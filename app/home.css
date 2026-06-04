@@ -1,0 +1,70 @@
+/* ============================================================
+   Animations for the home interface (ported from the offline
+   bundle's <style>). Class names are referenced directly by
+   HomeScreen.tsx. ligo-pulse already lives in globals.css.
+   ============================================================ */
+
+/* entrance fade for state changes / answered flow */
+@keyframes phase-fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.phase-fade { animation: phase-fade 360ms cubic-bezier(.2, .7, .2, 1); }
+
+/* daily-pick countdown card — breathing glow (orange before answer, green after) */
+@keyframes cd-breathe-o {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(249,115,22,0.12), 0 8px 30px -14px rgba(249,115,22,0.30); }
+  50% { box-shadow: 0 0 0 1px rgba(249,115,22,0.24), 0 14px 42px -10px rgba(249,115,22,0.52); }
+}
+@keyframes cd-breathe-g {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(113,192,127,0.12), 0 8px 30px -14px rgba(113,192,127,0.26); }
+  50% { box-shadow: 0 0 0 1px rgba(113,192,127,0.22), 0 14px 42px -10px rgba(113,192,127,0.46); }
+}
+.cd-breathe-o { animation: cd-breathe-o 2.6s ease-in-out infinite; }
+.cd-breathe-g { animation: cd-breathe-g 2.8s ease-in-out infinite; }
+
+/* the pulsing dot inside the countdown card */
+@keyframes cd-ring-o {
+  0% { box-shadow: 0 0 0 0 rgba(249,115,22,0.55); }
+  70% { box-shadow: 0 0 0 10px rgba(249,115,22,0); }
+  100% { box-shadow: 0 0 0 0 rgba(249,115,22,0); }
+}
+@keyframes cd-ring-g {
+  0% { box-shadow: 0 0 0 0 rgba(113,192,127,0.55); }
+  70% { box-shadow: 0 0 0 10px rgba(113,192,127,0); }
+  100% { box-shadow: 0 0 0 0 rgba(113,192,127,0); }
+}
+.cd-dot-o { animation: cd-ring-o 1.8s ease-out infinite; }
+.cd-dot-g { animation: cd-ring-g 2s ease-out infinite; }
+
+/* connection reveal — sealed-layer ambient blooms, live dot, floating rings */
+@keyframes cn-drift1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(26px, 18px) scale(1.08); }
+}
+@keyframes cn-drift2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-18px, -26px) scale(1.06); }
+}
+@keyframes cn-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+@keyframes cn-ringfloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+@keyframes cn-ringfloat-c {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-7px); }
+}
+
+/* meetup bottom sheet */
+@keyframes mt-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes mt-sheet {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
