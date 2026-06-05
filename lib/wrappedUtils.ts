@@ -1,5 +1,3 @@
-import homeContent from "@/data/canon/home_content.json";
-
 export type WrappedStory = Record<string, unknown>;
 
 export function parseWrappedContent(raw: unknown): WrappedStory | null {
@@ -69,22 +67,4 @@ export function normalizeWrappedContent(raw: unknown): WrappedStory | null {
     slide4: wrapped.slide4,
     slide5: wrapped.slide5,
   };
-}
-
-/** Prefer Supabase payload; fall back to canon JSON when DB row is stale or incomplete. */
-export function resolveWrappedForProfile(
-  profileId: string,
-  fromDb: unknown
-): WrappedStory | null {
-  const parsed = parseWrappedContent(fromDb);
-  if (isWrappedCarouselReady(parsed)) {
-    return normalizeWrappedContent(parsed);
-  }
-
-  const fallback = homeContent.wrapped?.[profileId as keyof typeof homeContent.wrapped];
-  if (fallback && isWrappedCarouselReady(fallback as WrappedStory)) {
-    return normalizeWrappedContent(fallback);
-  }
-
-  return parsed ? normalizeWrappedContent(parsed) : null;
 }

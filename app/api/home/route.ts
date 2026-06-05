@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { getHomeContentForProfile } from "@/lib/supabase/queries/home";
 import { createServerSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/server";
-import { isWrappedCarouselReady, resolveWrappedForProfile } from "@/lib/wrappedContent";
+import {
+  EMPTY_HOME_RESPONSE,
+  isMissingTableError,
+  profileExists,
+} from "@/lib/supabase/emptyBundles";
 
 export async function GET(request: Request) {
   if (!isSupabaseConfigured()) {
@@ -22,24 +26,42 @@ export async function GET(request: Request) {
 
   try {
     const supabase = createServerSupabaseClient();
-    const bundle = await getHomeContentForProfile(supabase, profileId);
-    if (!bundle) {
+
+    if (!(await profileExists(supabase, profileId))) {
       return NextResponse.json({ error: `Profile not found: ${profileId}` }, { status: 404 });
     }
 
-    const wrapped = resolveWrappedForProfile(profileId, bundle.wrapped);
+    try {
+      const bundle = await getHomeContentForProfile(supabase, profileId);
+      if (!bundle) {
+        return NextResponse.json({
+          profileId,
+          ...EMPTY_HOME_RESPONSE,
+          meta: { newsCount: 0, showsCount: 0, hasWrapped: false, empty: true },
+        });
+      }
 
-    return NextResponse.json({
-      profileId,
-      news: bundle.news,
-      shows: bundle.shows,
-      wrapped,
-      meta: {
-        newsCount: bundle.news.length,
-        showsCount: bundle.shows.length,
-        hasWrapped: isWrappedCarouselReady(wrapped),
-      },
-    });
+      return NextResponse.json({
+        profileId,
+        news: bundle.news,
+        shows: bundle.shows,
+        wrapped: bundle.wrapped,
+        meta: {
+          newsCount: bundle.news.length,
+          showsCount: bundle.shows.length,
+          hasWrapped: bundle.wrapped != null,
+        },
+      });
+    } catch (err) {
+      if (isMissingTableError(err)) {
+        return NextResponse.json({
+          profileId,
+          ...EMPTY_HOME_RESPONSE,
+          meta: { newsCount: 0, showsCount: 0, hasWrapped: false, empty: true },
+        });
+      }
+      throw err;
+    }
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });

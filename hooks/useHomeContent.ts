@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { HomeNewsRow, HomeShowRow } from "@/lib/supabase/types";
-import { parseWrappedContent } from "@/lib/wrappedContent";
+import { parseWrappedContent } from "@/lib/wrappedUtils";
 
 type HomeContentState = {
   loading: boolean;

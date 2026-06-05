@@ -3,6 +3,11 @@ import { buildDailyRevealBundle } from "@/lib/dailyReveal";
 import { getCanonBundle, getDailyAnswersForProfiles } from "@/lib/supabase/queries/canon";
 import { getDailyQuestions } from "@/lib/supabase/queries/daily";
 import { createServerSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import {
+  EMPTY_CONNECTION_RESPONSE,
+  isMissingTableError,
+  profileExists,
+} from "@/lib/supabase/emptyBundles";
 
 export async function GET(request: Request) {
   if (!isSupabaseConfigured()) {
@@ -23,27 +28,48 @@ export async function GET(request: Request) {
 
   try {
     const supabase = createServerSupabaseClient();
-    const [bundle, questions] = await Promise.all([
-      getCanonBundle(supabase, profileId),
-      getDailyQuestions(supabase),
-    ]);
-    if (!bundle) {
+
+    if (!(await profileExists(supabase, profileId))) {
       return NextResponse.json({ error: `Profile not found: ${profileId}` }, { status: 404 });
     }
 
-    const reveal = buildDailyRevealBundle(questions, bundle.dailyAnswers);
-    const matchIds = bundle.connectionRoster.map((row) => row.match_id);
-    const matchAnswersById = await getDailyAnswersForProfiles(supabase, matchIds);
+    try {
+      const [bundle, questions] = await Promise.all([
+        getCanonBundle(supabase, profileId),
+        getDailyQuestions(supabase),
+      ]);
 
-    return NextResponse.json({
-      profileId,
-      currentDayNumber: reveal.currentDayNumber,
-      currentAnswer: reveal.currentAnswer,
-      connectionRoster: bundle.connectionRoster,
-      dailyAnswers: bundle.dailyAnswers,
-      matchAnswersById,
-      dailyQuestions: questions,
-    });
+      if (!bundle || !bundle.dailyAnswers.length) {
+        return NextResponse.json({
+          profileId,
+          ...EMPTY_CONNECTION_RESPONSE,
+          meta: { empty: true },
+        });
+      }
+
+      const reveal = buildDailyRevealBundle(questions, bundle.dailyAnswers);
+      const matchIds = bundle.connectionRoster.map((row) => row.match_id);
+      const matchAnswersById = await getDailyAnswersForProfiles(supabase, matchIds);
+
+      return NextResponse.json({
+        profileId,
+        currentDayNumber: reveal.currentDayNumber,
+        currentAnswer: reveal.currentAnswer,
+        connectionRoster: bundle.connectionRoster,
+        dailyAnswers: bundle.dailyAnswers,
+        matchAnswersById,
+        dailyQuestions: questions,
+      });
+    } catch (err) {
+      if (isMissingTableError(err)) {
+        return NextResponse.json({
+          profileId,
+          ...EMPTY_CONNECTION_RESPONSE,
+          meta: { empty: true },
+        });
+      }
+      throw err;
+    }
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });

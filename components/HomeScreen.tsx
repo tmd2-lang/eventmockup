@@ -29,7 +29,7 @@ import { USERS } from "@/lib/users";
 import { useConnectionNight } from "@/hooks/useConnectionNight";
 import { useDailyReveal } from "@/hooks/useDailyReveal";
 import { useHomeContent } from "@/hooks/useHomeContent";
-import { isWrappedCarouselReady, normalizeWrappedContent } from "@/lib/wrappedContent";
+import { isWrappedCarouselReady, normalizeWrappedContent } from "@/lib/wrappedUtils";
 
 // useState/useEffect aliases the bundle used per-file
 const useStateS = useState, useStateN = useState, useStateC = useState, useStateW = useState, useStateM = useState;
@@ -104,6 +104,11 @@ function NewsStrip({ home }) {
             fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 500, fontSize: 14,
             color: 'rgba(200,50,50,0.85)', margin: '8px 0 12px',
           }}>{error}</p>
+        ) : !news.length ? (
+          <p style={{
+            fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 500, fontSize: 14,
+            color: 'rgba(20,17,13,0.45)', margin: '8px 0 12px',
+          }}>Nothing here yet</p>
         ) : news.map((n, i) => (
           <div key={n.id || i} style={{
             flex: '0 0 auto', width: 208, background: '#fff', borderRadius: 18,
@@ -459,12 +464,17 @@ function DailyPick() {
               fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 500, fontSize: 17,
               lineHeight: 1.4, color: 'rgba(200,50,50,0.85)', margin: 0,
             }}>{error}</p>
+          ) : !currentQuestion ? (
+            <p style={{
+              fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 500, fontSize: 17,
+              lineHeight: 1.4, color: 'rgba(20,17,13,0.45)', margin: 0,
+            }}>Today&apos;s question coming soon</p>
           ) : (
             <h2 style={{
               fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 500, fontSize: 29,
               lineHeight: 1.12, letterSpacing: '-0.025em', color: '#14110D', textWrap: 'balance',
             }}>
-              {currentQuestion?.question_text ?? 'Today\u2019s question is unavailable.'}
+              {currentQuestion.question_text}
             </h2>
           )}
 
@@ -633,6 +643,11 @@ function NearYou({ home }) {
             fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 500, fontSize: 14,
             color: 'rgba(200,50,50,0.85)', margin: '8px 0 12px',
           }}>{error}</p>
+        ) : !shows.length ? (
+          <p style={{
+            fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 500, fontSize: 14,
+            color: 'rgba(20,17,13,0.45)', margin: '8px 0 12px',
+          }}>Nothing here yet</p>
         ) : shows.map((s, i) => (
           <div key={s.id || i} style={{
             display: 'flex', alignItems: 'center', gap: 12, padding: 10, borderRadius: 18,
@@ -1131,7 +1146,7 @@ function WrappedExperience({ onNav, home }) {
   if (!isWrappedCarouselReady(home.wrapped)) {
     return (
       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0A0907', color: 'rgba(255,255,255,0.5)', padding: 28, textAlign: 'center' }}>
-        <p style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontSize: 15 }}>Wrapped isn&apos;t available for this profile yet.</p>
+        <p style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontSize: 15 }}>No wrapped data yet</p>
       </div>
     );
   }

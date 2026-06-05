@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { getDailyRevealForProfile } from "@/lib/supabase/queries/daily";
 import { createServerSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import {
+  EMPTY_DAILY_RESPONSE,
+  isMissingTableError,
+  profileExists,
+} from "@/lib/supabase/emptyBundles";
 
 export async function GET(request: Request) {
   if (!isSupabaseConfigured()) {
@@ -21,23 +26,43 @@ export async function GET(request: Request) {
 
   try {
     const supabase = createServerSupabaseClient();
-    const bundle = await getDailyRevealForProfile(supabase, profileId);
-    if (!bundle) {
+
+    if (!(await profileExists(supabase, profileId))) {
       return NextResponse.json({ error: `Profile not found: ${profileId}` }, { status: 404 });
     }
 
-    return NextResponse.json({
-      profileId,
-      currentDayNumber: bundle.currentDayNumber,
-      currentQuestion: bundle.currentQuestion,
-      currentAnswer: bundle.currentAnswer,
-      answerTrail: bundle.answerTrail,
-      meta: {
-        trailCount: bundle.answerTrail.length,
-        windowStart: "2026-05-08",
-        windowEnd: "2026-06-04",
-      },
-    });
+    try {
+      const bundle = await getDailyRevealForProfile(supabase, profileId);
+      if (!bundle) {
+        return NextResponse.json({
+          profileId,
+          ...EMPTY_DAILY_RESPONSE,
+          meta: { trailCount: 0, empty: true },
+        });
+      }
+
+      return NextResponse.json({
+        profileId,
+        currentDayNumber: bundle.currentDayNumber,
+        currentQuestion: bundle.currentQuestion,
+        currentAnswer: bundle.currentAnswer,
+        answerTrail: bundle.answerTrail,
+        meta: {
+          trailCount: bundle.answerTrail.length,
+          windowStart: "2026-05-08",
+          windowEnd: "2026-06-04",
+        },
+      });
+    } catch (err) {
+      if (isMissingTableError(err)) {
+        return NextResponse.json({
+          profileId,
+          ...EMPTY_DAILY_RESPONSE,
+          meta: { trailCount: 0, empty: true },
+        });
+      }
+      throw err;
+    }
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });

@@ -1029,6 +1029,8 @@ function ProfileTabV2() {
             <div style={{ fontSize: 13, color: 'rgba(20,17,13,0.45)', padding: '10px 4px' }}>Loading answer trail…</div>
           ) : trailError ? (
             <div style={{ fontSize: 13, color: 'rgba(200,50,50,0.85)', padding: '10px 4px' }}>{trailError}</div>
+          ) : !answerTrail.length ? (
+            <div style={{ fontSize: 13, color: 'rgba(20,17,13,0.45)', padding: '10px 4px' }}>No answers yet</div>
           ) : answerTrail.map((a) => (
             <div key={a.day_number} onClick={() => toast(`${a.dayLabel} · ${a.song}`)} style={{
               flexShrink: 0, width: 124, padding: '10px 12px', borderRadius: 14, cursor: 'pointer',

@@ -1,8 +1,8 @@
-# LIGO — Demo Mockup (v1)
+# LIGO — Demo Mockup
 
 An interactive, clickable prototype of **LIGO** — a music-first social app for college students. The demo runs inside an iPhone frame in the browser: answer a daily question, reveal who picked like you, browse events, and flip through a weekly Wrapped story.
 
-**v1 status:** Canon content lives in **Supabase**. The home feed, daily reveal, connection night, and profile answer trail read from server APIs. Profile-rich UI (playlists, receipts, streaks) still lives in TypeScript for now.
+**Branches:** **`v0-demo-mockup`** (git tag) is the frozen full-canon demo with all Supabase content. Branch **`v1`** is the empty data canvas — profiles only, soft UI empty states, canon scripts archived under `archive/v0/`. See [docs/V1_STARTING_POINT.md](docs/V1_STARTING_POINT.md) to set up v1 locally; see [docs/DEPLOY_V0.md](docs/DEPLOY_V0.md) to deploy the frozen v0 demo.
 
 ---
 
@@ -202,14 +202,13 @@ lib/
   dailyReveal.ts             Day resolution (ET window)
   connectionNight.ts         Roster → carousel mapping
   sharedPickRule.ts          Shared-pick card rules
-  wrappedContent.ts          Wrapped normalize + JSON fallback
-  supabase/                  Client, server, queries, types
-data/canon/                  Excel + home_content.json
+  wrappedUtils.ts            Wrapped parse + normalize (no JSON fallback)
+  supabase/                  Client, server, queries, emptyBundles
 scripts/
-  import-canon.ts
-  import-home-content.ts
+  import-profiles.ts         Seed profiles → v1 Supabase
   apply-migration.ts
-supabase/migrations/         001 canon · 002 home content
+supabase/migrations/         001_v1_profiles_only.sql
+archive/v0/                  Frozen v0 canon, scripts, migrations
 public/                      Covers, artist photos, fonts, assets
 archive/investor-demo/       Offline investor deck (not part of runtime demo)
 docs/                        Phase plans and implementation notes
@@ -224,9 +223,8 @@ docs/                        Phase plans and implementation notes
 | `npm run dev` | Development server |
 | `npm run dev:clean` | Clear `.next`, start on port 3000 |
 | `npm run db:migrate` | Apply SQL migrations (needs DB URL) |
-| `npm run import:canon` | Excel → Supabase canon tables |
-| `npm run import:home` | `home_content.json` → home_* tables |
-| `npm run export:home` | One-time export from legacy TS constants → JSON |
+| `npm run import:profiles` | Seed nine demo profiles into v1 Supabase |
+| `npm run import:profiles:dry` | Dry run for profile import |
 
 ---
 
