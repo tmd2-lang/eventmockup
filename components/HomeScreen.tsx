@@ -24,7 +24,9 @@ import { searchBennettCatalog } from "@/lib/bennett-catalog";
 import { searchMaddieCatalog } from "@/lib/maddie-catalog";
 import { searchAlessiaCatalog } from "@/lib/alessia-catalog";
 import { searchSofiaCatalog } from "@/lib/sofia-catalog";
+import { searchMarcusCatalog } from "@/lib/marcus-catalog";
 import { USERS } from "@/lib/users";
+import { useConnectionNight } from "@/hooks/useConnectionNight";
 
 // useState/useEffect aliases the bundle used per-file
 const useStateS = useState, useStateN = useState, useStateC = useState, useStateW = useState, useStateM = useState;
@@ -125,6 +127,14 @@ const BENNETT_NEWS = [
   { art: '/covers/chrislake-yuma-coverart.jpeg', src: 'Ligo Radar', when: '1d', head: 'Chris Lake at Echostage is officially sold out.' },
 ];
 
+const MARCUS_NEWS = [
+  { art: '/artists/tameimpala-profile.jpeg', src: 'Ligo Radar', when: '1h', head: 'Tame Impala hints at an upcoming B-sides compilation.' },
+  { art: '/artists/MGMT-profile.jpeg', src: 'Campus chart', when: '3h', head: '"Electric Feel" takes over the Georgetown late night aux.' },
+  { art: '/artists/freddiegibbs-profile.jpeg', src: 'Tour', when: '5h', head: 'Freddie Gibbs announces a surprise East Coast run.' },
+  { art: '/artists/MK-profile.jpeg', src: 'Breaking', when: '12h', head: 'MK drops a new house anthem perfect for the pregame.' },
+  { art: '/artists/fleetwoodmac-profike.jpeg', src: 'Pitchfork', when: '1d', head: 'Fleetwood Mac Rumours experiences a campus resurgence.' },
+];
+
 const ALESSIA_NEWS = [
   { art: '/covers/lanadelreyultraviolence-coverart.jpeg', src: 'Rumor', when: '2h', head: 'Lana Del Rey spotted recording in London studio.' },
   { art: '/covers/adamport-planet9-coverart.jpeg', src: 'Tour', when: '4h', head: 'Adam Port announces pop-up set in D.C. this Friday.' },
@@ -135,7 +145,7 @@ const ALESSIA_NEWS = [
 
 function NewsStrip() {
   const [activeUserId] = usePersistentState('ligo:active_user', 'jordan');
-  const newsItems = activeUserId === 'charlotte' ? CHARLOTTE_NEWS : activeUserId === 'cole' ? COLE_NEWS : activeUserId === 'caroline' ? CAROLINE_NEWS : activeUserId === 'bennett' ? BENNETT_NEWS : activeUserId === 'maddie' ? MADDIE_NEWS : activeUserId === 'alessia' ? ALESSIA_NEWS : NEWS;
+  const newsItems = activeUserId === 'charlotte' ? CHARLOTTE_NEWS : activeUserId === 'cole' ? COLE_NEWS : activeUserId === 'caroline' ? CAROLINE_NEWS : activeUserId === 'bennett' ? BENNETT_NEWS : activeUserId === 'maddie' ? MADDIE_NEWS : activeUserId === 'marcus' ? MARCUS_NEWS : activeUserId === 'alessia' ? ALESSIA_NEWS : NEWS;
   return (
     <div>
       <div style={{ padding: '24px 22px 12px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
@@ -460,6 +470,8 @@ function DailyPick() {
     ? searchAlessiaCatalog(draft, 8)
     : activeUserId === 'maddie'
     ? searchMaddieCatalog(draft, 8)
+    : activeUserId === 'marcus'
+    ? searchMarcusCatalog(draft, 8)
     : activeUserId === 'sofia'
     ? searchSofiaCatalog(draft, 8)
     : searchJordanCatalog(draft, 8);
@@ -661,6 +673,11 @@ const BENNETT_SHOWS = [
   { name: 'Ken Carson Chaos Tour', venue: 'The Anthem', when: 'Sat 8:00', tag: '$65', tagCls: 'orange', art: '/covers/kencarsonagreatchaos-coverart.jpeg' },
   { name: 'Late Night House Set', venue: 'Flash DC', when: 'Sat 11:30', tag: '$20', tagCls: 'orange', art: '/covers/chrislake-morebaby-coverart.jpeg' },
 ];
+const MARCUS_SHOWS = [
+  { name: 'Tame Impala Listening Party', venue: 'Leavey Center', when: 'Tonight 9:00', tag: 'Free', tagCls: 'green', art: '/artists/tameimpala-profile.jpeg' },
+  { name: 'MK Deep House Basement', venue: 'Off campus', when: 'Fri 10:30', tag: '$10', tagCls: 'orange', art: '/artists/MK-profile.jpeg' },
+];
+
 const ALESSIA_SHOWS = [
   { name: 'Adam Port & Keinemusik Open Air', venue: 'Echostage', when: 'Fri 10:00', tag: '$40', tagCls: 'orange', art: '/covers/adamport-planet9-coverart.jpeg' },
   { name: 'Lana Del Rey Listening Party', venue: 'The Tombs', when: 'Sat 9:00', tag: 'Free', tagCls: 'green', art: '/covers/lanadelreyultraviolence-coverart.jpeg' },
@@ -672,7 +689,7 @@ const TAG_STYLE = {
 
 function NearYou() {
   const [activeUserId] = usePersistentState('ligo:active_user', 'jordan');
-  const showsItems = activeUserId === 'charlotte' ? CHARLOTTE_SHOWS : activeUserId === 'cole' ? COLE_SHOWS : activeUserId === 'caroline' ? CAROLINE_SHOWS : activeUserId === 'bennett' ? BENNETT_SHOWS : activeUserId === 'alessia' ? ALESSIA_SHOWS : activeUserId === 'maddie' ? MADDIE_SHOWS : SHOWS;
+  const showsItems = activeUserId === 'charlotte' ? CHARLOTTE_SHOWS : activeUserId === 'cole' ? COLE_SHOWS : activeUserId === 'caroline' ? CAROLINE_SHOWS : activeUserId === 'bennett' ? BENNETT_SHOWS : activeUserId === 'alessia' ? ALESSIA_SHOWS : activeUserId === 'marcus' ? MARCUS_SHOWS : activeUserId === 'maddie' ? MADDIE_SHOWS : SHOWS;
   return (
     <div>
       <div style={{ padding: '24px 22px 12px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
@@ -725,68 +742,61 @@ function HomeNormal({ onOpen }) {
 
 // home-connection.jsx — Connection day IS the reveal: sealed moment → story carousel → summary
 
-// the three people who picked the same as you tonight
-const PEOPLE = [
-  {
-    name: 'Alexis J.', initials: 'AJ', grad: 'linear-gradient(140deg, #F5D783, #F97316)',
-    meta: 'Junior · She/Her', archetype: 'The Culture Keeper', aIcon: Icon.Music,
-    week: ['match', 'miss', 'match', 'miss', 'today'],
-    prompt: 'Three times this week. Same place, no coordination.',
-    horoscope: "A Culture Keeper has entered your orbit. She reached for the same warm, lyric-heavy records on Monday and Wednesday — and tonight you both landed on Frank Ocean. The stars read slow-burn: a friendship that lives on the 2am side of the playlist.",
-  },
-  {
-    name: 'Marcus T.', initials: 'MT', grad: 'linear-gradient(140deg, #EA8CE1, #A13D99)',
-    meta: 'Senior · He/Him', archetype: 'The Early Adopter', aIcon: Icon.Spark,
-    week: ['miss', 'match', 'miss', 'match', 'today'],
-    prompt: 'Also three times this week. Neither of you knew.',
-    horoscope: "An Early Adopter crossed your path. He finds the songs before the charts do, yet still matched your answers Tuesday and Thursday. Expect a connection built on trading deep cuts — starting with the one you both picked tonight.",
-  },
-  {
-    name: 'Sofia L.', initials: 'SL', grad: 'linear-gradient(140deg, #71C07F, #2F7D3F)',
-    meta: 'Sophomore · She/Her', archetype: 'The Mood Curator', aIcon: Icon.Moon,
-    week: ['match', 'miss', 'miss', 'match', 'today'],
-    prompt: "Same song, three different nights. That's not random.",
-    horoscope: "A Mood Curator is aligned with you. Her week ran nocturnal like yours — same answer Monday, same answer Thursday — and she chose 'Self Control' the moment you did. The reading: late-night drives, shared headphones, no small talk required.",
-  },
-];
-const SONG = { name: 'Self Control', artist: 'Frank Ocean', art: ART.frank };
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+function archetypeIconFor(key) {
+  const map = {
+    "mood-curator": Icon.Moon,
+    "deep-cut": Icon.Spark,
+    "afterglow": Icon.Moon,
+    "hypnotist": Icon.Music,
+    "main-character": Icon.Spark,
+    "pop-oracle": Icon.Spark,
+    "southern-romantic": Icon.Music,
+    "social-aux": Icon.Vibe,
+    "pregame-menace": Icon.Spark,
+    "algorithm-dodger": Icon.Music,
+    "culture-keeper": Icon.Music,
+  };
+  return map[key] ?? Icon.Music;
+}
 
-const ALESSIA_PEOPLE = [
-  {
-    name: 'Jordan D.', initials: 'JD', grad: 'linear-gradient(140deg, #F97316, #EA8CE1)',
-    meta: 'Junior · He/Him', archetype: 'The Hypnotist', aIcon: Icon.Music,
-    week: ['match', 'miss', 'match', 'miss', 'today'],
-    prompt: 'Three times this week. Both leaning into house.',
-    horoscope: "A Hypnotist caught your rhythm. He reached for Disclosure on Monday and Wednesday — and tonight you both landed on Keinemusik. The stars read late nights: a connection that thrives when the bass kicks in.",
-  },
-  {
-    name: 'Charlotte W.', initials: 'CW', grad: 'linear-gradient(140deg, #2A5E40, #71C07F)',
-    meta: 'Sophomore · She/Her', archetype: 'The Main Character', aIcon: Icon.Music,
-    week: ['miss', 'match', 'miss', 'match', 'today'],
-    prompt: 'Also three times this week. Pop anthems aligned.',
-    horoscope: "A Main Character crossed your path. She brings the high energy you love, matching your answers Tuesday and Thursday. Expect a connection built on singing every word to the chorus — starting with the one you both picked tonight.",
-  },
-  {
-    name: 'Sofia L.', initials: 'SL', grad: 'linear-gradient(140deg, #71C07F, #2F7D3F)',
-    meta: 'Sophomore · She/Her', archetype: 'The Mood Curator', aIcon: Icon.Moon,
-    week: ['match', 'miss', 'miss', 'match', 'today'],
-    prompt: "Same song, three different nights. That's not random.",
-    horoscope: "A Mood Curator is aligned with you. Her week ran nocturnal like yours — same answer Monday, same answer Thursday — and she chose 'Brooklyn Baby' the moment you did. The reading: late-night drives, shared headphones, no small talk required.",
-  },
-];
-const ALESSIA_SONG = { name: 'Brooklyn Baby', artist: 'Lana Del Rey', art: '/covers/lanadelreyultraviolence-coverart.jpeg' };
+const FALLBACK_SONG = { name: 'Self Control', artist: 'Frank Ocean', art: ART.frank };
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
 function ConnectionReveal({ onMeetup, onNav }) {
   const [activeUserId] = usePersistentState('ligo:active_user', 'jordan');
-  const peopleData = activeUserId === 'alessia' ? ALESSIA_PEOPLE : PEOPLE;
-  const songData = activeUserId === 'alessia' ? ALESSIA_SONG : SONG;
+  const { loading, error, people, song } = useConnectionNight(activeUserId);
+  const peopleData = people;
+  const songData = song ?? FALLBACK_SONG;
 
   const [phase, setPhase] = useStateC('sealed');
   const [cur, setCur] = useStateC(0);
   // persisted: your Vibe/Spark/Pass choices are remembered
   const [actions, setActions] = usePersistentState('ligo:reveal:actions', {});   // idx -> 'vibe' | 'spark' | 'pass'
   const TOTAL = peopleData.length + 1;                // + done slide
+  const ringPeople = peopleData.slice(0, 3);
+
+  useEffect(() => {
+    setCur(0);
+    setPhase('sealed');
+  }, [activeUserId, peopleData.length]);
+
+  if (loading) {
+    return (
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0A0907', color: 'rgba(255,255,255,0.5)', fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 600, fontSize: 14 }}>
+        Loading tonight&apos;s reveal…
+      </div>
+    );
+  }
+
+  if (error || !peopleData.length) {
+    return (
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, background: '#0A0907', color: '#fff', padding: 24, textAlign: 'center' }}>
+        <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 18 }}>Connection Night unavailable</div>
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', maxWidth: 280 }}>{error || 'No matches surfaced for this profile yet.'}</div>
+        <button onClick={() => onNav && onNav('home')} style={{ marginTop: 8, padding: '10px 16px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)', color: '#fff', cursor: 'pointer', fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 13 }}>Back to home</button>
+      </div>
+    );
+  }
 
   function next() { setCur(c => Math.min(c + 1, TOTAL - 1)); }
   function prev() { setCur(c => Math.max(c - 1, 0)); }
@@ -837,10 +847,10 @@ function ConnectionReveal({ onMeetup, onNav }) {
           {/* floating rings */}
           <div style={{ position: 'relative', width: 180, height: 84, marginBottom: 34 }}>
             {[
-              { p: peopleData[0], style: { left: 0, top: 10, width: 64, height: 64, animation: 'cn-ringfloat 3.2s ease-in-out infinite' } },
-              { p: peopleData[2], style: { right: 0, top: 12, width: 64, height: 64, animation: 'cn-ringfloat 4.1s ease-in-out infinite 0.8s' } },
-              { p: peopleData[1], style: { left: '50%', top: 0, width: 72, height: 72, animation: 'cn-ringfloat-c 3.8s ease-in-out infinite 0.4s' } },
-            ].map((r, i) => (
+              { p: ringPeople[0], style: { left: 0, top: 10, width: 64, height: 64, animation: 'cn-ringfloat 3.2s ease-in-out infinite' } },
+              { p: ringPeople[2], style: { right: 0, top: 12, width: 64, height: 64, animation: 'cn-ringfloat 4.1s ease-in-out infinite 0.8s' } },
+              { p: ringPeople[1], style: { left: '50%', top: 0, width: 72, height: 72, animation: 'cn-ringfloat-c 3.8s ease-in-out infinite 0.4s' } },
+            ].filter((r) => r.p).map((r, i) => (
               <div key={i} style={{
                 position: 'absolute', borderRadius: 99, background: r.p.grad, color: '#fff',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -850,19 +860,19 @@ function ConnectionReveal({ onMeetup, onNav }) {
             ))}
           </div>
 
-          <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 72, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 6, color: '#fff' }}>3</div>
-          <div style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,0.45)', marginBottom: 12 }}>people at Georgetown tonight</div>
+          <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 72, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 6, color: '#fff' }}>{peopleData.length}</div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,0.45)', marginBottom: 12 }}>connections surfaced tonight</div>
           <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 26, letterSpacing: '-0.03em', lineHeight: 1.2, marginBottom: 10, textWrap: 'balance' }}>
-            chose the same<br />song as you.
+            matched to your taste.
           </div>
           <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, maxWidth: 250 }}>You'll never know it's coming. That's the point.</div>
 
           {/* your pick chip */}
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 11, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, padding: '10px 14px', marginTop: 22 }}>
-            <div style={{ width: 38, height: 38, borderRadius: 9, backgroundImage: `url(${SONG.art})`, backgroundSize: 'cover', backgroundPosition: 'center', flexShrink: 0 }} />
+            <div style={{ width: 38, height: 38, borderRadius: 9, backgroundImage: `url(${songData.art})`, backgroundSize: 'cover', backgroundPosition: 'center', flexShrink: 0 }} />
             <div style={{ textAlign: 'left' }}>
-              <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 13.5, lineHeight: 1.2 }}>{SONG.name}</div>
-              <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{SONG.artist}</div>
+              <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 13.5, lineHeight: 1.2 }}>{songData.name}</div>
+              <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{songData.artist}</div>
             </div>
             <span style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#F97316', background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.2)', borderRadius: 6, padding: '4px 7px' }}>Your pick</span>
           </div>
@@ -905,7 +915,7 @@ function ConnectionReveal({ onMeetup, onNav }) {
         {/* slides */}
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 74 }}>
           {peopleData.map((p, i) => (
-            <PersonSlide key={i} p={p} idx={i} cur={cur} action={actions[i]} onAct={act} />
+            <PersonSlide key={p.id} p={p} idx={i} cur={cur} total={peopleData.length} song={songData} action={actions[i]} onAct={act} />
           ))}
           <DoneSlide idx={peopleData.length} cur={cur} actions={actions} peopleData={peopleData} onReplay={replay} onMeetup={onMeetup} />
         </div>
@@ -942,15 +952,15 @@ function WeekPips({ week }) {
   );
 }
 
-function PersonSlide({ p, idx, cur, action, onAct }) {
-  const A = p.aIcon;
+function PersonSlide({ p, idx, cur, total, song, action, onAct }) {
+  const A = archetypeIconFor(p.aIconKey);
   return (
     <div style={slideStyle(idx, cur)}>
       {/* hero */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '78px 22px 12px', position: 'relative', overflowY: 'auto', scrollbarWidth: 'none' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(460px 460px at 82% 10%, rgba(234,140,225,0.16), transparent 65%)', pointerEvents: 'none' }} />
         <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8, position: 'relative', zIndex: 2 }}>
-          <span style={{ width: 5, height: 5, borderRadius: 99, background: '#F97316' }} /> {idx + 1} of 3 · Same song tonight
+          <span style={{ width: 5, height: 5, borderRadius: 99, background: '#F97316' }} /> {idx + 1} of {total} · {p.matchType} · {p.score}
         </div>
 
         {/* header: avatar + name + archetype */}
@@ -970,7 +980,7 @@ function PersonSlide({ p, idx, cur, action, onAct }) {
           <span style={{ position: 'absolute', top: 13, right: 16, width: 3, height: 3, borderRadius: 99, background: '#EA8CE1', opacity: 0.8 }} />
           <span style={{ position: 'absolute', bottom: 16, right: 34, width: 2, height: 2, borderRadius: 99, background: '#EA8CE1', opacity: 0.7 }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
-            <Icon.Spark width="13" height="13" style={{ color: d.theme.horoscopeIconColor }} />
+            <Icon.Spark width="13" height="13" style={{ color: '#EA8CE1' }} />
             <span style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 9.5, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#EA8CE1' }}>Your connection reading</span>
           </div>
           <p style={{ fontSize: 13, lineHeight: 1.55, color: 'rgba(255,255,255,0.8)', textWrap: 'pretty' }}>{p.horoscope}</p>
@@ -978,18 +988,33 @@ function PersonSlide({ p, idx, cur, action, onAct }) {
 
         {/* shared song */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginTop: 10, padding: '10px 12px', borderRadius: 14, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', position: 'relative', zIndex: 2 }}>
-          <div style={{ width: 38, height: 38, borderRadius: 9, backgroundImage: `url(${SONG.art})`, backgroundSize: 'cover', backgroundPosition: 'center', flexShrink: 0, boxShadow: '0 6px 16px rgba(0,0,0,0.4)' }} />
+          <div style={{ width: 38, height: 38, borderRadius: 9, backgroundImage: `url(${song.art})`, backgroundSize: 'cover', backgroundPosition: 'center', flexShrink: 0, boxShadow: '0 6px 16px rgba(0,0,0,0.4)' }} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>You both picked</div>
-            <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 14.5, letterSpacing: '-0.01em', marginTop: 2 }}>{SONG.name} · <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>{SONG.artist}</span></div>
+            <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>Your pick tonight</div>
+            <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 14.5, letterSpacing: '-0.01em', marginTop: 2 }}>{song.name} · <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>{song.artist}</span></div>
           </div>
         </div>
 
-        {/* their week of answers */}
-        <div style={{ marginTop: 14, position: 'relative', zIndex: 2 }}>
-          <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>Their answers this week</div>
-          <WeekPips week={p.week} />
-        </div>
+        {(p.headlineOverlap || p.sharedLane) && (
+          <div style={{ marginTop: 14, position: 'relative', zIndex: 2 }}>
+            <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>Overlap signal</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {p.headlineOverlap && (
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.72)', background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.22)', borderRadius: 999, padding: '6px 10px' }}>{p.headlineOverlap}</span>
+              )}
+              {p.sharedLane && (
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.55)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 999, padding: '6px 10px' }}>{p.sharedLane}</span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {p.week && (
+          <div style={{ marginTop: 14, position: 'relative', zIndex: 2 }}>
+            <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>Their answers this week</div>
+            <WeekPips week={p.week} />
+          </div>
+        )}
       </div>
 
       {/* cta sheet */}
@@ -1375,6 +1400,19 @@ const WRAPPED_DATA = {
       title: "That's your week,\nThe Pregame Menace.",
       sub: "6 answers · 2 shows · 14 twins. Post it and see who answered like you."
     }
+  },
+  marcus: {
+    heroAccent: '#3B82F6', heroGrad: 'linear-gradient(140deg, #10B981, #3B82F6)',
+    topPct: 38,
+    label: 'The Deep Cut Generalist',
+    statLabel: 'more niche at Georgetown',
+    sub: 'Tame Impala, MGMT, Fleetwood Mac, MK — you share a different lane with almost everyone.',
+    storyPicks: ['Tame Impala', 'MGMT', 'Fleetwood Mac'],
+    song: { title: 'Electric Feel', artist: 'MGMT' },
+    friends: [
+      { n: 'Maddie R.', t: 'Matched 3x', p: 'MR', c: '#F97316' },
+      { n: 'Cole B.', t: 'Matched 2x', p: 'CB', c: '#3B82F6' },
+    ],
   },
   alessia: {
     meshClass: "pink-purple-mesh",
