@@ -23,6 +23,26 @@ export async function getDailyAnswersForProfile(
   return data ?? [];
 }
 
+export async function getDailyAnswersForProfiles(
+  supabase: SupabaseClient<Database>,
+  profileIds: string[]
+): Promise<Record<string, DailyAnswerRow[]>> {
+  if (!profileIds.length) return {};
+  const { data, error } = await supabase
+    .from("daily_answers")
+    .select("*")
+    .in("profile_id", profileIds)
+    .order("day_number", { ascending: true });
+  if (error) throw error;
+
+  const byProfile: Record<string, DailyAnswerRow[]> = {};
+  for (const id of profileIds) byProfile[id] = [];
+  for (const row of data ?? []) {
+    byProfile[row.profile_id]?.push(row);
+  }
+  return byProfile;
+}
+
 export async function getConnectionRoster(
   supabase: SupabaseClient<Database>,
   viewerId: string

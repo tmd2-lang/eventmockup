@@ -951,13 +951,15 @@ function slideStyle(i, cur) {
 function WeekPips({ week }) {
   return (
     <div style={{ display: 'flex', gap: 5, position: 'relative', zIndex: 2 }}>
-      {week.map((st, i) => {
+      {week.map((cell, i) => {
+        const st = cell.status ?? cell;
+        const label = cell.label ?? DAYS[i];
         const c = st === 'today' ? { bg: 'rgba(249,115,22,0.18)', bd: 'rgba(249,115,22,0.3)', fg: '#F97316' }
           : st === 'match' ? { bg: 'rgba(113,192,127,0.13)', bd: 'rgba(113,192,127,0.22)', fg: 'rgba(113,192,127,0.85)' }
           : { bg: 'rgba(255,255,255,0.04)', bd: 'rgba(255,255,255,0.07)', fg: 'rgba(255,255,255,0.28)' };
         return (
           <div key={i} style={{ flex: 1, height: 34, borderRadius: 8, background: c.bg, border: `1px solid ${c.bd}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-            <span style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 8, textTransform: 'uppercase', color: c.fg, opacity: 0.7 }}>{DAYS[i]}</span>
+            <span style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 8, textTransform: 'uppercase', color: c.fg, opacity: 0.7 }}>{label}</span>
             <span style={{ fontSize: 11, color: c.fg, fontWeight: 700 }}>{st === 'miss' ? '–' : '✓'}</span>
           </div>
         );
@@ -1009,25 +1011,32 @@ function PersonSlide({ p, idx, cur, total, song, action, onAct }) {
           </div>
         </div>
 
-        {(p.headlineOverlap || p.sharedLane) && (
-          <div style={{ marginTop: 14, position: 'relative', zIndex: 2 }}>
-            <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>Overlap signal</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {p.headlineOverlap && (
-                <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.72)', background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.22)', borderRadius: 999, padding: '6px 10px' }}>{p.headlineOverlap}</span>
-              )}
-              {p.sharedLane && (
+        {p.sharedPickCard ? (
+          <div style={{ marginTop: 14, padding: '12px 14px', borderRadius: 14, background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.24)', position: 'relative', zIndex: 2 }}>
+            <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#F97316', marginBottom: 6 }}>Shared pick</div>
+            <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 15, letterSpacing: '-0.01em', color: 'rgba(255,255,255,0.92)' }}>{p.sharedPickCard.label}</div>
+            {p.sharedPickCard.date && (
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>{p.sharedPickCard.date}</div>
+            )}
+            {p.sharedPickCard.detail && (
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', marginTop: 6, lineHeight: 1.45 }}>{p.sharedPickCard.detail}</div>
+            )}
+          </div>
+        ) : (
+          <>
+            {p.sharedLane && (
+              <div style={{ marginTop: 14, position: 'relative', zIndex: 2 }}>
+                <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>Shared lane</div>
                 <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.55)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 999, padding: '6px 10px' }}>{p.sharedLane}</span>
-              )}
-            </div>
-          </div>
-        )}
-
-        {p.week && (
-          <div style={{ marginTop: 14, position: 'relative', zIndex: 2 }}>
-            <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>Their answers this week</div>
-            <WeekPips week={p.week} />
-          </div>
+              </div>
+            )}
+            {p.weekGrid?.length > 0 && (
+              <div style={{ marginTop: 14, position: 'relative', zIndex: 2 }}>
+                <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>Your answers this week</div>
+                <WeekPips week={p.weekGrid} />
+              </div>
+            )}
+          </>
         )}
       </div>
 

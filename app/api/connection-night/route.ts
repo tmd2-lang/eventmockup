@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildDailyRevealBundle } from "@/lib/dailyReveal";
-import { getCanonBundle } from "@/lib/supabase/queries/canon";
+import { getCanonBundle, getDailyAnswersForProfiles } from "@/lib/supabase/queries/canon";
 import { getDailyQuestions } from "@/lib/supabase/queries/daily";
 import { createServerSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
@@ -32,6 +32,8 @@ export async function GET(request: Request) {
     }
 
     const reveal = buildDailyRevealBundle(questions, bundle.dailyAnswers);
+    const matchIds = bundle.connectionRoster.map((row) => row.match_id);
+    const matchAnswersById = await getDailyAnswersForProfiles(supabase, matchIds);
 
     return NextResponse.json({
       profileId,
@@ -39,6 +41,8 @@ export async function GET(request: Request) {
       currentAnswer: reveal.currentAnswer,
       connectionRoster: bundle.connectionRoster,
       dailyAnswers: bundle.dailyAnswers,
+      matchAnswersById,
+      dailyQuestions: questions,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

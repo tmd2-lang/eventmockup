@@ -56,25 +56,27 @@ async function main() {
 
   const dailyPath = path.join(process.cwd(), "data/canon/Ligo_28_Day_Daily_Answers_Matrix.xlsx");
   const seedPath = path.join(process.cwd(), "data/canon/Ligo_Connection_Seed.xlsx");
-  if (!fs.existsSync(dailyPath) || !fs.existsSync(seedPath)) {
-    console.error("Canon xlsx missing in data/canon/");
+  const copyPath = path.join(process.cwd(), "data/canon/Ligo_Directional_Copy.xlsx");
+  if (!fs.existsSync(dailyPath) || !fs.existsSync(seedPath) || !fs.existsSync(copyPath)) {
+    console.error("Canon xlsx missing in data/canon/ (matrix, seed, directional copy)");
     process.exit(1);
   }
 
   const dailyWb = XLSX.readFile(dailyPath);
   const seedWb = XLSX.readFile(seedPath);
+  const copyWb = XLSX.readFile(copyPath);
 
   const matrixRows = readSheetRows(dailyWb, "Daily Answer Matrix");
   const profilesRows = readSheetRows(dailyWb, "Profiles");
   const questionBankRows = readSheetRows(dailyWb, "Question Bank");
-  const rosterRows = readSheetRows(seedWb, "Connection Night (per viewer)");
+  const rosterRows = readSheetRows(copyWb, "connection_roster");
   const pairsRows = readSheetRows(seedWb, "Unique Connections");
 
   const profileCount = PROFILE_IDENTITY.length;
   const questionCount = matrixRows.filter((row) => cellStr(row["Day #"])).length;
   const answerCount = matrixRows.filter((row) => cellStr(row["Day #"])).length * Object.keys(ANSWER_PROFILE_COLUMNS).length;
   const pairCount = pairsRows.filter((row) => cellStr(row["Person A"])).length;
-  const rosterCount = rosterRows.filter((row) => cellStr(row["Viewer"])).length;
+  const rosterCount = rosterRows.filter((row) => cellStr(row["viewer_id"])).length;
 
   console.log("Parsed from xlsx:");
   console.log(`  profiles: ${profileCount}`);
@@ -249,18 +251,18 @@ async function main() {
     console.log(`connection_pairs: ${pairRows.length} upserted`);
   }
 
-  // --- connection_roster (denormalized, verbatim — no join to pairs) ---
+  // --- connection_roster (directional copy — viewer-facing "you" voice) ---
   const rosterData = rosterRows
-    .filter((row) => cellStr(row["Viewer"]))
+    .filter((row) => cellStr(row["viewer_id"]))
     .map((row) => ({
-      viewer_id: slugFromDisplayName(cellStr(row["Viewer"])),
-      rank: Number(row["Rank"]),
-      match_id: slugFromDisplayName(cellStr(row["Surfaced"])),
-      score: Number(row["Score"]),
-      match_type: cellStr(row["Match Type"]),
-      shared_lane: cellStr(row["Shared Lane"]) || null,
-      headline_overlap: cellStr(row["Headline Overlap"]) || null,
-      why_copy: cellStr(row["Why (copy)"]),
+      viewer_id: cellStr(row["viewer_id"]),
+      rank: Number(row["rank"]),
+      match_id: cellStr(row["match_id"]),
+      score: Number(row["score"]),
+      match_type: cellStr(row["match_type"]),
+      shared_lane: cellStr(row["shared_lane"]) || null,
+      headline_overlap: cellStr(row["headline_overlap"]) || null,
+      why_copy: cellStr(row["why_copy"]),
     }));
 
   {

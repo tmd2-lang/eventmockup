@@ -45,7 +45,15 @@ export function useConnectionNight(viewerId: string): ConnectionNightState {
 
         const pick: DailyAnswerRow | null = data.currentAnswer ?? null;
         const song = songFromAnswer(pick, "/artists/frank-blond.png");
-        const people = mapRosterToPeople(data.connectionRoster ?? [], USERS);
+        const people = mapRosterToPeople(
+          data.connectionRoster ?? [],
+          USERS,
+          viewerId,
+          data.dailyAnswers ?? [],
+          data.matchAnswersById ?? {},
+          data.dailyQuestions ?? [],
+          data.currentDayNumber ?? 28
+        );
 
         setState({
           loading: false,

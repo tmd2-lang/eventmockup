@@ -1,5 +1,11 @@
-import type { ConnectionRosterRow, DailyAnswerRow } from "@/lib/supabase/types";
+import type { ConnectionRosterRow, DailyAnswerRow, DailyQuestionRow } from "@/lib/supabase/types";
 import type { UserProfile } from "@/lib/users";
+import {
+  buildWeekAnswerGrid,
+  sharedPickCardForPair,
+  type SharedPickCard,
+  type WeekGridCell,
+} from "@/lib/sharedPickRule";
 
 export type ConnectionNightSong = {
   name: string;
@@ -20,8 +26,8 @@ export type ConnectionNightPerson = {
   score: number;
   matchType: string;
   sharedLane: string | null;
-  headlineOverlap: string | null;
-  week: Array<"match" | "miss" | "today"> | null;
+  sharedPickCard: SharedPickCard | null;
+  weekGrid: WeekGridCell[] | null;
 };
 
 function initialsFromName(name: string): string {
@@ -37,8 +43,8 @@ function metaFromUser(user: UserProfile): string {
   return [user.yearLevel, user.pronouns].filter(Boolean).join(" · ");
 }
 
-function promptFromRoster(row: ConnectionRosterRow): string {
-  if (row.headline_overlap) return row.headline_overlap;
+function promptFromRoster(row: ConnectionRosterRow, sharedPickCard: SharedPickCard | null): string {
+  if (sharedPickCard) return sharedPickCard.label;
   if (row.shared_lane) return `${row.match_type} match · ${row.shared_lane}`;
   return `${row.match_type} · score ${row.score}`;
 }
@@ -66,11 +72,21 @@ export function songFromAnswer(answer: DailyAnswerRow | null, fallbackArt: strin
 
 export function mapRosterToPeople(
   roster: ConnectionRosterRow[],
-  usersById: Record<string, UserProfile>
+  usersById: Record<string, UserProfile>,
+  viewerId: string,
+  viewerAnswers: DailyAnswerRow[],
+  matchAnswersById: Record<string, DailyAnswerRow[]>,
+  questions: DailyQuestionRow[],
+  currentDay: number
 ): ConnectionNightPerson[] {
   return roster.map((row) => {
     const user = usersById[row.match_id];
     const displayName = user?.name ?? row.match_id;
+    const sharedPickCard = sharedPickCardForPair(viewerId, row.match_id);
+    const weekGrid = sharedPickCard
+      ? null
+      : buildWeekAnswerGrid(questions, viewerAnswers, matchAnswersById[row.match_id] ?? [], currentDay);
+
     return {
       id: row.match_id,
       name: displayName,
@@ -80,12 +96,12 @@ export function mapRosterToPeople(
       archetype: user?.archetype ?? "Ligo match",
       aIconKey: user?.archetypeIcon ?? "music",
       horoscope: row.why_copy,
-      prompt: promptFromRoster(row),
+      prompt: promptFromRoster(row, sharedPickCard),
       score: row.score,
       matchType: row.match_type,
       sharedLane: row.shared_lane,
-      headlineOverlap: row.headline_overlap,
-      week: null,
+      sharedPickCard,
+      weekGrid,
     };
   });
 }
