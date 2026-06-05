@@ -1390,24 +1390,37 @@ export function ProfileV2Shell() {
 }
 
 function ProfileScreenRouter() {
-  const profile = useActiveUserProfile();
+  const activeUser = useActiveUser();
+  const profile = activeUser.profile;
   const { screen, closeArchetypeGallery, openArchetypeFromGallery } = usePV2();
-  if (screen === "receipts") return <TheReceiptsScreen />;
-  if (screen === "archetype-gallery") {
-    return (
-      <ArchetypeGalleryScreen
-        earnedId={profile.earnedArchetypeId}
-        edge={EDGE}
-        onBack={closeArchetypeGallery}
-        onSelectArchetype={openArchetypeFromGallery}
-      />
-    );
-  }
+
   return (
-    <div id="profile-scroll" style={{
-      position: 'absolute', inset: 0, overflowY: 'auto', overflowX: 'hidden', scrollbarWidth: 'none',
-    }}>
-      <ProfileTabV2 />
+    <div key={activeUser.id} style={{ position: 'absolute', inset: 0, animation: 'profileFadeIn 0.35s cubic-bezier(0.2, 0.7, 0.2, 1)' }}>
+      <style>{`
+        @keyframes profileFadeIn {
+          0% { opacity: 0; transform: scale(0.98) translateY(10px); }
+          100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+      `}</style>
+      
+      {screen === "receipts" && <TheReceiptsScreen />}
+      
+      {screen === "archetype-gallery" && (
+        <ArchetypeGalleryScreen
+          earnedId={profile.earnedArchetypeId}
+          edge={EDGE}
+          onBack={closeArchetypeGallery}
+          onSelectArchetype={openArchetypeFromGallery}
+        />
+      )}
+      
+      {screen === "profile" && (
+        <div id="profile-scroll" style={{
+          position: 'absolute', inset: 0, overflowY: 'auto', overflowX: 'hidden', scrollbarWidth: 'none',
+        }}>
+          <ProfileTabV2 />
+        </div>
+      )}
     </div>
   );
 }

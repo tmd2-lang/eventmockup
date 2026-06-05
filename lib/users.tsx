@@ -246,6 +246,125 @@ export const USERS: Record<string, UserProfile> = {
       ...PROFILE_PRESENTATION_DEFAULTS,
     }
   },
+  marcus: {
+    id: 'marcus',
+    name: 'Marcus T.',
+    firstName: 'Marcus',
+    avatar: '/assets/Marcus-profile.png',
+    archetype: 'The Deep Cut Generalist',
+    archetypeIcon: 'deep-cut',
+    gradient: 'linear-gradient(145deg, #10B981, #3B82F6)',
+    yearLevel: 'Senior',
+    pronouns: 'He/Him',
+    school: 'Georgetown',
+    profile: {
+      earnedArchetypeId: 'deep-cut',
+      heldWeeks: '1 week',
+      earnedBlurb: "The true mixer. Marcus is no longer niche for niche sake. He can move from Fleetwood Mac to Freddie Gibbs, MK to Tame Impala, Disclosure to The Strokes, and make it feel like one worldview.",
+      traits: [
+        { n: '38%', l: <><b>more niche</b> at Georgetown</> },
+        { n: '12', l: <><b>core artists</b> carried your week</> },
+        { n: '1', l: <><b>perfect transition</b> made the room stop and ask for the song</> }
+      ],
+      artists: [
+        { name: 'Tame Impala', photo: `/artists/tameimpala-profile.jpeg`, pos: 'center 20%', rank: 1 },
+        { name: 'MGMT', photo: `/artists/MGMT-profile.jpeg`, pos: 'center 20%', rank: 2 },
+        { name: 'Fleetwood Mac', photo: `/artists/fleetwoodmac-profike.jpeg`, pos: 'center 20%', rank: 3 },
+        { name: 'MK', photo: `/artists/MK-profile.jpeg`, pos: 'center 20%', rank: 4 },
+        { name: 'Freddie Gibbs', photo: `/artists/freddiegibbs-profile.jpeg`, pos: 'center 20%', rank: 5 },
+        { name: 'KAYTRANADA', photo: `/artists/katry-profile.jpeg`, pos: 'center 20%', rank: 6 },
+      ],
+      afterHoursCover: [
+        `/artists/tameimpala-profile.jpeg`,
+        `/artists/MGMT-profile.jpeg`,
+        `/artists/fleetwoodmac-profike.jpeg`,
+        `/artists/MK-profile.jpeg`,
+      ],
+      playlistTrackCount: 100,
+      answerTrail: [
+        { day: 'Today', song: 'Electric Feel', artist: 'MGMT', today: true },
+        { day: 'Sun', song: 'Let It Happen', artist: 'Tame Impala' },
+        { day: 'Sat', song: '17', artist: 'MK' },
+        { day: 'Fri', song: 'Crime Pays', artist: 'Freddie Gibbs, Madlib' },
+        { day: 'Thu', song: 'Dreams', artist: 'Fleetwood Mac' },
+        { day: 'Wed', song: '10%', artist: 'KAYTRANADA, Kali Uchis' },
+        { day: 'Tue', song: 'Reptilia', artist: 'The Strokes' },
+      ],
+      playlistTracks: [
+        { title: 'Electric Feel', artist: 'MGMT', dur: '3:49', photo: `/artists/MGMT-profile.jpeg`, coverArt: `/covers/oracularspectacular-coverart.jpeg` },
+        { title: 'Let It Happen', artist: 'Tame Impala', dur: '7:47', photo: `/artists/tameimpala-profile.jpeg`, coverArt: `/covers/currents-coverart.jpeg` },
+        { title: '17', artist: 'MK', dur: '3:16', photo: `/artists/MK-profile.jpeg`, coverArt: `/covers/MK17-coverart.jpeg` },
+        { title: 'Crime Pays', artist: 'Freddie Gibbs, Madlib', dur: '3:02', photo: `/artists/freddiegibbs-profile.jpeg`, coverArt: `/covers/bandana-coverart.jpeg` },
+      ],
+      pastReads: [
+        { type: 'time-machine', date: 'Your Music Horoscope', head: "You’re the compatibility wild card today.", body: 'Your last five check-ins jump from MGMT and Tame Impala into MK and Freddie Gibbs, which means your night starts chill, hits the dancefloor, and somehow ends with everyone agreeing on your taste.' },
+        { type: 'honest', date: 'Hot Take', head: '“The best aux is one your dad would respect and your friends would still dance to.”', body: 'Tame Impala, MGMT, Fleetwood Mac, MK — you share a different lane with almost everyone.' },
+      ],
+      currentStreak: 4,
+      longestStreak: 11,
+      tasteEvolution: [
+        { month: 'March', archetype: 'The Mood Curator' },
+        { month: 'April', archetype: 'The Deep Cut Generalist' },
+        { month: 'May', archetype: 'The Deep Cut Generalist', note: 'held 2 weeks' },
+      ],
+      rarestPicks: [
+        { stat: 'Top 38%', label: 'more niche at Georgetown' },
+      ],
+      connectedSongs: [
+        { song: 'Let It Happen', artist: 'Tame Impala', people: 5 },
+        { song: '17', artist: 'MK', people: 2 },
+        { song: 'Reptilia', artist: 'The Strokes', people: 4 },
+      ],
+      firstToPick: [
+        { text: 'Tame Impala energy' },
+        { text: 'Mixes everything' },
+        { text: 'Unites the room' }
+      ],
+      hotTake: 'The best aux is one your dad would respect and your friends would still dance to.',
+      nowListening: { title: 'Electric Feel', artist: 'MGMT', photo: `/artists/MGMT-profile.jpeg`, coverArt: `/covers/oracularspectacular-coverart.jpeg` },
+      onRepeat: [
+        { title: 'Electric Feel', artist: 'MGMT', photo: `/artists/MGMT-profile.jpeg`, coverArt: `/covers/oracularspectacular-coverart.jpeg` },
+        { title: 'Let It Happen', artist: 'Tame Impala', photo: `/artists/tameimpala-profile.jpeg`, coverArt: `/covers/currents-coverart.jpeg` },
+        { title: '17', artist: 'MK', photo: `/artists/MK-profile.jpeg`, coverArt: `/covers/MK17-coverart.jpeg` },
+      ],
+      archetypeSubline: (
+        <>
+          <b style={{ color: '#fff' }}>38%</b> more niche · <b style={{ color: '#fff' }}>Tame, MGMT, Fleetwood</b> core · <span style={{ color: '#3B82F6', fontWeight: 600 }}>the true mixer</span>
+        </>
+      ),
+      mainstreamScoreAccent: 'Top 38%',
+      mainstreamScoreRest: 'more niche at Georgetown',
+      mainstreamMeterPct: 62,
+      mainstreamFootnote: (
+        <>
+          <b>Tame Impala, MGMT, Fleetwood Mac, MK</b> — you share a different lane with almost everyone.
+        </>
+      ),
+      horoscope: {
+        headline: "You’re the compatibility wild card today.",
+        body: 'Your last five check-ins jump from MGMT and Tame Impala into MK and Freddie Gibbs, which means your night starts chill, hits the dancefloor, and somehow ends with everyone agreeing on your taste.',
+        chips: [
+          { label: 'Tame Impala energy', tone: 'orange' },
+          { label: 'Mixes everything', tone: 'yellow' },
+          { label: 'Unites the room', tone: 'pink' },
+        ],
+      },
+      playlistName: 'the true mixer',
+      secretTrack: {
+        label: 'Guilty Pleasure',
+        title: 'Dreams',
+        artist: 'Fleetwood Mac',
+        cover: `/covers/rumorsfleetwood-coverart.jpeg`,
+        accentColor: '#3B82F6',
+      },
+      receiptsFooter: 'Built from your daily answers · Tame Impala, MGMT, Fleetwood Mac, MK, Freddie Gibbs, The Rolling Stones, and 100 tracks across the semester.',
+      notifications: [
+        { ic: 'M', bg: 'linear-gradient(145deg,#14B8A6,#A78BFA)', text: <><b>Maddie</b> bumped you — you&apos;re a <b>85% match</b> on Tame Impala and The Strokes.</>, time: '11 min ago', unread: true },
+        { ic: 'C', bg: 'linear-gradient(145deg,#3B82F6,#14B8A6)', text: <><b>Cole</b> bumped you — you&apos;re a <b>75% match</b> on MK and Disclosure.</>, time: '15 min ago', unread: true },
+        { ic: '◉', bg: '#0A0907', text: <>Your archetype held steady — <b>The Deep Cut Generalist</b> for 2 weeks running.</>, time: '4 hr ago', unread: true },
+      ],
+    }
+  },
   charlotte: {
     id: 'charlotte',
     name: 'Charlotte W.',

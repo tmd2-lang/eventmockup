@@ -175,6 +175,17 @@ export const ARCHETYPE_CATALOG: Archetype[] = [
       "radial-gradient(400px 220px at 10% 0%, rgba(167,139,250,0.2), transparent 60%), radial-gradient(320px 260px at 100% 100%, rgba(109,40,217,0.12), transparent 60%)",
     seal: "dodger",
   },
+  {
+    id: "deep-cut",
+    name: "The Deep Cut Generalist",
+    descriptor: "The true mixer. Moves from Fleetwood Mac to Freddie Gibbs and makes it feel like one worldview.",
+    ring: ["#10B981", "#3B82F6", "#8B5CF6"],
+    accent: "#3B82F6",
+    eyebrow: "#3B82F6",
+    glow:
+      "radial-gradient(400px 220px at 10% 0%, rgba(59,130,246,0.2), transparent 60%), radial-gradient(320px 260px at 100% 100%, rgba(16,185,129,0.12), transparent 60%)",
+    seal: "globe",
+  },
 ];
 
 export function getArchetypeById(id: string): Archetype | null {
