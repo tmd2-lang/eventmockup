@@ -29,6 +29,7 @@ import { USERS } from "@/lib/users";
 import { useConnectionNight } from "@/hooks/useConnectionNight";
 import { useDailyReveal } from "@/hooks/useDailyReveal";
 import { useHomeContent } from "@/hooks/useHomeContent";
+import { isWrappedCarouselReady, normalizeWrappedContent } from "@/lib/wrappedContent";
 
 // useState/useEffect aliases the bundle used per-file
 const useStateS = useState, useStateN = useState, useStateC = useState, useStateW = useState, useStateM = useState;
@@ -1100,7 +1101,7 @@ function StatSlide({ idx, cur, glow, eyebrow, eyebrowColor, big, unit, sub, mesh
 }
 
 function WrappedExperience({ onNav, home }) {
-  const d = home.wrapped;
+  const d = normalizeWrappedContent(home.wrapped);
 
   const [phase, setPhase] = useStateW('sealed');
   const [cur, setCur] = useStateW(0);
@@ -1109,7 +1110,9 @@ function WrappedExperience({ onNav, home }) {
   const prev = () => setCur(c => Math.max(c - 1, 0));
   const replay = () => { setCur(0); setPhase('sealed'); };
 
-  if (home.loading || !d) {
+  useEffect(() => { setPhase('sealed'); setCur(0); }, [home.wrapped]);
+
+  if (home.loading) {
     return (
       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0A0907', color: 'rgba(255,255,255,0.5)' }}>
         <p style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontSize: 15 }}>Loading your Wrapped…</p>
@@ -1121,6 +1124,14 @@ function WrappedExperience({ onNav, home }) {
     return (
       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0A0907', color: 'rgba(255,255,255,0.5)', padding: 28, textAlign: 'center' }}>
         <p style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontSize: 15, color: 'rgba(255,120,120,0.9)' }}>{home.error}</p>
+      </div>
+    );
+  }
+
+  if (!isWrappedCarouselReady(home.wrapped)) {
+    return (
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0A0907', color: 'rgba(255,255,255,0.5)', padding: 28, textAlign: 'center' }}>
+        <p style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontSize: 15 }}>Wrapped isn&apos;t available for this profile yet.</p>
       </div>
     );
   }
@@ -1273,12 +1284,10 @@ function WrappedExperience({ onNav, home }) {
         </div>
       </div>
 
-      {/* ── CAROUSEL ── */}
+      {/* ── CAROUSEL ── only mount slides once opened (avoids theme access on sealed view) */}
+      {phase === 'carousel' && d && (
       <div style={{
         position: 'absolute', inset: 0, zIndex: 5,
-        opacity: phase === 'carousel' ? 1 : 0, pointerEvents: phase === 'carousel' ? 'auto' : 'none',
-        transform: phase === 'carousel' ? 'scale(1)' : 'scale(0.97)',
-        transition: 'opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s',
       }}>
         {/* story bars */}
         <div style={{ position: 'absolute', top: 56, left: 64, right: 16, display: 'flex', gap: 4, zIndex: 50 }}>
@@ -1400,6 +1409,7 @@ function WrappedExperience({ onNav, home }) {
 
         <BottomNav active="home" dark onChange={onNav || (() => {})} />
       </div>
+      )}
     </div>
   );
 }

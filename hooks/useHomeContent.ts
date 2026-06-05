@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { HomeNewsRow, HomeShowRow } from "@/lib/supabase/types";
+import { parseWrappedContent } from "@/lib/wrappedContent";
 
 type HomeContentState = {
   loading: boolean;
@@ -26,7 +27,7 @@ export function useHomeContent(profileId: string): HomeContentState {
     let cancelled = false;
 
     async function load() {
-      setState((s) => ({ ...s, loading: true, error: null }));
+      setState({ loading: true, error: null, news: [], shows: [], wrapped: null });
 
       try {
         const res = await fetch(`/api/home?profile=${encodeURIComponent(profileId)}`);
@@ -43,7 +44,7 @@ export function useHomeContent(profileId: string): HomeContentState {
           error: null,
           news: data.news ?? [],
           shows: data.shows ?? [],
-          wrapped: data.wrapped ?? null,
+          wrapped: parseWrappedContent(data.wrapped),
         });
       } catch (err) {
         if (cancelled) return;

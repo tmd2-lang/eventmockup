@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getHomeContentForProfile } from "@/lib/supabase/queries/home";
 import { createServerSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { isWrappedCarouselReady, resolveWrappedForProfile } from "@/lib/wrappedContent";
 
 export async function GET(request: Request) {
   if (!isSupabaseConfigured()) {
@@ -26,15 +27,17 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: `Profile not found: ${profileId}` }, { status: 404 });
     }
 
+    const wrapped = resolveWrappedForProfile(profileId, bundle.wrapped);
+
     return NextResponse.json({
       profileId,
       news: bundle.news,
       shows: bundle.shows,
-      wrapped: bundle.wrapped,
+      wrapped,
       meta: {
         newsCount: bundle.news.length,
         showsCount: bundle.shows.length,
-        hasWrapped: bundle.wrapped != null,
+        hasWrapped: isWrappedCarouselReady(wrapped),
       },
     });
   } catch (err) {
