@@ -66,7 +66,7 @@ npm run dev
 Switch profiles from the home top bar. Expect:
 
 - **Daily Pick** — “Today's question coming soon”
-- **News / Near you** — “Nothing here yet”
+- **News / Near you** — per-profile fidelity cards from `lib/homeFidelity.ts` (same content as v0 demo; not stored in Supabase on v1)
 - **Connection Night** — empty roster message (no carousel)
 - **Wrapped** — “No wrapped data yet”
 - **Profile answer trail** — “No answers yet”

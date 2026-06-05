@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { HomeNewsRow, HomeShowRow } from "@/lib/supabase/types";
+import { getFidelityNews, getFidelityShows } from "@/lib/homeFidelity";
 import { parseWrappedContent } from "@/lib/wrappedUtils";
 
 type HomeContentState = {
@@ -39,11 +40,15 @@ export function useHomeContent(profileId: string): HomeContentState {
 
         if (cancelled) return;
 
+        const apiNews: HomeNewsRow[] = data.news ?? [];
+        const apiShows: HomeShowRow[] = data.shows ?? [];
+        const useFidelity = data.meta?.empty === true || (!apiNews.length && !apiShows.length);
+
         setState({
           loading: false,
           error: null,
-          news: data.news ?? [],
-          shows: data.shows ?? [],
+          news: apiNews.length ? apiNews : useFidelity ? getFidelityNews(profileId) : [],
+          shows: apiShows.length ? apiShows : useFidelity ? getFidelityShows(profileId) : [],
           wrapped: parseWrappedContent(data.wrapped),
         });
       } catch (err) {
@@ -52,8 +57,8 @@ export function useHomeContent(profileId: string): HomeContentState {
         setState({
           loading: false,
           error: message,
-          news: [],
-          shows: [],
+          news: getFidelityNews(profileId),
+          shows: getFidelityShows(profileId),
           wrapped: null,
         });
       }
