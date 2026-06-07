@@ -1,10 +1,18 @@
 # Deploy v0 to Vercel (ligo-v0)
 
-Frozen demo tag: **`v0-demo-mockup`** (commit `51063f4`).
+**Live:** https://ligo-v0.vercel.app
+
+Frozen demo tag: **`v0-demo-mockup`** (commit `d4f9944`, same as branch **`v0-release`**).
 
 Uses the **existing v0 Supabase project** (full canon data). Do not point this deployment at the v1 Supabase project.
 
-## 1. Import project
+## Current Vercel settings (configured)
+
+- **Project:** `ligo-v0`
+- **Production branch:** `v0-release`
+- **Env vars (Production):** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (v0 project)
+
+## 1. Import project (one-time)
 
 1. Go to [vercel.com/new](https://vercel.com/new)
 2. Import GitHub repo **`tmd2-lang/ligo-home-mockup`**
@@ -12,9 +20,7 @@ Uses the **existing v0 Supabase project** (full canon data). Do not point this d
 
 ## 2. Git settings
 
-- **Production Branch:** create a branch from tag or deploy from tag `v0-demo-mockup`
-  - Option A: In Vercel → Settings → Git → set Production Branch to `cursor/supabase-canon-connection-night` at commit `51063f4` (same as tag)
-  - Option B: Create branch `v0-release` at tag and use that as production branch
+- **Production Branch:** `v0-release` (tracks tag `v0-demo-mockup`)
 
 ## 3. Environment variables (Production)
 
@@ -40,4 +46,4 @@ After deploy succeeds, smoke test on the production URL:
 2. Marcus — Wrapped "The Deep Cut Generalist"
 3. Sofia — Wrapped "The Mood Curator"
 
-Paste the production URL into `docs/V1_STARTING_POINT.md` when confirmed.
+Paste the production URL into `docs/V1_STARTING_POINT.md` when confirmed: **https://ligo-v0.vercel.app** (done).

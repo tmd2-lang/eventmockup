@@ -59,16 +59,17 @@ Bottom nav: **Events · Home · Profile**.
 
 ```mermaid
 flowchart TB
-  subgraph canon [Canon sources]
-    XLSX[Excel workbooks in data/canon/]
-    JSON[home_content.json snapshot]
+  subgraph v0frozen [v0 frozen demo]
+    v0Tag[v0-demo-mockup tag / v0-release]
+    v0Vercel[ligo-v0.vercel.app]
+    v0Canon[archive/v0 canon + scripts]
+    v0Db[v0 Supabase full canon]
   end
 
-  subgraph supabase [Supabase]
-    P[profiles]
-    DQ[daily_questions + daily_answers]
-    CN[connection_roster + connection_pairs]
-    HN[home_news + home_shows + wrapped_stories]
+  subgraph v1local [v1 local dev branch v1]
+    v1Db[v1 Supabase profiles only]
+    v1Fidelity[lib/homeFidelity.ts]
+    v1Users[lib/users.tsx presentation]
   end
 
   subgraph next [Next.js App Router]
@@ -76,28 +77,33 @@ flowchart TB
     UI[HomeScreen · ProfileScreen · EventsScreen]
   end
 
-  XLSX -->|npm run import:canon| supabase
-  JSON -->|npm run import:home| supabase
-  supabase --> API
+  v0Canon -.->|not used on v1| v1Db
+  v1Db --> API
+  v1Fidelity --> UI
+  v1Users --> UI
   API --> UI
+  v0Db --> v0Vercel
 ```
 
-**Design choices:**
+**Design choices (v1 branch):**
 
-- Browser calls **Next.js API routes**, not Supabase directly (same pattern across daily, connection, home).
-- Canon copy and scores are **verbatim from spreadsheets** — import scripts do not invent match logic.
-- Assets stay in `public/`; the database stores paths only (`/covers/...`, `/assets/...`, `/artists/...`).
-- Demo tables use **public read RLS**; writes go through import scripts with the service role key.
+- Browser calls **Next.js API routes**, not Supabase directly.
+- **v1 Supabase** stores only `profiles`; daily, connection, and wrapped tables are absent — APIs return empty 200 bundles with `meta.empty: true`.
+- **News and near-you** use per-profile fidelity data in [`lib/homeFidelity.ts`](lib/homeFidelity.ts) (not Supabase on v1).
+- Profile presentation (playlists, receipts, streaks) stays in [`lib/users.tsx`](lib/users.tsx).
+- **Full canon demo** lives at **https://ligo-v0.vercel.app** (v0 Supabase). See [`docs/V1_STARTING_POINT.md`](docs/V1_STARTING_POINT.md).
 
-### What reads from Supabase (wired)
+### What reads from Supabase (v1)
 
-| Surface | API | Hook / consumer |
-|---------|-----|-----------------|
-| Daily question + answer trail | `GET /api/daily?profile=` | `useDailyReveal` → Daily Pick, Profile Answer Trail |
-| Connection Night roster | `GET /api/connection-night?profile=` | `useConnectionNight` → Home Connection carousel |
-| News, shows, Wrapped | `GET /api/home?profile=` | `useHomeContent` → NewsStrip, NearYou, WrappedExperience |
+| Surface | API | v1 behavior |
+|---------|-----|-------------|
+| Daily question + answer trail | `GET /api/daily?profile=` | Empty bundle; UI: "Today's question coming soon" |
+| Connection Night roster | `GET /api/connection-night?profile=` | Empty roster |
+| Wrapped | `GET /api/home?profile=` | `wrapped: null`; UI: "No wrapped data yet" |
+| News + near-you | `GET /api/home?profile=` | Empty from API; UI falls back to `homeFidelity.ts` |
+| Profile lookup | all APIs | Requires row in `profiles` table |
 
-Daily “current day” resolves in Eastern Time against a fixed canon window (`2026-05-08` → `2026-06-04`); outside that window the demo clamps to day 28.
+On **v0** (Vercel URL), the same APIs return full spreadsheet-backed content from v0 Supabase.
 
 ### What still lives in code (v1)
 
@@ -111,23 +117,17 @@ Daily “current day” resolves in Eastern Time against a fixed canon window (`
 
 ---
 
-## Canon data
+## Canon data (v0 only)
 
-Spreadsheets in `data/canon/`:
+Full spreadsheet canon lives under [`archive/v0/`](archive/v0/) (xlsx, `home_content.json`, import scripts, migrations). It is **not** used on branch `v1`.
 
-| File | Purpose |
-|------|---------|
-| `Ligo_28_Day_Daily_Answers_Matrix.xlsx` | 28 questions × 9 profiles |
-| `Ligo_Connection_Seed.xlsx` | Connection pairs (reference) |
-| `Ligo_Directional_Copy.xlsx` | Per-viewer roster copy for Connection Night |
-| `Ligo_SharedPick_Rule.xlsx` | Which pairs show the shared-pick card vs taste grid |
-| `home_content.json` | Exported news, shows, wrapped per profile |
-
-Import rules: scores and copy come from cells only; `connection_roster` is the runtime source for Connection Night; shared-pick visibility is rule-driven in `lib/sharedPickRule.ts`.
+To run or re-seed v0 locally, see [`archive/v0/README.md`](archive/v0/README.md) and [`docs/DEPLOY_V0.md`](docs/DEPLOY_V0.md). For sharing the full demo, use **https://ligo-v0.vercel.app**.
 
 ---
 
-## Setup
+## Setup (v1 local)
+
+See [`docs/V1_STARTING_POINT.md`](docs/V1_STARTING_POINT.md) for the full walkthrough.
 
 ### 1. Install and env
 
@@ -136,29 +136,25 @@ npm install
 cp .env.example .env.local
 ```
 
-Fill in from Supabase **Project Settings → API**:
+Point `.env.local` at your **v1** Supabase project (not v0):
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-SUPABASE_SERVICE_ROLE_KEY=...   # import scripts only — never commit
+SUPABASE_SERVICE_ROLE_KEY=...   # import:profiles only — never commit
 ```
 
 ### 2. Database
 
-Run migrations in order via Supabase **SQL Editor** (or `npm run db:migrate` if direct Postgres access works):
+Run [`supabase/migrations/001_v1_profiles_only.sql`](supabase/migrations/001_v1_profiles_only.sql) in the Supabase SQL Editor (or `npm run db:migrate` with `DATABASE_URL`).
 
-1. `supabase/migrations/001_initial_schema.sql`
-2. `supabase/migrations/002_home_content.sql`
-
-### 3. Seed content
+### 3. Seed profiles
 
 ```bash
-npm run import:canon      # profiles, daily, connection roster
-npm run import:home       # news, shows, wrapped stories
+npm run import:profiles
 ```
 
-Dry-run variants: `import:canon:dry`, `import:home:dry`.
+Dry run: `npm run import:profiles:dry`.
 
 ### 4. Run
 
@@ -166,14 +162,9 @@ Dry-run variants: `import:canon:dry`, `import:home:dry`.
 npm run dev
 ```
 
-Open http://localhost:3000. If the port is busy, Next.js may use 3001 — check the terminal.
+Open http://localhost:3000. Use `npm run dev:clean` if you hit stale `.next` errors after switching branches.
 
-```bash
-npm run dev:clean   # wipe .next and force port 3000
-npm run build       # production build check
-```
-
-The app is behind a simple **password gate** (`middleware.ts` + `app/api/auth/`). Configure via your existing auth env if deployed.
+**v0 full demo:** https://ligo-v0.vercel.app — no local v0 setup required.
 
 ---
 
@@ -250,14 +241,12 @@ See `docs/SUPABASE_IMPLEMENTATION_PLAN.md` and `docs/PHASE_5_HOME_CONTENT_PLAN.m
 
 ## Starting a new experiment from this repo
 
-**Tag v1 and branch:**
+Stay on branch **`v1`**, keep v1 Supabase keys in `.env.local`, and add tables/features as needed. v0 remains frozen at tag **`v0-demo-mockup`** and **https://ligo-v0.vercel.app**.
 
 ```bash
-git tag v1-demo-mockup
+git checkout v1
 git checkout -b experiment/my-idea
 ```
-
-**Or fork fresh:** copy `data/canon/`, `supabase/migrations/`, import scripts, `lib/users.tsx` (profiles), and `public/assets/` into a new Next app; use a **new Supabase project** so v1 data stays frozen.
 
 ---
 
@@ -266,7 +255,7 @@ git checkout -b experiment/my-idea
 - **Next.js 14** (App Router) · **React 18** · **TypeScript**
 - **Supabase** (Postgres + RLS)
 - **Tailwind CSS** · design tokens in CSS
-- Deployable on **Vercel** (set Supabase env vars + password gate secret)
+- Deployable on **Vercel** — v0 at `ligo-v0`; v1 optional with v1 Supabase env vars
 
 ---
 
