@@ -2,7 +2,9 @@
 
 v1 is a **clean slate** for building new product experiments. The UI shell, nine demo profiles, and profile-rich presentation data stay in TypeScript. Canon content tables (daily answers, connection roster, home feed, wrapped) are **not** seeded — APIs return empty 200 bundles and the UI shows soft empty states.
 
-**v0** (tag `v0-demo-mockup`) remains the frozen full-canon demo. See [DEPLOY_V0.md](./DEPLOY_V0.md) for deploying that snapshot.
+**v0** (tag `v0-demo-mockup`) remains the frozen full-canon demo at **https://ligo-v0.vercel.app**. See [DEPLOY_V0.md](./DEPLOY_V0.md) for deploy details.
+
+**Local dev on branch `v1` uses v1 Supabase keys only.** Use the Vercel URL above for the full v0 demo — no need to run v0 locally.
 
 ---
 
@@ -79,7 +81,7 @@ APIs return HTTP 200 with empty payloads when content tables are missing or empt
 
 Deploy from branch `v1` with v1 Supabase env vars on Vercel (or similar). Do not point a v1 deployment at the v0 Supabase project.
 
-**v0 production URL** (when deployed): _paste confirmed URL here after deploy_
+**v0 production URL:** https://ligo-v0.vercel.app
 
 ---
 
@@ -87,8 +89,8 @@ Deploy from branch `v1` with v1 Supabase env vars on Vercel (or similar). Do not
 
 To run the full spreadsheet demo again:
 
-1. Checkout tag `v0-demo-mockup` or branch `cursor/supabase-canon-connection-night`
+1. Checkout tag `v0-demo-mockup` or branch `v0-release`
 2. Swap `.env.local` to v0 Supabase keys
 3. Use scripts under `archive/v0/scripts/` and migrations under `archive/v0/supabase/`
 
-Do not move or delete tag `v0-demo-mockup`.
+Or skip local v0 entirely and use **https://ligo-v0.vercel.app**.
