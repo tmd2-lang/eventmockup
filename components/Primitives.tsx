@@ -98,6 +98,12 @@ export const Icon = {
   ),
   Plus: svg(<path d="M12 5v14M5 12h14" />),
   Check: svg(<path d="M20 6L9 17l-5-5" />),
+  Eye: svg(
+    <>
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
+      <circle cx="12" cy="12" r="3" />
+    </>
+  ),
   Chev: svg(<path d="M9 6l6 6-6 6" />),
   Close: svg(<path d="M18 6L6 18M6 6l12 12" />),
   Users: svg(

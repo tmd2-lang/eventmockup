@@ -1,8 +1,12 @@
 # LIGO — Demo Mockup
 
-An interactive, clickable prototype of **LIGO** — a music-first social app for college students. The demo runs inside an iPhone frame in the browser: answer a daily question, reveal who picked like you, browse events, and flip through a weekly Wrapped story.
+An interactive, clickable prototype of **LIGO** — a music-first social app for college students. The demo runs inside an iPhone frame in the browser: answer a daily question, open the nightly **Aurora reveal** at 8 PM, browse events, and explore nine demo profiles.
 
-**Branches:** **`v0-demo-mockup`** (git tag) is the frozen full-canon demo with all Supabase content. Branch **`v1`** is the empty data canvas — profiles only, soft UI empty states, canon scripts archived under `archive/v0/`. See [docs/V1_STARTING_POINT.md](docs/V1_STARTING_POINT.md) to set up v1 locally; see [docs/DEPLOY_V0.md](docs/DEPLOY_V0.md) to deploy the frozen v0 demo.
+**New to v1?** Read **[docs/V1_DIRECTION.md](docs/V1_DIRECTION.md)** first — product pivot, daily loop, and roadmap.
+
+**Branches:** **`v0-demo-mockup`** (git tag) is the frozen full-canon demo at [ligo-v0.vercel.app](https://ligo-v0.vercel.app). Branch **`v1`** is the new direction: nightly reveal-first mockup, profiles + catalogs in TypeScript, Supabase profiles-only. See [docs/V1_STARTING_POINT.md](docs/V1_STARTING_POINT.md) for setup; [docs/DEPLOY_V0.md](docs/DEPLOY_V0.md) for the frozen v0 deploy.
+
+**v1 pivot (summary):** Retention is the problem; the fix is a daily music question → lock answer → **8 PM reveal** (campus pulse, personal standing, mood, forward hook). Connection Night and Weekly Wrapped are parked — code kept, home entry removed. Aurora is the chosen reveal visual direction.
 
 ---
 
@@ -11,11 +15,12 @@ An interactive, clickable prototype of **LIGO** — a music-first social app for
 LIGO is not a generic social feed. The loop is:
 
 1. **Daily pick** — Everyone on campus gets the same question each day. You lock in one answer (song, artist, or vibe).
-2. **Connection Night** — At reveal time, you see who answered like you. Directional copy explains *why* you matched. Some pairs get a special “shared pick” card; others get a taste overlap lane.
-3. **Wrapped** — A Spotify Wrapped-style story summarizing your week in answers, shows, and “answer twins.”
-4. **Profile** — Archetype, taste signals, and an answer trail tied to the same 28-day canon.
+2. **Nightly reveal (8 PM)** — Aurora full-screen experience: campus pulse, your standing, campus mood, forward hook. This happens **every night**.
+3. **Connection Night** *(later)* — Random 1–2× per week; cumulative answers surface matches. Vibe or Spark. Code parked in repo.
+4. **Ligo Wrap Night** *(later)* — End-of-week summary. Separate from the daily reveal. Code parked in repo.
+5. **Profile** — Archetype, taste signals, synced catalogs, answer trail.
 
-The demo uses **nine fictional Georgetown students** with distinct taste lanes (house head, country romantic, alt socialite, etc.). Switch profiles from the home top bar to see how the same product feels for different people — different news, shows, matches, and Wrapped stories.
+The demo uses **nine fictional Georgetown students** with distinct taste lanes. Switch profiles from the home top bar — news and shows vary per profile; reveal content is one demo night in slice 1 (per-profile reveal coming next).
 
 Nothing here is “computed live” from real listening data. It is a **scripted, spreadsheet-driven demo** designed to feel coherent when you click around.
 
@@ -41,15 +46,15 @@ Profile switcher persists in `localStorage` (`ligo:active_user`). Most session s
 
 ---
 
-## Home experience (three states)
-
-Reached via **“This week on Ligo”** cards — no top toggle.
+## Home experience
 
 | State | What you see |
 |-------|----------------|
-| **Normal** | Daily pick question, reveal countdown, Connections/Wrapped teasers, “Your artists this week” news strip, “Near you” shows |
-| **Connection** | Sealed “Tonight’s Reveal” → story carousel of matches → summary + plan-a-hang sheet (Vibe / Spark, no DMs) |
-| **Wrapped** | Sealed open → five-slide story (horoscope, answers, shows, twins, share) |
+| **Normal** | Daily pick, countdown, games hub banner, news, near-you. Marcus: after lock-in, 10s wait then reveal; replay card after dismiss. |
+| **Reveal** | Aurora takeover — 5 acts (Look Up · Answer · Your Light · Sky · Tomorrow) via `RevealScreen` |
+| **Games** | Ligo Games Hub — trivia, chart ranker, soundmoji |
+| **Connection** *(parked)* | Legacy code; not reachable from home on v1 |
+| **Wrapped** *(parked)* | Legacy code; not reachable from home on v1 |
 
 Bottom nav: **Events · Home · Profile**.
 
@@ -74,7 +79,7 @@ flowchart TB
 
   subgraph next [Next.js App Router]
     API["/api/daily · /api/connection-night · /api/home"]
-    UI[HomeScreen · ProfileScreen · EventsScreen]
+    UI[HomeScreen · RevealScreen · GamesHub · ProfileScreen · EventsScreen]
   end
 
   v0Canon -.->|not used on v1| v1Db
@@ -164,6 +169,15 @@ npm run dev
 
 Open http://localhost:3000. Use `npm run dev:clean` if you hit stale `.next` errors after switching branches.
 
+**Marcus reveal demo:** default profile is Marcus. Lock an answer, wait 10s for auto-reveal, or reset in the browser console:
+
+```js
+localStorage.removeItem('ligo:reveal:marcus:unlocked');
+localStorage.removeItem('ligo:daily:marcus:answered');
+```
+
+**Night Preview:** use the N1–N10 buttons above the phone to preview aurora progression across demo nights.
+
 **v0 full demo:** https://ligo-v0.vercel.app — no local v0 setup required.
 
 ---
@@ -180,7 +194,10 @@ app/
     auth/route.ts            Password gate
     dev/canon/route.ts       Dev canon inspector
 components/
-  HomeScreen.tsx             Normal · Connection · Wrapped
+  HomeScreen.tsx             Normal · Reveal · Games · Connection · Wrapped
+  RevealScreen.tsx           Aurora nightly reveal (5 acts)
+  RevealShell.tsx            Shared cinematic shell
+  GamesHub.tsx               Games hub + GamePlayer
   EventsScreen.tsx           Events tab (TS mock data)
   profile/ProfileScreen.tsx  Profile v2 + answer trail
   IOSDevice.tsx              iPhone frame

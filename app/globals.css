@@ -133,6 +133,115 @@ body {
   }
 }
 
+/* ── Northern lights / aurora animations (games hub) ── */
+@keyframes aurora-1 {
+  0%, 100% { transform: translateX(0)    scaleX(1)    rotate(0deg);  opacity: 0.42; }
+  28%       { transform: translateX(38px) scaleX(1.12) rotate(2.5deg); opacity: 0.58; }
+  60%       { transform: translateX(-22px) scaleX(0.94) rotate(-1.5deg); opacity: 0.34; }
+}
+@keyframes aurora-2 {
+  0%, 100% { transform: translateX(0)     scaleX(1.05) rotate(0deg);   opacity: 0.35; }
+  35%       { transform: translateX(-48px) scaleX(1.18) rotate(-3deg);  opacity: 0.5;  }
+  70%       { transform: translateX(28px)  scaleX(0.88) rotate(2.5deg); opacity: 0.28; }
+}
+@keyframes aurora-3 {
+  0%, 100% { transform: translateY(0)    scaleY(1);    opacity: 0.28; }
+  45%       { transform: translateY(-18px) scaleY(1.12); opacity: 0.42; }
+}
+@keyframes aurora-4 {
+  0%, 100% { transform: translate(0, 0)       scale(1);    opacity: 0.22; }
+  38%       { transform: translate(25px, -12px) scale(1.1);  opacity: 0.38; }
+  72%       { transform: translate(-18px, 8px)  scale(0.93); opacity: 0.18; }
+}
+@keyframes star-twinkle {
+  0%, 100% { opacity: var(--so, 0.7); }
+  50%       { opacity: calc(var(--so, 0.7) * 0.15); }
+}
+
+/* ── Reveal-screen curtain aurora animations ── */
+@keyframes auroraSway {
+  from { transform: skewX(-7deg) translateX(-11%) scaleY(1); }
+  to   { transform: skewX(-19deg) translateX(11%) scaleY(1.14); }
+}
+@keyframes auroraShimmer {
+  from { opacity: 0.45; }
+  to   { opacity: 1; }
+}
+@keyframes auroraRay {
+  0%   { transform: translateX(-130%) skewX(-14deg); opacity: 0.05; }
+  50%  { opacity: 0.55; }
+  100% { transform: translateX(150%) skewX(-20deg); opacity: 0.05; }
+}
+@keyframes auroraBreathe {
+  from { transform: translateY(-3%) scaleY(0.96); }
+  to   { transform: translateY(3%) scaleY(1.04); }
+}
+@keyframes twinkleReveal {
+  from { opacity: 0.45; }
+  to   { opacity: 0.9; }
+}
+@keyframes enterRise {
+  from { opacity: 0; transform: translateY(70px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes exitRise {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-50px); }
+}
+@keyframes enterZoom {
+  from { opacity: 0; transform: scale(0.9); filter: blur(8px); }
+  to   { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+@keyframes exitZoom {
+  from { opacity: 1; transform: scale(1); filter: blur(0); }
+  to   { opacity: 0; transform: scale(1.08); filter: blur(6px); }
+}
+@keyframes enterFlare {
+  from { opacity: 0; filter: brightness(2.4) blur(4px); }
+  to   { opacity: 1; filter: brightness(1) blur(0); }
+}
+@keyframes exitFlare {
+  from { opacity: 1; filter: brightness(1); }
+  to   { opacity: 0; filter: brightness(0.6); }
+}
+@keyframes enterCurtain {
+  from { opacity: 0; transform: translateY(-64px); clip-path: inset(0 0 100% 0); }
+  to   { opacity: 1; transform: translateY(0); clip-path: inset(0 0 0% 0); }
+}
+@keyframes exitCurtain {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(64px); }
+}
+@keyframes enterFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes exitFade {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+@keyframes veilFlash {
+  0%   { opacity: 0; }
+  18%  { opacity: 0.5; }
+  100% { opacity: 0; }
+}
+@keyframes veilSweep {
+  from { transform: translateY(-110%); opacity: 0.7; }
+  to   { transform: translateY(110%); opacity: 0; }
+}
+@keyframes wf {
+  0%, 100% { transform: scaleY(0.45); }
+  50%       { transform: scaleY(1); }
+}
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 /* hide scrollbars inside the phone */
 .no-scrollbar {
   scrollbar-width: none;

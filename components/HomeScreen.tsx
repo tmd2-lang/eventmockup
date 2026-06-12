@@ -2,11 +2,12 @@
 /* ============================================================
    HomeScreen — the LIGO home interface (ported from the offline
    bundle: home-shared / home-normal / home-connection /
-   home-wrapped / meetup-sheet). Three states managed internally:
-     • normal      — daily pick + this-week teasers + news + near you
-     • connection  — "Tonight's Reveal" sealed → carousel → summary
-     • wrapped      — full-screen Wrapped story
-   Reached via the "This week on Ligo" cards (no top toggle).
+   home-wrapped / meetup-sheet). States managed internally:
+     • normal      — daily pick + tonight's reveal teaser + games + news + near you
+     • reveal      — Aurora nightly reveal (RevealScreen)
+     • games       — Ligo Games Hub
+     • connection  — legacy Connection Night (parked, no home entry)
+     • wrapped     — legacy Wrapped story (parked, no home entry)
    Album art resolves to /public/artists. Animations live in
    app/home.css. The bottom bar is Events / Home / Profile.
    ============================================================ */
@@ -30,6 +31,14 @@ import { useConnectionNight } from "@/hooks/useConnectionNight";
 import { useDailyReveal } from "@/hooks/useDailyReveal";
 import { useHomeContent } from "@/hooks/useHomeContent";
 import { isWrappedCarouselReady, normalizeWrappedContent } from "@/lib/wrappedUtils";
+import { RevealScreen } from "@/components/RevealScreen";
+import { GamesHub } from "@/components/GamesHub";
+import { loadDailyResults } from "@/lib/gameState";
+import {
+  DEMO_QUESTION,
+  REVEAL_COUNTDOWN_SECONDS,
+  REVEAL_DEMO_PROFILE_ID,
+} from "@/lib/revealConstants";
 
 // useState/useEffect aliases the bundle used per-file
 const useStateS = useState, useStateN = useState, useStateC = useState, useStateW = useState, useStateM = useState;
@@ -313,7 +322,7 @@ function CountdownBar({ answered, time }) {
   );
 }
 
-// two weekly-event teasers: this week's connections + last week's wrapped
+// Legacy v0 entry points — parked; Connection Night + Wrapped code kept, not rendered on home.
 function WeekTeasers({ onOpen }) {
   const conn = fmtDHM(useCountdown(() => nextWeekly(CONNECTION_DAY, CONNECTION_HOUR, 0)));
   const wrap = fmtDHM(useCountdown(() => nextWeekly(WRAPPED_DAY, WRAPPED_HOUR, 0)));
@@ -352,8 +361,180 @@ function WeekTeasers({ onOpen }) {
   );
 }
 
+function RevealTeaser({ onOpen, activeUserId, answered, revealUnlocked }) {
+  if (activeUserId !== REVEAL_DEMO_PROFILE_ID) return null;
+  if (!answered || !revealUnlocked) return null;
+
+  return (
+    <div style={{ padding: '20px 22px 0' }}>
+      <button
+        type="button"
+        onClick={() => onOpen()}
+        style={{
+          width: '100%',
+          textAlign: 'left',
+          cursor: 'pointer',
+          border: '1px solid rgba(113,192,127,0.28)',
+          borderRadius: 20,
+          padding: 18,
+          background: 'linear-gradient(160deg, rgba(7,9,12,0.96), rgba(22,19,15,0.92))',
+          boxShadow: '0 12px 32px -14px rgba(113,192,127,0.35)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+          color: '#fff',
+        }}
+      >
+        <span style={{
+          display: 'inline-flex', alignItems: 'center', gap: 7, alignSelf: 'flex-start',
+          fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 10,
+          letterSpacing: '0.14em', textTransform: 'uppercase', color: '#71C07F',
+        }}>
+          <Icon.Eye width="14" height="14" /> Tonight&apos;s reveal
+        </span>
+        <div style={{
+          fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 22,
+          letterSpacing: '-0.025em', lineHeight: 1.15, textWrap: 'balance',
+        }}>
+          Look up, Georgetown.
+        </div>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8, paddingTop: 12,
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+        }}>
+          <span className="cd-tick" style={{
+            width: 7, height: 7, borderRadius: 99, background: '#71C07F',
+            animation: 'ligo-pulse 1.8s ease-in-out infinite', flexShrink: 0,
+          }} />
+          <span style={{
+            fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 600, fontSize: 12,
+            color: 'rgba(255,255,255,0.55)',
+          }}>
+            Open tonight&apos;s sky · swipe through five cards
+          </span>
+        </div>
+      </button>
+    </div>
+  );
+}
+
+function GamesHubBanner({ onOpen, activeUserId }) {
+  const results = React.useMemo(() => {
+    try { return loadDailyResults(activeUserId); } catch { return null; }
+  }, [activeUserId]);
+
+  const played = results
+    ? ['trivia', 'ranking', 'soundmoji'].filter((f) => results[f] !== null).length
+    : 0;
+
+  return (
+    <div style={{ margin: '16px 22px 0' }}>
+      <button
+        type="button"
+        onClick={onOpen}
+        style={{
+          width: '100%', textAlign: 'left', cursor: 'pointer',
+          background: 'linear-gradient(135deg, rgba(249,115,22,0.10) 0%, rgba(124,58,237,0.08) 50%, rgba(8,145,178,0.08) 100%)',
+          border: '1px solid rgba(249,115,22,0.22)',
+          borderRadius: 20, padding: '15px 18px',
+          display: 'flex', alignItems: 'center', gap: 14,
+          boxShadow: '0 1px 0 rgba(20,17,13,0.02), 0 6px 20px -12px rgba(249,115,22,0.18)',
+          transition: 'transform 0.12s ease',
+        }}
+        onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.985)'; }}
+        onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+      >
+        <div style={{
+          width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+          background: 'rgba(249,115,22,0.12)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
+        }}>
+          🎮
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 15,
+            letterSpacing: '-0.01em', color: '#14110D',
+          }}>
+            Ligo Games Hub
+          </div>
+          <div style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontSize: 12, color: 'rgba(20,17,13,0.5)', marginTop: 1 }}>
+            {played === 3
+              ? '✓ All games done today'
+              : played > 0
+              ? `${played}/3 played · ${3 - played} left today`
+              : 'Music Trivia · Chart Ranker · Soundmoji'}
+          </div>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(249,115,22,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+function RevealWait({ secondsLeft }) {
+  const padded = String(secondsLeft).padStart(2, "0");
+
+  return (
+    <div style={{ margin: "12px 22px 0" }}>
+      <div
+        style={{
+          padding: "22px 20px",
+          borderRadius: 18,
+          border: "1.5px dashed rgba(249,115,22,0.35)",
+          background: "linear-gradient(160deg, rgba(249,115,22,0.06), rgba(245,215,131,0.04))",
+          textAlign: "center",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: "Bricolage Grotesque, sans-serif",
+            fontWeight: 700,
+            fontSize: 11,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: "#C2410C",
+            marginBottom: 10,
+          }}
+        >
+          Tonight&apos;s reveal · opening soon
+        </div>
+        <div
+          style={{
+            fontFamily: "Bricolage Grotesque, sans-serif",
+            fontWeight: 700,
+            fontSize: 42,
+            letterSpacing: "-0.03em",
+            color: "#9A3412",
+            fontVariantNumeric: "tabular-nums",
+            lineHeight: 1,
+          }}
+        >
+          0:{padded}
+        </div>
+        <p
+          style={{
+            margin: "14px 0 0",
+            fontFamily: "Bricolage Grotesque, sans-serif",
+            fontWeight: 600,
+            fontSize: 14,
+            lineHeight: 1.45,
+            color: "rgba(20,17,13,0.55)",
+            textWrap: "balance",
+          }}
+        >
+          Your answer&apos;s in. Campus is still answering — the reveal opens when the countdown ends.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // progress timeline: Opens · Answered · Reveal
-function Timeline({ answered }) {
+function Timeline({ answered, revealWaiting, revealUnlocked }) {
   const node = (label, time, state) => (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, flexShrink: 0, width: 64 }}>
       <span style={{
@@ -379,32 +560,42 @@ function Timeline({ answered }) {
       {seg(true)}
       {node('Answered', 'You', answered ? 'done' : 'next')}
       {seg(false)}
-      {node('Reveal', '8:00p', 'pending')}
+      {node('Reveal', '8:00p', revealUnlocked ? 'done' : revealWaiting || answered ? 'next' : 'pending')}
     </div>
   );
 }
 
-function DailyPick() {
-  // persisted: your lock-in survives refreshes & revisits
-  const [answered, setAnswered] = usePersistentState('ligo:daily:answered', false);
-  const [answer, setAnswer] = usePersistentState('ligo:daily:answer', '');
+function DailyPick({
+  revealCountdown,
+  revealUnlocked,
+  onRevealAnswerLocked,
+  onRevealAnswerEdited,
+}) {
+  const [activeUserId] = usePersistentState('ligo:active_user', REVEAL_DEMO_PROFILE_ID);
+  // persisted per profile — lock-in survives refreshes & revisits
+  const [answered, setAnswered] = usePersistentState(`ligo:daily:${activeUserId}:answered`, false);
+  const [answer, setAnswer] = usePersistentState(`ligo:daily:${activeUserId}:answer`, '');
   const [draft, setDraft] = useStateN('');
   const [focused, setFocused] = useStateN(false);
-  const [activeUserId] = usePersistentState('ligo:active_user', 'jordan');
   const reveal = useReveal();
   const { loading, error, currentQuestion } = useDailyReveal(activeUserId);
+  const isRevealDemoProfile = activeUserId === REVEAL_DEMO_PROFILE_ID;
+  const revealWaiting =
+    isRevealDemoProfile && answered && !revealUnlocked && revealCountdown !== null && revealCountdown > 0;
 
   function lockIn() {
     if (!draft.trim()) return;
     setAnswer(draft.trim());
     setAnswered(true);
     setFocused(false);
+    if (isRevealDemoProfile) onRevealAnswerLocked();
   }
 
   function changeAnswer() {
     setDraft(answer || '');
     setAnswered(false);
     setFocused(true);
+    if (isRevealDemoProfile) onRevealAnswerEdited();
   }
 
   function pickSynced(row) {
@@ -464,17 +655,12 @@ function DailyPick() {
               fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 500, fontSize: 17,
               lineHeight: 1.4, color: 'rgba(200,50,50,0.85)', margin: 0,
             }}>{error}</p>
-          ) : !currentQuestion ? (
-            <p style={{
-              fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 500, fontSize: 17,
-              lineHeight: 1.4, color: 'rgba(20,17,13,0.45)', margin: 0,
-            }}>Today&apos;s question coming soon</p>
           ) : (
             <h2 style={{
               fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 500, fontSize: 29,
               lineHeight: 1.12, letterSpacing: '-0.025em', color: '#14110D', textWrap: 'balance',
             }}>
-              {currentQuestion.question_text}
+              {currentQuestion?.question_text ?? DEMO_QUESTION}
             </h2>
           )}
 
@@ -553,7 +739,11 @@ function DailyPick() {
       {/* answered → reveal flow */}
       {answered && (
         <div className="phase-fade">
-          <Timeline answered={answered} />
+          <Timeline
+            answered={answered}
+            revealWaiting={revealWaiting}
+            revealUnlocked={isRevealDemoProfile && revealUnlocked}
+          />
 
           {/* locked answer */}
           <div style={{ margin: '12px 22px 0' }}>
@@ -576,17 +766,7 @@ function DailyPick() {
             </div>
           </div>
 
-          {/* come back placeholder */}
-          <div style={{ margin: '12px 22px 0' }}>
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '20px 18px',
-              borderRadius: 18, border: '1.5px dashed rgba(249,115,22,0.4)', background: 'rgba(249,115,22,0.03)',
-              color: '#C2410C', textAlign: 'center',
-            }}>
-              <Icon.EyeOff width="18" height="18" style={{ flexShrink: 0 }} />
-              <span style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 600, fontSize: 15, letterSpacing: '-0.01em', textWrap: 'balance' }}>Come back at 8pm to see everyone</span>
-            </div>
-          </div>
+          {revealWaiting ? <RevealWait secondsLeft={revealCountdown} /> : null}
         </div>
       )}
     </div>
@@ -678,11 +858,32 @@ function NearYou({ home }) {
   );
 }
 
-function HomeNormal({ onOpen, home }) {
+function HomeNormal({
+  onOpenReveal,
+  onOpenGames,
+  home,
+  activeUserId,
+  answered,
+  revealCountdown,
+  revealUnlocked,
+  onRevealAnswerLocked,
+  onRevealAnswerEdited,
+}) {
   return (
     <div style={{ paddingBottom: 124 }}>
-      <DailyPick />
-      <WeekTeasers onOpen={onOpen} />
+      <DailyPick
+        revealCountdown={revealCountdown}
+        revealUnlocked={revealUnlocked}
+        onRevealAnswerLocked={onRevealAnswerLocked}
+        onRevealAnswerEdited={onRevealAnswerEdited}
+      />
+      <RevealTeaser
+        onOpen={onOpenReveal}
+        activeUserId={activeUserId}
+        answered={answered}
+        revealUnlocked={revealUnlocked}
+      />
+      <GamesHubBanner onOpen={onOpenGames} activeUserId={activeUserId} />
       <NewsStrip home={home} />
       <NearYou home={home} />
     </div>
@@ -1650,7 +1851,14 @@ function TopBar({ activeUser, activeUserId, setActiveUserId }) {
 // `state`/`setState` (normal|connection|wrapped) are lifted to the page so
 // it can darken the device status bar. `onNav` routes the bottom bar.
 export function HomeScreen({ state, setState, onNav }) {
-  const [activeUserId, setActiveUserId] = usePersistentState('ligo:active_user', 'jordan');
+  const [activeUserId, setActiveUserId] = usePersistentState('ligo:active_user', REVEAL_DEMO_PROFILE_ID);
+  const [answered] = usePersistentState(`ligo:daily:${activeUserId}:answered`, false);
+  const [revealUnlocked, setRevealUnlocked] = usePersistentState(
+    `ligo:reveal:${REVEAL_DEMO_PROFILE_ID}:unlocked`,
+    false,
+  );
+  const [revealCountdown, setRevealCountdown] = useState(null);
+  const [revealPlayIntro, setRevealPlayIntro] = useState(false);
   const activeUser = USERS[activeUserId] || USERS['jordan'];
   const home = useHomeContent(activeUserId);
 
@@ -1659,6 +1867,43 @@ export function HomeScreen({ state, setState, onNav }) {
   const scrollRef = React.useRef(null);
 
   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; }, [state]);
+
+  useEffect(() => {
+    if (revealCountdown === null || revealCountdown <= 0) return;
+    const id = setTimeout(() => {
+      setRevealCountdown((current) => (current !== null && current > 0 ? current - 1 : current));
+    }, 1000);
+    return () => clearTimeout(id);
+  }, [revealCountdown]);
+
+  useEffect(() => {
+    if (activeUserId !== REVEAL_DEMO_PROFILE_ID) {
+      setRevealCountdown(null);
+      return;
+    }
+    if (!answered || revealUnlocked || revealCountdown !== null) return;
+    setRevealCountdown(REVEAL_COUNTDOWN_SECONDS);
+  }, [activeUserId, answered, revealUnlocked, revealCountdown]);
+
+  useEffect(() => {
+    if (activeUserId !== REVEAL_DEMO_PROFILE_ID) return;
+    if (revealCountdown !== 0 || revealUnlocked) return;
+    setRevealPlayIntro(true);
+    setRevealUnlocked(true);
+    setRevealCountdown(null);
+    setState('reveal');
+  }, [activeUserId, revealCountdown, revealUnlocked, setRevealUnlocked, setState]);
+
+  function handleRevealAnswerLocked() {
+    if (activeUserId !== REVEAL_DEMO_PROFILE_ID) return;
+    if (revealUnlocked) return;
+    setRevealCountdown(REVEAL_COUNTDOWN_SECONDS);
+  }
+
+  function handleRevealAnswerEdited() {
+    setRevealCountdown(null);
+    setRevealUnlocked(false);
+  }
 
   function sendInvite() {
     setToast({ name: sheet?.match?.name || 'They', mode: sheet?.mode || 'vibe' });
@@ -1672,12 +1917,43 @@ export function HomeScreen({ state, setState, onNav }) {
         <HomeConnection key="conn" onMeetup={(match, mode) => setSheet({ match, mode })} onNav={onNav} />
       ) : state === 'wrapped' ? (
         <HomeWrapped key="wrap" onNav={onNav} home={home} />
+      ) : state === 'games' ? (
+        <>
+          <GamesHub activeUserId={activeUserId} onBack={() => setState('normal')} />
+          <BottomNav active="home" onChange={onNav} />
+        </>
+      ) : state === 'reveal' ? (
+        <>
+          <RevealScreen
+            key={`reveal-${revealPlayIntro ? 'intro' : 'replay'}`}
+            activeUserId={activeUserId}
+            playIntro={revealPlayIntro}
+            onBack={() => {
+              setRevealPlayIntro(false);
+              setState('normal');
+            }}
+          />
+          <BottomNav active="home" dark onChange={onNav} />
+        </>
       ) : (
         <>
           <div ref={scrollRef} className="no-scrollbar" style={{ position: 'absolute', inset: 0, overflowY: 'auto', overflowX: 'hidden' }}>
             <TopBar activeUser={activeUser} activeUserId={activeUserId} setActiveUserId={setActiveUserId} />
             <div key={state} className="phase-fade">
-              <HomeNormal onOpen={setState} home={home} />
+              <HomeNormal
+                onOpenReveal={() => {
+                  setRevealPlayIntro(false);
+                  setState('reveal');
+                }}
+                onOpenGames={() => setState('games')}
+                home={home}
+                activeUserId={activeUserId}
+                answered={answered}
+                revealCountdown={revealCountdown}
+                revealUnlocked={revealUnlocked}
+                onRevealAnswerLocked={handleRevealAnswerLocked}
+                onRevealAnswerEdited={handleRevealAnswerEdited}
+              />
             </div>
           </div>
           <BottomNav active="home" onChange={onNav} />

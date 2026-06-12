@@ -1,6 +1,8 @@
 # v1 starting point — empty data canvas
 
-v1 is a **clean slate** for building new product experiments. The UI shell, nine demo profiles, and profile-rich presentation data stay in TypeScript. Canon content tables (daily answers, connection roster, home feed, wrapped) are **not** seeded — APIs return empty 200 bundles and the UI shows soft empty states.
+**Read [V1_DIRECTION.md](./V1_DIRECTION.md) first** for product context — why v1 exists, the daily reveal loop, and roadmap.
+
+v1 is a **clean slate** for building new product experiments. The UI shell, nine demo profiles, and profile-rich presentation data stay in TypeScript. Canon content tables (daily answers, connection roster, home feed, wrapped) are **not** seeded — APIs return empty 200 bundles. The **nightly Aurora reveal** uses hardcoded demo content in [`lib/revealData.ts`](../lib/revealData.ts) (10 nights) until spreadsheet import lands.
 
 **v0** (tag `v0-demo-mockup`) remains the frozen full-canon demo at **https://ligo-v0.vercel.app**. See [DEPLOY_V0.md](./DEPLOY_V0.md) for deploy details.
 
@@ -67,11 +69,13 @@ npm run dev
 
 Switch profiles from the home top bar. Expect:
 
-- **Daily Pick** — “Today's question coming soon”
-- **News / Near you** — per-profile fidelity cards from `lib/homeFidelity.ts` (same content as v0 demo; not stored in Supabase on v1)
-- **Connection Night** — empty roster message (no carousel)
-- **Wrapped** — “No wrapped data yet”
-- **Profile answer trail** — “No answers yet”
+- **Daily Pick** — demo question from `lib/revealConstants.ts` fallback (API empty)
+- **Tonight's reveal** — Marcus: 10s countdown after lock-in, then Aurora auto-opens; replay from home card
+- **Games Hub** — banner on home; trivia, ranking, soundmoji
+- **Night Preview** — N1–N10 picker above the phone (internal demo tool)
+- **News / Near you** — per-profile fidelity cards from `lib/homeFidelity.ts` (not stored in Supabase on v1)
+- **Connection Night / Wrapped** — not on home (legacy code parked in repo)
+- **Profile answer trail** — “No answers yet” (API empty)
 
 APIs return HTTP 200 with empty payloads when content tables are missing or empty.
 

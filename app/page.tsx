@@ -7,7 +7,7 @@
    ============================================================ */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { IOSDevice } from "@/components/IOSDevice";
 import { BottomNav, type NavId } from "@/components/BottomNav";
 import { HomeScreen } from "@/components/HomeScreen";
@@ -15,14 +15,147 @@ import { EventsScreen } from "@/components/EventsScreen";
 import { ProfileV2Provider, ProfileV2Shell } from "@/components/profile/ProfileScreen";
 import { ProfileGateProvider } from "@/lib/profileGate";
 
-type HomeState = "normal" | "connection" | "wrapped";
+type HomeState = "normal" | "connection" | "wrapped" | "games" | "reveal";
+
+const FF = "Bricolage Grotesque, var(--font-display), sans-serif";
+
+const NIGHT_LABELS = [
+  "N1", "N2", "N3", "N4", "N5",
+  "N6", "N7", "N8", "N9", "N10",
+];
+
+const NIGHT_INTENSITY = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
+
+function NightPicker() {
+  const [activeNight, setActiveNight] = useState<number | null>(null);
+
+  useEffect(() => {
+    const ov = localStorage.getItem("ligo:demo:night");
+    setActiveNight(ov !== null ? parseInt(ov, 10) : null);
+  }, []);
+
+  const pick = useCallback((n: number | null) => {
+    if (n === null) {
+      localStorage.removeItem("ligo:demo:night");
+    } else {
+      localStorage.setItem("ligo:demo:night", String(n));
+    }
+    setActiveNight(n);
+    window.location.reload();
+  }, []);
+
+  return (
+    <div
+      className="app-chrome"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 10,
+      }}
+    >
+      <div
+        style={{
+          fontFamily: FF,
+          fontSize: 10,
+          fontWeight: 700,
+          letterSpacing: "0.14em",
+          textTransform: "uppercase",
+          color: "rgba(255,255,255,0.4)",
+        }}
+      >
+        Night Preview
+      </div>
+      <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+        {NIGHT_LABELS.map((label, i) => {
+          const active = activeNight === i;
+          const intensity = NIGHT_INTENSITY[i];
+          return (
+            <button
+              key={i}
+              type="button"
+              onClick={() => pick(active ? null : i)}
+              title={`Night ${i + 1} — ${Math.round(intensity * 100)}% aurora intensity`}
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 8,
+                border: "none",
+                cursor: "pointer",
+                background: active
+                  ? `rgba(249,115,22,${0.3 + intensity * 0.5})`
+                  : `rgba(255,255,255,${0.04 + intensity * 0.06})`,
+                color: active ? "#fff" : `rgba(255,255,255,${0.3 + intensity * 0.4})`,
+                fontFamily: FF,
+                fontSize: 10,
+                fontWeight: active ? 800 : 600,
+                boxShadow: active
+                  ? `0 0 0 1.5px rgba(249,115,22,0.6), 0 4px 12px rgba(249,115,22,${intensity * 0.4})`
+                  : "0 0 0 1px rgba(255,255,255,0.08)",
+                transition: "all 0.15s ease",
+                position: "relative",
+              }}
+            >
+              {label}
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 3,
+                  left: 4,
+                  right: 4,
+                  height: 2,
+                  borderRadius: 99,
+                  background: "linear-gradient(90deg, #71C07F, #EA8CE1, #F97316)",
+                  opacity: intensity * 0.8,
+                }}
+              />
+            </button>
+          );
+        })}
+        {activeNight !== null && (
+          <button
+            type="button"
+            onClick={() => pick(null)}
+            title="Reset to live night"
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: 8,
+              border: "none",
+              cursor: "pointer",
+              background: "rgba(255,255,255,0.06)",
+              color: "rgba(255,255,255,0.45)",
+              fontFamily: FF,
+              fontSize: 9,
+              fontWeight: 700,
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.08)",
+              letterSpacing: "0.04em",
+            }}
+          >
+            LIVE
+          </button>
+        )}
+      </div>
+      <div
+        style={{
+          fontFamily: FF,
+          fontSize: 10,
+          color: "rgba(255,255,255,0.25)",
+          letterSpacing: "0.06em",
+        }}
+      >
+        {activeNight !== null
+          ? `Previewing Night ${activeNight + 1} — click again to deselect · LIVE resets`
+          : "Click a night to preview the aurora progression"}
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   const [nav, setNav] = useState<NavId>("home");
   const [homeState, setHomeState] = useState<HomeState>("normal");
 
-  // Bottom-bar routing. Home resets the home to its normal state;
-  // Events switches tabs; Profile is a parked placeholder.
   const onNav = (id: NavId) => {
     if (id === "home") {
       setNav("home");
@@ -36,8 +169,8 @@ export default function Home() {
 
   const isEvents = nav === "events";
   const isProfile = nav === "profile";
-  // The device status bar goes light on the dark home takeovers.
-  const dark = !isEvents && !isProfile && homeState !== "normal";
+  const dark =
+    !isEvents && !isProfile && homeState !== "normal" && homeState !== "games";
 
   return (
     <main
@@ -48,11 +181,12 @@ export default function Home() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 22,
+        gap: 18,
         padding: "40px 24px",
       }}
     >
-      {/* caption */}
+      <NightPicker />
+
       <div
         className="app-chrome"
         style={{
@@ -68,7 +202,14 @@ export default function Home() {
         }}
       >
         <b style={{ color: "#F5D783", fontWeight: 600 }}>LIGO</b>
-        <span style={{ width: 4, height: 4, borderRadius: 99, background: "rgba(255,255,255,0.25)" }} />
+        <span
+          style={{
+            width: 4,
+            height: 4,
+            borderRadius: 99,
+            background: "rgba(255,255,255,0.25)",
+          }}
+        />
         Home · music-first · college
       </div>
 
@@ -78,14 +219,17 @@ export default function Home() {
             width: "100%",
             height: "100%",
             position: "relative",
-            background: isEvents || isProfile ? "#FAFAF8" : dark ? "#0A0907" : "#FAFAF8",
+            background: isEvents || isProfile ? "#FAFAF8" : dark ? "#07090C" : "#FAFAF8",
             color: dark ? "#fff" : "#14110D",
             overflow: "hidden",
           }}
         >
           {isEvents ? (
             <>
-              <div className="ligo-events" style={{ position: "absolute", inset: 0 }}>
+              <div
+                className="ligo-events"
+                style={{ position: "absolute", inset: 0 }}
+              >
                 <EventsScreen onTab={onNav} />
               </div>
               <BottomNav active="events" onChange={onNav} />
@@ -100,12 +244,15 @@ export default function Home() {
               <BottomNav active="profile" onChange={onNav} />
             </>
           ) : (
-            <HomeScreen state={homeState} setState={setHomeState} onNav={onNav} />
+            <HomeScreen
+              state={homeState}
+              setState={setHomeState}
+              onNav={onNav}
+            />
           )}
         </div>
       </IOSDevice>
 
-      {/* hint */}
       <div
         className="app-chrome"
         style={{
@@ -113,18 +260,38 @@ export default function Home() {
           fontSize: 12,
           color: "rgba(255,255,255,0.35)",
           textAlign: "center",
-          maxWidth: 400,
+          maxWidth: 440,
           lineHeight: 1.5,
         }}
       >
         {isEvents ? (
-          <>The <b style={{ color: "rgba(255,255,255,0.6)" }}>Events</b> tab — tap <b style={{ color: "rgba(255,255,255,0.6)" }}>Home</b> to go back.</>
+          <>
+            The{" "}
+            <b style={{ color: "rgba(255,255,255,0.6)" }}>Events</b> tab — tap{" "}
+            <b style={{ color: "rgba(255,255,255,0.6)" }}>Home</b> to go back.
+          </>
         ) : isProfile ? (
-          <>Jordan&apos;s <b style={{ color: "rgba(255,255,255,0.6)" }}>Profile</b> — tap <b style={{ color: "rgba(255,255,255,0.6)" }}>Home</b> or <b style={{ color: "rgba(255,255,255,0.6)" }}>Events</b> to explore the rest of the mockup.</>
+          <>
+            Jordan&apos;s{" "}
+            <b style={{ color: "rgba(255,255,255,0.6)" }}>Profile</b> — tap{" "}
+            <b style={{ color: "rgba(255,255,255,0.6)" }}>Home</b> or{" "}
+            <b style={{ color: "rgba(255,255,255,0.6)" }}>Events</b> to explore
+            the rest of the mockup.
+          </>
         ) : homeState !== "normal" ? (
-          <>Tap the <b style={{ color: "rgba(255,255,255,0.6)" }}>Home</b> button to return to your daily home.</>
+          <>
+            Tap the{" "}
+            <b style={{ color: "rgba(255,255,255,0.6)" }}>Home</b> button to
+            return to your daily home.
+          </>
         ) : (
-          <>Answer the daily pick, then open <b style={{ color: "rgba(255,255,255,0.6)" }}>Connections</b> or <b style={{ color: "rgba(255,255,255,0.6)" }}>Wrapped</b> from “This week on Ligo.”</>
+          <>
+            Switch to{" "}
+            <b style={{ color: "rgba(255,255,255,0.6)" }}>Marcus</b>, lock in,
+            wait for the reveal — then replay from home. Use{" "}
+            <b style={{ color: "rgba(255,255,255,0.6)" }}>Night Preview</b>{" "}
+            above to demo N1–N10 aurora nights.
+          </>
         )}
       </div>
     </main>
