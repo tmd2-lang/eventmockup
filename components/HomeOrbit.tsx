@@ -3,14 +3,14 @@
 import React, { useEffect, useState } from 'react';
 import { MockBackend, ConnectionAction } from '@/lib/mockBackend';
 import { USERS } from '@/lib/users';
-import { MeetupSupportSheet, MeetupPayload } from '@/components/reveal/MeetupSupportSheet';
+import { OrbitSheet } from '@/components/OrbitSheet';
+import { Icon } from '@/components/Primitives';
 
 const FF = "'Bricolage Grotesque', sans-serif";
 
 export function HomeOrbit({ activeUserId }: { activeUserId: string }) {
   const [connections, setConnections] = useState<ConnectionAction[]>([]);
-  const [selectedMatch, setSelectedMatch] = useState<any>(null);
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     function update() {
@@ -23,99 +23,66 @@ export function HomeOrbit({ activeUserId }: { activeUserId: string }) {
 
   if (connections.length === 0) return null;
 
+  // Grab the 3 most recent avatars to display
+  const recentAvatars = connections.slice(0, 3).map(c => {
+    const isSpark = c.type === 'spark';
+    const isMutual = isSpark ? MockBackend.isMutualSpark(activeUserId, c.fromId) : true;
+    const showMystery = isSpark && !isMutual;
+    
+    if (showMystery) return null; // We skip mysteries in the stacked avatars or handle them differently
+    return USERS[c.fromId]?.avatar;
+  }).filter(Boolean);
+
   return (
-    <div style={{ marginTop: 12, marginBottom: 12 }}>
-      <div style={{ padding: '0 24px', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h2 style={{ fontFamily: FF, fontWeight: 700, fontSize: 15, color: '#FFF', letterSpacing: '0.02em', textTransform: 'uppercase' }}>Your Orbit</h2>
-        <span style={{ fontFamily: FF, fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: 600, background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: 99 }}>{connections.length} NEW</span>
-      </div>
-
-      <div style={{ 
-        display: 'flex', gap: 16, overflowX: 'auto', padding: '0 24px 12px', 
-        scrollbarWidth: 'none', msOverflowStyle: 'none' 
-      }}>
-        {connections.map(c => {
-          const user = USERS[c.fromId];
-          if (!user) return null;
-
-          const isSpark = c.type === 'spark';
-          const isMeetup = c.type === 'meetup_invite';
-          const isConfirmed = c.type === 'meetup_confirmed';
-          const isMutual = isSpark ? MockBackend.isMutualSpark(activeUserId, c.fromId) : true;
-          const showMystery = isSpark && !isMutual;
-
-          const ringColor = isConfirmed ? '#FACC15' : (isMeetup ? '#22C55E' : (isSpark ? '#EA8CE1' : '#F97316'));
-          
-          return (
-            <div key={c.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0, width: 64 }}>
-              <button 
-                onClick={() => setSelectedMatch({
-                   id: c.fromId, name: showMystery ? 'Someone' : user.name, 
-                   avatar: user.avatar, isMystery: showMystery, mode: isSpark ? 'spark' : c.type,
-                   payload: c.payload
-                })}
-                style={{
-                  width: 68, height: 68, borderRadius: 99, padding: 0, cursor: 'pointer',
-                  border: `2.5px solid ${ringColor}`,
-                  background: showMystery ? 'rgba(234,140,225,0.1)' : `url(${user.avatar}) center/cover`,
-                  position: 'relative',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}
-              >
-                {showMystery && <span style={{ fontSize: 24, filter: 'drop-shadow(0 0 10px rgba(234,140,225,0.8))' }}>✨</span>}
-                {(isMeetup || isConfirmed) && !showMystery && (
-                  <div style={{ position: 'absolute', bottom: -2, right: -2, background: isConfirmed ? '#FACC15' : '#22C55E', width: 22, height: 22, borderRadius: 99, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #0A0907' }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={isConfirmed ? '#000' : '#fff'} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  </div>
-                )}
-              </button>
-              <span style={{ fontFamily: FF, fontSize: 11.5, fontWeight: 600, color: 'rgba(255,255,255,0.8)', textAlign: 'center', letterSpacing: '-0.01em' }}>
-                {showMystery ? 'Mystery' : user.name}
+    <>
+      <div style={{ padding: '0 24px', marginBottom: 24, marginTop: 12 }}>
+        <button onClick={() => setOpen(true)} style={{
+          width: '100%', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 24, cursor: 'pointer', textAlign: 'left',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2)', backdropFilter: 'blur(20px)',
+          transition: 'transform 0.15s cubic-bezier(.2,.7,.2,1)',
+        }} onMouseDown={e => e.currentTarget.style.transform = 'scale(0.98)'} onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+          <div>
+            <div style={{ fontFamily: FF, fontWeight: 700, fontSize: 16, color: '#FFF', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+              Your Orbit
+              <span style={{
+                background: '#F97316', color: '#FFF', fontSize: 11, padding: '2px 8px', borderRadius: 99,
+                fontWeight: 700
+              }}>
+                {connections.length}
               </span>
             </div>
-          );
-        })}
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>
+              {connections.some(c => c.type === 'meetup_invite') ? 'You have pending invites' : 'New connections await'}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {recentAvatars.map((url, i) => (
+              <img key={i} src={url as string} style={{
+                width: 36, height: 36, borderRadius: 99, border: '2px solid #1A1A1A',
+                marginLeft: i > 0 ? -12 : 0, objectFit: 'cover'
+              }} alt="" />
+            ))}
+            {recentAvatars.length === 0 && (
+              <div style={{ width: 36, height: 36, borderRadius: 99, background: 'rgba(255,255,255,0.1)', border: '2px solid #1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="16" height="16" color="#EA8CE1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 3c.5 4 1.5 5 5.5 5.5C13.5 9 12.5 10 12 14c-.5-4-1.5-5-5.5-5.5C10.5 8 11.5 7 12 3z" />
+                  <path d="M18.5 14.5c.3 2 .8 2.5 2.5 2.8-1.7.3-2.2.8-2.5 2.7-.3-1.9-.8-2.4-2.5-2.7 1.7-.3 2.2-.8 2.5-2.8z" />
+                </svg>
+              </div>
+            )}
+            <div style={{ marginLeft: 12, color: 'rgba(255,255,255,0.4)' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </div>
+        </button>
       </div>
 
-      {selectedMatch && (
-        <MeetupSupportSheet 
-          match={selectedMatch}
-          mode={selectedMatch.mode}
-          incomingPayload={selectedMatch.mode === 'meetup_invite' ? selectedMatch.payload : undefined}
-          onClose={() => setSelectedMatch(null)}
-          onSend={(payload) => {
-            if (selectedMatch.mode === 'meetup_invite') {
-              const statusPayload = payload as { status: 'confirmed' | 'declined' };
-              if (statusPayload.status === 'confirmed') {
-                MockBackend.recordAction(activeUserId, selectedMatch.id, 'meetup_confirmed');
-                setToastMsg(`Meetup confirmed with ${selectedMatch.name}!`);
-              } else {
-                setToastMsg(`You declined the invite.`);
-              }
-            } else {
-              MockBackend.recordAction(activeUserId, selectedMatch.id, 'meetup_invite', payload);
-              setToastMsg(`Invite sent to ${selectedMatch.name}.`);
-            }
-            setSelectedMatch(null);
-            setTimeout(() => setToastMsg(null), 3000);
-          }}
-        />
-      )}
-
-      {toastMsg && (
-        <div style={{
-          position: 'fixed', bottom: 40, left: '50%', transform: 'translateX(-50%)', zIndex: 200,
-          background: toastMsg.includes('confirmed') ? '#FACC15' : '#22C55E', color: toastMsg.includes('confirmed') ? '#000' : '#fff', padding: '12px 20px', borderRadius: 99,
-          fontFamily: FF, fontWeight: 600, fontSize: 14, boxShadow: toastMsg.includes('confirmed') ? '0 8px 24px rgba(250,204,21,0.4)' : '0 8px 24px rgba(34,197,94,0.4)',
-          animation: 'fadeIn 0.2s ease', pointerEvents: 'none', whiteSpace: 'nowrap'
-        }}>
-          {toastMsg}
-        </div>
-      )}
-      
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-      `}</style>
-    </div>
+      {open && <OrbitSheet activeUserId={activeUserId} onClose={() => setOpen(false)} />}
+    </>
   );
 }

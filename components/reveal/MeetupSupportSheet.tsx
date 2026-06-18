@@ -315,13 +315,13 @@ export function MeetupSupportSheet({
                     <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{v.meta}</div>
                   </div>
                   
-                  {'perk' in v && v.perk && (
+                  {Boolean((v as any).perk) && (
                     <span style={{
-                      background: v.perkBg, color: v.perkColor,
+                      background: (v as any).perkBg, color: (v as any).perkColor,
                       flexShrink: 0, fontFamily: FF, fontSize: 9.5, fontWeight: 700,
                       letterSpacing: '0.04em', textTransform: 'uppercase', padding: '6px 10px', borderRadius: 99, maxWidth: 100, lineHeight: 1.2, textAlign: 'center',
-                      border: `1px solid ${v.perkColor}30`,
-                    }}>{v.perk}</span>
+                      border: `1px solid ${(v as any).perkColor}30`,
+                    }}>{(v as any).perk}</span>
                   )}
                 </button>
               );

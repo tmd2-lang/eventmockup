@@ -770,9 +770,13 @@ export function ActConnectionDone({
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: FF, fontWeight: 700, fontSize: 13 }}>{p.name}</div>
                 <div style={{ fontSize: 11, marginTop: 2, color: 'rgba(255,255,255,0.38)' }}>
-                  {a === 'vibe' && <span style={{ color: '#F97316', fontWeight: 700 }}>Sent a Vibe</span>}
-                  {a === 'spark' && <span style={{ color: '#EA8CE1', fontWeight: 700 }}>Sparked · anonymous until mutual</span>}
-                  {(!a || a === 'pass') && <span style={{ color: 'rgba(255,255,255,0.28)', fontWeight: 700 }}>Passed</span>}
+                  {a === 'vibe' && <span style={{ color: '#F97316', fontWeight: 700 }}>Vibed</span>}
+                  {a === 'spark' && (
+                    MockBackend.isMutualSpark(activeUserId, p.id) 
+                      ? <span style={{ color: '#FACC15', fontWeight: 700 }}>Mutual Spark ✨</span>
+                      : <span style={{ color: '#EA8CE1', fontWeight: 700 }}>Sparked · anonymous until mutual</span>
+                  )}
+                  {a === 'pass' && <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>Passed</span>}
                 </div>
               </div>
               {a === 'vibe' && (
