@@ -12,6 +12,7 @@ import {
   ActConnectionPerson,
   ActConnectionDone,
 } from '@/components/reveal/ConnectionNightActs';
+import { MockBackend } from '@/lib/mockBackend';
 import { useConnectionNight } from '@/hooks/useConnectionNight';
 import { isConnectionNightPreview } from '@/lib/revealConstants';
 
@@ -393,6 +394,7 @@ export function RevealScreen({ onBack, activeUserId, playIntro = false }: Props)
 
   function cnAct(idx: number, kind: 'vibe' | 'spark' | 'pass') {
     setCnActions((a) => ({ ...a, [idx]: kind }));
+    MockBackend.recordAction(activeUserId, people[idx].id, kind);
     window.setTimeout(() => shell.current?.go(1), 420);
   }
 
@@ -421,7 +423,7 @@ export function RevealScreen({ onBack, activeUserId, playIntro = false }: Props)
             return PersonAct;
           }),
           ({ anim }: { anim: string }) => (
-            <ActConnectionDone people={people} actions={cnActions} anim={anim} />
+            <ActConnectionDone people={people} actions={cnActions} anim={anim} activeUserId={activeUserId} />
           ),
         ]
       : [];

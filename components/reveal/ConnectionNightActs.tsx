@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Icon } from '@/components/Primitives';
 import type { ConnectionNightPerson, ConnectionNightSong } from '@/lib/connectionNight';
+import { MeetupSupportSheet } from './MeetupSupportSheet';
+import { MockBackend } from '@/lib/mockBackend';
 
 const FF = "'Bricolage Grotesque', sans-serif";
 
@@ -683,11 +685,16 @@ export function ActConnectionDone({
   people,
   actions,
   anim,
+  activeUserId,
 }: {
   people: ConnectionNightPerson[];
   actions: Record<number, string>;
   anim: string;
+  activeUserId: string;
 }) {
+  const [meetupPerson, setMeetupPerson] = useState<ConnectionNightPerson | null>(null);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
   return (
     <div
       style={{
@@ -768,6 +775,25 @@ export function ActConnectionDone({
                   {(!a || a === 'pass') && <span style={{ color: 'rgba(255,255,255,0.28)', fontWeight: 700 }}>Passed</span>}
                 </div>
               </div>
+              {a === 'vibe' && (
+                <button
+                  onClick={() => setMeetupPerson(p)}
+                  style={{
+                    background: 'rgba(249,115,22,0.15)',
+                    border: '1px solid rgba(249,115,22,0.3)',
+                    color: '#F97316',
+                    padding: '6px 12px',
+                    borderRadius: 99,
+                    fontFamily: FF,
+                    fontWeight: 700,
+                    fontSize: 10,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  Plan Meetup
+                </button>
+              )}
             </div>
           );
         })}
@@ -775,6 +801,31 @@ export function ActConnectionDone({
       <span style={{ marginTop: 24, fontFamily: FF, fontSize: 11, letterSpacing: '0.04em', color: 'rgba(245,215,131,0.75)' }}>
         tap — back to home →
       </span>
+
+      {meetupPerson && (
+        <MeetupSupportSheet 
+          match={meetupPerson} 
+          mode="vibe" 
+          onClose={() => setMeetupPerson(null)} 
+          onSend={() => {
+            MockBackend.recordAction(activeUserId, meetupPerson.id, 'meetup_invite');
+            setMeetupPerson(null);
+            setToastMsg(`Invite sent to ${meetupPerson.name}.`);
+            setTimeout(() => setToastMsg(null), 3000);
+          }} 
+        />
+      )}
+
+      {toastMsg && (
+        <div style={{
+          position: 'fixed', bottom: 40, left: '50%', transform: 'translateX(-50%)', zIndex: 200,
+          background: '#F97316', color: '#fff', padding: '12px 20px', borderRadius: 99,
+          fontFamily: FF, fontWeight: 600, fontSize: 14, boxShadow: '0 8px 24px rgba(249,115,22,0.5)',
+          animation: 'fadeIn 0.2s ease', pointerEvents: 'none', whiteSpace: 'nowrap'
+        }}>
+          {toastMsg}
+        </div>
+      )}
     </div>
   );
 }
