@@ -5,6 +5,7 @@ import { Icon } from '@/components/Primitives';
 import type { ConnectionNightPerson, ConnectionNightSong } from '@/lib/connectionNight';
 import { MeetupSupportSheet } from './MeetupSupportSheet';
 import { MockBackend } from '@/lib/mockBackend';
+import { useConnectionRevision } from '@/hooks/useConnectionRevision';
 
 const FF = "'Bricolage Grotesque', sans-serif";
 
@@ -694,6 +695,7 @@ export function ActConnectionDone({
 }) {
   const [meetupPerson, setMeetupPerson] = useState<ConnectionNightPerson | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  useConnectionRevision();
 
   return (
     <div

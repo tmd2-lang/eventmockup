@@ -5,11 +5,22 @@ export interface ConnectionAction {
   fromId: string;
   toId: string;
   type: ConnectionActionType;
-  payload?: any;
+  payload?: unknown;
   timestamp: number;
 }
 
+export type OrbitConnection = {
+  otherId: string;
+  action: ConnectionAction;
+  direction: 'in' | 'out';
+};
+
 const STORAGE_KEY = 'ligo:global:connections';
+export const CONNECTIONS_UPDATE_EVENT = 'ligo:global:connections:update';
+
+function norm(id: string) {
+  return id.toLowerCase().trim();
+}
 
 function getStoredConnections(): ConnectionAction[] {
   if (typeof window === 'undefined') return [];
@@ -24,18 +35,16 @@ function getStoredConnections(): ConnectionAction[] {
 function saveConnections(actions: ConnectionAction[]) {
   if (typeof window === 'undefined') return;
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(actions));
-  // Dispatch an event so other components can react instantly
-  window.dispatchEvent(new Event('ligo:global:connections:update'));
+  window.dispatchEvent(new Event(CONNECTIONS_UPDATE_EVENT));
 }
 
 export const MockBackend = {
-  // Record a new action (vibe, spark, pass, meetup_invite)
-  recordAction(fromId: string, toId: string, type: ConnectionActionType, payload?: any) {
+  recordAction(fromId: string, toId: string, type: ConnectionActionType, payload?: unknown) {
     const connections = getStoredConnections();
     const newAction: ConnectionAction = {
       id: Math.random().toString(36).substring(2, 9),
-      fromId,
-      toId,
+      fromId: norm(fromId),
+      toId: norm(toId),
       type,
       payload,
       timestamp: Date.now(),
@@ -44,35 +53,67 @@ export const MockBackend = {
     saveConnections(connections);
   },
 
-  // Get all connections where the active user is the TARGET
+  /** Re-sync persisted CN slide choices into the global graph (replay / refresh). */
+  ensureAction(fromId: string, toId: string, type: ConnectionActionType) {
+    const from = norm(fromId);
+    const to = norm(toId);
+    const exists = getStoredConnections().some(
+      (c) => norm(c.fromId) === from && norm(c.toId) === to && c.type === type,
+    );
+    if (!exists) this.recordAction(from, to, type);
+  },
+
   getIncomingConnections(userId: string): ConnectionAction[] {
+    const uid = norm(userId);
     const connections = getStoredConnections();
-    // Filter to latest action from each unique sender to this user
-    // e.g. if Cole sent a Vibe, then later sent a Meetup Invite, we only care about the latest status
-    const incoming = connections.filter(c => c.toId === userId && c.type !== 'pass');
-    
-    // Deduplicate by fromId (keeping the most recent)
+    const incoming = connections.filter((c) => norm(c.toId) === uid && c.type !== 'pass');
+
     const latestMap = new Map<string, ConnectionAction>();
-    incoming.forEach(c => {
-      const existing = latestMap.get(c.fromId);
+    incoming.forEach((c) => {
+      const from = norm(c.fromId);
+      const existing = latestMap.get(from);
       if (!existing || existing.timestamp < c.timestamp) {
-        latestMap.set(c.fromId, c);
+        latestMap.set(from, c);
       }
     });
 
     return Array.from(latestMap.values()).sort((a, b) => b.timestamp - a.timestamp);
   },
 
-  // Check if there is a mutual spark between A and B
-  isMutualSpark(userA: string, userB: string): boolean {
-    const connections = getStoredConnections();
-    const aToB = connections.find(c => c.fromId === userA && c.toId === userB && c.type === 'spark');
-    const bToA = connections.find(c => c.fromId === userB && c.toId === userA && c.type === 'spark');
-    return !!(aToB && bToA);
+  /** All orbit-visible ties for a user (incoming + outgoing, latest per person). */
+  getOrbitConnections(userId: string): OrbitConnection[] {
+    const uid = norm(userId);
+    const relevant = getStoredConnections().filter((c) => {
+      if (c.type === 'pass') return false;
+      return norm(c.fromId) === uid || norm(c.toId) === uid;
+    });
+
+    const byOther = new Map<string, OrbitConnection>();
+    for (const c of relevant) {
+      const from = norm(c.fromId);
+      const to = norm(c.toId);
+      const isIncoming = to === uid;
+      const otherId = isIncoming ? from : to;
+      const direction = isIncoming ? ('in' as const) : ('out' as const);
+      const prev = byOther.get(otherId);
+      if (!prev || prev.action.timestamp < c.timestamp) {
+        byOther.set(otherId, { otherId, action: c, direction });
+      }
+    }
+
+    return Array.from(byOther.values()).sort((a, b) => b.action.timestamp - a.action.timestamp);
   },
-  
-  // Clear all connections (for resetting the demo)
+
+  isMutualSpark(userA: string, userB: string): boolean {
+    const a = norm(userA);
+    const b = norm(userB);
+    const connections = getStoredConnections();
+    const aToB = connections.some((c) => norm(c.fromId) === a && norm(c.toId) === b && c.type === 'spark');
+    const bToA = connections.some((c) => norm(c.fromId) === b && norm(c.toId) === a && c.type === 'spark');
+    return aToB && bToA;
+  },
+
   clearAll() {
     saveConnections([]);
-  }
+  },
 };

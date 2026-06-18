@@ -365,8 +365,10 @@ function WeekTeasers({ onOpen }) {
 function RevealTeaser({ onOpen, hasLockedAnswer, revealUnlocked }) {
   if (!hasLockedAnswer || !revealUnlocked) return null;
 
+  const cn = typeof window !== 'undefined' && localStorage.getItem('ligo:demo:night') === 'cn';
+
   return (
-    <div style={{ padding: '20px 22px 0' }}>
+    <div style={{ padding: '12px 22px 0' }}>
       <button
         type="button"
         onClick={() => onOpen()}
@@ -374,11 +376,13 @@ function RevealTeaser({ onOpen, hasLockedAnswer, revealUnlocked }) {
           width: '100%',
           textAlign: 'left',
           cursor: 'pointer',
-          border: '1px solid rgba(113,192,127,0.28)',
+          border: cn ? '1px solid rgba(234,140,225,0.32)' : '1px solid rgba(113,192,127,0.28)',
           borderRadius: 20,
           padding: 18,
           background: 'linear-gradient(160deg, rgba(7,9,12,0.96), rgba(22,19,15,0.92))',
-          boxShadow: '0 12px 32px -14px rgba(113,192,127,0.35)',
+          boxShadow: cn
+            ? '0 12px 32px -14px rgba(234,140,225,0.35)'
+            : '0 12px 32px -14px rgba(113,192,127,0.35)',
           display: 'flex',
           flexDirection: 'column',
           gap: 12,
@@ -388,29 +392,31 @@ function RevealTeaser({ onOpen, hasLockedAnswer, revealUnlocked }) {
         <span style={{
           display: 'inline-flex', alignItems: 'center', gap: 7, alignSelf: 'flex-start',
           fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 10,
-          letterSpacing: '0.14em', textTransform: 'uppercase', color: '#71C07F',
+          letterSpacing: '0.14em', textTransform: 'uppercase',
+          color: cn ? '#EA8CE1' : '#71C07F',
         }}>
-          <Icon.Eye width="14" height="14" /> Tonight&apos;s reveal
+          <Icon.Eye width="14" height="14" /> {cn ? "Tonight's matches" : "Tonight's reveal"}
         </span>
         <div style={{
           fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 22,
           letterSpacing: '-0.025em', lineHeight: 1.15, textWrap: 'balance',
         }}>
-          Look up, Georgetown.
+          {cn ? 'Your Connection Night is still open.' : 'Look up, Georgetown.'}
         </div>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8, paddingTop: 12,
           borderTop: '1px solid rgba(255,255,255,0.08)',
         }}>
           <span className="cd-tick" style={{
-            width: 7, height: 7, borderRadius: 99, background: '#71C07F',
+            width: 7, height: 7, borderRadius: 99,
+            background: cn ? '#EA8CE1' : '#71C07F',
             animation: 'ligo-pulse 1.8s ease-in-out infinite', flexShrink: 0,
           }} />
           <span style={{
             fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 600, fontSize: 12,
             color: 'rgba(255,255,255,0.55)',
           }}>
-            Open tonight&apos;s sky · swipe through five cards
+            {cn ? 'Replay your three matches · picks stay saved' : "Open tonight's sky · swipe through five cards"}
           </span>
         </div>
       </button>
@@ -885,12 +891,12 @@ function HomeNormal({
         onRevealAnswerLocked={onRevealAnswerLocked}
         onRevealAnswerCleared={onRevealAnswerCleared}
       />
-      <HomeOrbit activeUserId={activeUserId} />
       <RevealTeaser
         onOpen={onOpenReveal}
         hasLockedAnswer={hasLockedAnswer}
         revealUnlocked={revealUnlocked}
       />
+      <HomeOrbit activeUserId={activeUserId} />
       <GamesHubBanner onOpen={onOpenGames} activeUserId={activeUserId} />
       <NewsStrip home={home} />
       <NearYou home={home} />

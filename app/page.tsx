@@ -15,6 +15,7 @@ import { EventsScreen } from "@/components/EventsScreen";
 import { ProfileV2Provider, ProfileV2Shell } from "@/components/profile/ProfileScreen";
 import { ProfileGateProvider } from "@/lib/profileGate";
 import { CONNECTION_NIGHT_PREVIEW_KEY } from "@/lib/revealConstants";
+import { resetConnectionNightDemo } from "@/lib/connectionDemoReset";
 
 type HomeState = "normal" | "connection" | "wrapped" | "games" | "reveal";
 
@@ -199,6 +200,34 @@ function NightPicker() {
             }}
           />
         </button>
+
+        {selection === "cn" && (
+          <button
+            type="button"
+            onClick={() => {
+              resetConnectionNightDemo();
+              window.location.reload();
+            }}
+            title="Reset Connection Night demo state (sparks, vibes, slide picks)"
+            style={{
+              height: 34,
+              padding: "0 10px",
+              borderRadius: 8,
+              border: "none",
+              cursor: "pointer",
+              background: "rgba(239,68,68,0.12)",
+              color: "rgba(252,165,165,0.95)",
+              fontFamily: FF,
+              fontSize: 9,
+              fontWeight: 700,
+              boxShadow: "0 0 0 1px rgba(239,68,68,0.28)",
+              letterSpacing: "0.04em",
+              flexShrink: 0,
+            }}
+          >
+            RST
+          </button>
+        )}
 
         {selection !== null && (
           <button

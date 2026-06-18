@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { getDayIndex } from '@/lib/gameQuestions';
 import { getRevealNight } from '@/lib/revealData';
@@ -15,6 +15,7 @@ import {
 import { MockBackend } from '@/lib/mockBackend';
 import { useConnectionNight } from '@/hooks/useConnectionNight';
 import { isConnectionNightPreview } from '@/lib/revealConstants';
+import { CN_RESET_EVENT } from '@/lib/connectionDemoReset';
 
 const FF = "'Bricolage Grotesque', sans-serif";
 const EASE = 'cubic-bezier(.2,.7,.2,1)';
@@ -384,6 +385,30 @@ export function RevealScreen({ onBack, activeUserId, playIntro = false }: Props)
     {},
   );
 
+  useEffect(() => {
+    if (!cnPreview || people.length === 0) return;
+    Object.entries(cnActions).forEach(([idx, kind]) => {
+      if (kind !== 'vibe' && kind !== 'spark' && kind !== 'pass') return;
+      const person = people[Number(idx)];
+      if (!person) return;
+      MockBackend.ensureAction(activeUserId, person.id, kind);
+    });
+  }, [cnPreview, people, cnActions, activeUserId]);
+
+  useEffect(() => {
+    const reset = () => setCnActions({});
+    window.addEventListener(CN_RESET_EVENT, reset);
+    return () => window.removeEventListener(CN_RESET_EVENT, reset);
+  }, [setCnActions]);
+
+  const cnInitialStep = useMemo(() => {
+    if (!cnPreview || people.length === 0 || playIntro) return 0;
+    for (let i = 0; i < people.length; i += 1) {
+      if (!cnActions[i]) return 2 + i;
+    }
+    return 2 + people.length;
+  }, [cnPreview, people, cnActions, playIntro]);
+
   const [introDone, setIntroDone] = useState(!shouldPlayIntro);
   const handleIntroComplete = useCallback(() => setIntroDone(true), []);
   const [shareOpen, setShareOpen] = useState(false);
@@ -477,6 +502,7 @@ export function RevealScreen({ onBack, activeUserId, playIntro = false }: Props)
         <RevealShell
           steps={steps}
           colors={shellColors}
+          initial={cnPreview && cnSteps.length ? cnInitialStep : 0}
           controllerRef={shell}
           title={cnPreview && cnSteps.length ? 'Connection Night' : 'The Reveal'}
           subtitle={cnPreview && cnSteps.length ? 'Georgetown · three matches tonight' : 'Georgetown · under the lights'}

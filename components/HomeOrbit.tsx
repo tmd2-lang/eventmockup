@@ -1,81 +1,117 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { MockBackend, ConnectionAction } from '@/lib/mockBackend';
+import { MockBackend, OrbitConnection, CONNECTIONS_UPDATE_EVENT } from '@/lib/mockBackend';
 import { USERS } from '@/lib/users';
 import { OrbitSheet } from '@/components/OrbitSheet';
-import { Icon } from '@/components/Primitives';
+import { isConnectionNightPreview } from '@/lib/revealConstants';
 
 const FF = "'Bricolage Grotesque', sans-serif";
 
+const SparkGlyph = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3c.5 4 1.5 5 5.5 5.5C13.5 9 12.5 10 12 14c-.5-4-1.5-5-5.5-5.5C10.5 8 11.5 7 12 3z" />
+    <path d="M18.5 14.5c.3 2 .8 2.5 2.5 2.8-1.7.3-2.2.8-2.5 2.7-.3-1.9-.8-2.4-2.5-2.7 1.7-.3 2.2-.8 2.5-2.8z" />
+  </svg>
+);
+
+function orbitSubtitle(connections: OrbitConnection[]) {
+  if (connections.some((c) => c.action.type === 'meetup_invite' && c.direction === 'in')) {
+    return 'You have pending invites';
+  }
+  if (connections.some((c) => c.action.type === 'spark')) {
+    return 'Sparks and vibes from tonight';
+  }
+  return 'Your connections live here';
+}
+
 export function HomeOrbit({ activeUserId }: { activeUserId: string }) {
-  const [connections, setConnections] = useState<ConnectionAction[]>([]);
+  const [connections, setConnections] = useState<OrbitConnection[]>([]);
   const [open, setOpen] = useState(false);
+  const cnMode = isConnectionNightPreview();
 
   useEffect(() => {
     function update() {
-      setConnections(MockBackend.getIncomingConnections(activeUserId));
+      setConnections(MockBackend.getOrbitConnections(activeUserId));
     }
     update();
-    window.addEventListener('ligo:global:connections:update', update);
-    return () => window.removeEventListener('ligo:global:connections:update', update);
+    window.addEventListener(CONNECTIONS_UPDATE_EVENT, update);
+    return () => window.removeEventListener(CONNECTIONS_UPDATE_EVENT, update);
   }, [activeUserId]);
 
-  if (connections.length === 0) return null;
+  if (!cnMode && connections.length === 0) return null;
 
-  // Grab the 3 most recent avatars to display
-  const recentAvatars = connections.slice(0, 3).map(c => {
-    const isSpark = c.type === 'spark';
-    const isMutual = isSpark ? MockBackend.isMutualSpark(activeUserId, c.fromId) : true;
-    const showMystery = isSpark && !isMutual;
-    
-    if (showMystery) return null; // We skip mysteries in the stacked avatars or handle them differently
-    return USERS[c.fromId]?.avatar;
+  const recentAvatars = connections.slice(0, 3).map((c) => {
+    const isSpark = c.action.type === 'spark';
+    const isMutual = isSpark ? MockBackend.isMutualSpark(activeUserId, c.otherId) : true;
+    const showMystery = isSpark && c.direction === 'in' && !isMutual;
+    if (showMystery) return null;
+    return USERS[c.otherId]?.avatar;
   }).filter(Boolean);
 
   return (
     <>
-      <div style={{ padding: '0 24px', marginBottom: 24, marginTop: 12 }}>
-        <button onClick={() => setOpen(true)} style={{
-          width: '100%', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: 24, cursor: 'pointer', textAlign: 'left',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.2)', backdropFilter: 'blur(20px)',
-          transition: 'transform 0.15s cubic-bezier(.2,.7,.2,1)',
-        }} onMouseDown={e => e.currentTarget.style.transform = 'scale(0.98)'} onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+      <div style={{ padding: '0 22px', marginBottom: 8, marginTop: 4 }}>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          style={{
+            width: '100%',
+            padding: '16px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: 'linear-gradient(160deg, rgba(7,9,12,0.96), rgba(22,19,15,0.92))',
+            border: '1px solid rgba(234,140,225,0.22)',
+            borderRadius: 20,
+            cursor: 'pointer',
+            textAlign: 'left',
+            boxShadow: '0 12px 32px -14px rgba(234,140,225,0.28)',
+          }}
+        >
           <div>
-            <div style={{ fontFamily: FF, fontWeight: 700, fontSize: 16, color: '#FFF', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{
+              fontFamily: FF, fontWeight: 700, fontSize: 15, color: '#FFF', marginBottom: 4,
+              display: 'flex', alignItems: 'center', gap: 8,
+            }}>
               Your Orbit
-              <span style={{
-                background: '#F97316', color: '#FFF', fontSize: 11, padding: '2px 8px', borderRadius: 99,
-                fontWeight: 700
-              }}>
-                {connections.length}
-              </span>
+              {connections.length > 0 && (
+                <span style={{
+                  background: '#EA8CE1', color: '#0A0907', fontSize: 11, padding: '2px 8px',
+                  borderRadius: 99, fontWeight: 700,
+                }}>
+                  {connections.length}
+                </span>
+              )}
             </div>
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>
-              {connections.some(c => c.type === 'meetup_invite') ? 'You have pending invites' : 'New connections await'}
+            <div style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.52)', fontFamily: FF, fontWeight: 600 }}>
+              {connections.length > 0 ? orbitSubtitle(connections) : 'Opens after you vibe or spark tonight'}
             </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            {recentAvatars.map((url, i) => (
-              <img key={i} src={url as string} style={{
-                width: 36, height: 36, borderRadius: 99, border: '2px solid #1A1A1A',
-                marginLeft: i > 0 ? -12 : 0, objectFit: 'cover'
-              }} alt="" />
-            ))}
-            {recentAvatars.length === 0 && (
-              <div style={{ width: 36, height: 36, borderRadius: 99, background: 'rgba(255,255,255,0.1)', border: '2px solid #1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="16" height="16" color="#EA8CE1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 3c.5 4 1.5 5 5.5 5.5C13.5 9 12.5 10 12 14c-.5-4-1.5-5-5.5-5.5C10.5 8 11.5 7 12 3z" />
-                  <path d="M18.5 14.5c.3 2 .8 2.5 2.5 2.8-1.7.3-2.2.8-2.5 2.7-.3-1.9-.8-2.4-2.5-2.7 1.7-.3 2.2-.8 2.5-2.8z" />
-                </svg>
+            {recentAvatars.length > 0 ? recentAvatars.map((url, i) => (
+              <img
+                key={i}
+                src={url as string}
+                alt=""
+                style={{
+                  width: 34, height: 34, borderRadius: 99, border: '2px solid #14110D',
+                  marginLeft: i > 0 ? -10 : 0, objectFit: 'cover',
+                }}
+              />
+            )) : (
+              <div style={{
+                width: 34, height: 34, borderRadius: 99,
+                background: 'rgba(234,140,225,0.14)', border: '1px solid rgba(234,140,225,0.28)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EA8CE1',
+              }}>
+                <SparkGlyph />
               </div>
             )}
-            <div style={{ marginLeft: 12, color: 'rgba(255,255,255,0.4)' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6"></polyline>
+            <div style={{ marginLeft: 10, color: 'rgba(255,255,255,0.38)' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
               </svg>
             </div>
           </div>
