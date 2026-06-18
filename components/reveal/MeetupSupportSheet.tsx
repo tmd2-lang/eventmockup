@@ -28,13 +28,22 @@ const TIMES = [
   { id: 'late', label: 'Late Night' },
 ];
 
-const COFFEE_VENUES = [
+type Venue = {
+  id: string;
+  name: string;
+  meta: string;
+  perk?: string;
+  perkColor?: string;
+  perkBg?: string;
+};
+
+const COFFEE_VENUES: Venue[] = [
   { id: 'mug', name: 'Midnight Mug', meta: 'On campus · Leavey Center', perk: 'LIGO PAYS THE FIRST ONE', perkColor: '#F97316', perkBg: 'rgba(249,115,22,0.12)' },
   { id: 'gray', name: 'Gray Street Coffee', meta: 'Off campus · 0.4 mi', perk: '15% OFF WITH LIGO', perkColor: '#EA8CE1', perkBg: 'rgba(234,140,225,0.12)' },
   { id: 'corp', name: 'The Corp · Uncommon Grounds', meta: 'On campus · student-run' },
 ];
 
-const SHOW_VENUES = [
+const SHOW_VENUES: Venue[] = [
   { id: 'orch', name: 'University Orchestra Matinee', meta: 'Gaston Hall · 3 PM' },
   { id: 'jazz', name: 'Georgetown Jazz Ensemble', meta: 'Sellinger Lounge · 9 PM' },
   { id: 'blues', name: 'Blues Alley Jazz', meta: '1073 Wisconsin Ave NW · 8 PM' },
