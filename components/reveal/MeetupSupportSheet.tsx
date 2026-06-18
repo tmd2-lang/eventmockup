@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Icon } from '@/components/Primitives';
 import type { ConnectionNightPerson } from '@/lib/connectionNight';
 
@@ -82,10 +82,12 @@ export function MeetupSupportSheet({
 
   // Dynamic Venues
   const venues = (hang === 'listen' || hang === 'show') ? SHOW_VENUES : COFFEE_VENUES;
-  // Make sure venue selection is valid when switching categories
-  if (!venues.find(v => v.id === venue)) {
-    setVenue(venues[0].id);
-  }
+
+  useEffect(() => {
+    if (!venues.some((v) => v.id === venue)) {
+      setVenue(venues[0]?.id ?? 'mug');
+    }
+  }, [hang, venue, venues]);
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pointerEvents: 'auto' }}>
@@ -134,10 +136,12 @@ export function MeetupSupportSheet({
           <h2 style={{ fontFamily: FF, fontWeight: 600, fontSize: 26, letterSpacing: '-0.02em', color: '#FFF', margin: '4px 0 2px' }}>
             {spark ? `Make a little spark with ${name}` : `Something low-key with ${name}`}
           </h2>
-          <p style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>We'll send {name} the invite — {spark ? 'a little spark, no pressure.' : 'friendly, no pressure.'} No DMs.</p>
+          <p style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>
+            We&apos;ll send {name} the invite — {spark ? 'a little spark, no pressure.' : 'friendly, no pressure.'} No DMs.
+          </p>
 
           {/* Hang Type - Scrollable Pills */}
-          <SheetLabel>What's the vibe</SheetLabel>
+          <SheetLabel>What&apos;s the vibe</SheetLabel>
           <div style={{ 
             display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 12, 
             scrollbarWidth: 'none', msOverflowStyle: 'none', margin: '0 -24px', padding: '0 24px 8px' 
@@ -230,14 +234,14 @@ export function MeetupSupportSheet({
                     <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{v.meta}</div>
                   </div>
                   
-                  {'perk' in v && v.perk && (
+                  {v.perk ? (
                     <span style={{
                       background: v.perkBg, color: v.perkColor,
                       flexShrink: 0, fontFamily: FF, fontSize: 9.5, fontWeight: 700,
                       letterSpacing: '0.04em', textTransform: 'uppercase', padding: '6px 10px', borderRadius: 99, maxWidth: 100, lineHeight: 1.2, textAlign: 'center',
                       border: `1px solid ${v.perkColor}30`,
                     }}>{v.perk}</span>
-                  )}
+                  ) : null}
                 </button>
               );
             })}
