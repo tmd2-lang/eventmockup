@@ -1,4 +1,4 @@
-export type ConnectionActionType = 'vibe' | 'spark' | 'pass' | 'meetup_invite';
+export type ConnectionActionType = 'vibe' | 'spark' | 'pass' | 'meetup_invite' | 'meetup_confirmed';
 
 export interface ConnectionAction {
   id: string;

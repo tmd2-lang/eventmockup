@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { MockBackend, ConnectionAction } from '@/lib/mockBackend';
 import { USERS } from '@/lib/users';
-import { MeetupSupportSheet } from '@/components/reveal/MeetupSupportSheet';
+import { MeetupSupportSheet, MeetupPayload } from '@/components/reveal/MeetupSupportSheet';
 
 const FF = "'Bricolage Grotesque', sans-serif";
 
@@ -40,17 +40,19 @@ export function HomeOrbit({ activeUserId }: { activeUserId: string }) {
 
           const isSpark = c.type === 'spark';
           const isMeetup = c.type === 'meetup_invite';
+          const isConfirmed = c.type === 'meetup_confirmed';
           const isMutual = isSpark ? MockBackend.isMutualSpark(activeUserId, c.fromId) : true;
           const showMystery = isSpark && !isMutual;
 
-          const ringColor = isMeetup ? '#22C55E' : (isSpark ? '#EA8CE1' : '#F97316');
+          const ringColor = isConfirmed ? '#FACC15' : (isMeetup ? '#22C55E' : (isSpark ? '#EA8CE1' : '#F97316'));
           
           return (
             <div key={c.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0, width: 64 }}>
               <button 
                 onClick={() => setSelectedMatch({
                    id: c.fromId, name: showMystery ? 'Someone' : user.name, 
-                   avatar: user.avatar, isMystery: showMystery, mode: isSpark ? 'spark' : 'vibe'
+                   avatar: user.avatar, isMystery: showMystery, mode: isSpark ? 'spark' : c.type,
+                   payload: c.payload
                 })}
                 style={{
                   width: 68, height: 68, borderRadius: 99, padding: 0, cursor: 'pointer',
@@ -61,9 +63,9 @@ export function HomeOrbit({ activeUserId }: { activeUserId: string }) {
                 }}
               >
                 {showMystery && <span style={{ fontSize: 24, filter: 'drop-shadow(0 0 10px rgba(234,140,225,0.8))' }}>✨</span>}
-                {isMeetup && !showMystery && (
-                  <div style={{ position: 'absolute', bottom: -2, right: -2, background: '#22C55E', width: 22, height: 22, borderRadius: 99, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #0A0907' }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                {(isMeetup || isConfirmed) && !showMystery && (
+                  <div style={{ position: 'absolute', bottom: -2, right: -2, background: isConfirmed ? '#FACC15' : '#22C55E', width: 22, height: 22, borderRadius: 99, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #0A0907' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={isConfirmed ? '#000' : '#fff'} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                   </div>
                 )}
               </button>
@@ -79,11 +81,22 @@ export function HomeOrbit({ activeUserId }: { activeUserId: string }) {
         <MeetupSupportSheet 
           match={selectedMatch}
           mode={selectedMatch.mode}
+          incomingPayload={selectedMatch.mode === 'meetup_invite' ? selectedMatch.payload : undefined}
           onClose={() => setSelectedMatch(null)}
-          onSend={() => {
-            MockBackend.recordAction(activeUserId, selectedMatch.id, 'meetup_invite');
+          onSend={(payload) => {
+            if (selectedMatch.mode === 'meetup_invite') {
+              const statusPayload = payload as { status: 'confirmed' | 'declined' };
+              if (statusPayload.status === 'confirmed') {
+                MockBackend.recordAction(activeUserId, selectedMatch.id, 'meetup_confirmed');
+                setToastMsg(`Meetup confirmed with ${selectedMatch.name}!`);
+              } else {
+                setToastMsg(`You declined the invite.`);
+              }
+            } else {
+              MockBackend.recordAction(activeUserId, selectedMatch.id, 'meetup_invite', payload);
+              setToastMsg(`Invite sent to ${selectedMatch.name}.`);
+            }
             setSelectedMatch(null);
-            setToastMsg(`Invite sent to ${selectedMatch.name}.`);
             setTimeout(() => setToastMsg(null), 3000);
           }}
         />
@@ -92,8 +105,8 @@ export function HomeOrbit({ activeUserId }: { activeUserId: string }) {
       {toastMsg && (
         <div style={{
           position: 'fixed', bottom: 40, left: '50%', transform: 'translateX(-50%)', zIndex: 200,
-          background: '#22C55E', color: '#fff', padding: '12px 20px', borderRadius: 99,
-          fontFamily: FF, fontWeight: 600, fontSize: 14, boxShadow: '0 8px 24px rgba(34,197,94,0.4)',
+          background: toastMsg.includes('confirmed') ? '#FACC15' : '#22C55E', color: toastMsg.includes('confirmed') ? '#000' : '#fff', padding: '12px 20px', borderRadius: 99,
+          fontFamily: FF, fontWeight: 600, fontSize: 14, boxShadow: toastMsg.includes('confirmed') ? '0 8px 24px rgba(250,204,21,0.4)' : '0 8px 24px rgba(34,197,94,0.4)',
           animation: 'fadeIn 0.2s ease', pointerEvents: 'none', whiteSpace: 'nowrap'
         }}>
           {toastMsg}

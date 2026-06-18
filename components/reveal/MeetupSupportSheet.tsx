@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Icon } from '@/components/Primitives';
 import type { ConnectionNightPerson } from '@/lib/connectionNight';
 
@@ -28,22 +28,13 @@ const TIMES = [
   { id: 'late', label: 'Late Night' },
 ];
 
-type Venue = {
-  id: string;
-  name: string;
-  meta: string;
-  perk?: string;
-  perkColor?: string;
-  perkBg?: string;
-};
-
-const COFFEE_VENUES: Venue[] = [
+const COFFEE_VENUES = [
   { id: 'mug', name: 'Midnight Mug', meta: 'On campus · Leavey Center', perk: 'LIGO PAYS THE FIRST ONE', perkColor: '#F97316', perkBg: 'rgba(249,115,22,0.12)' },
   { id: 'gray', name: 'Gray Street Coffee', meta: 'Off campus · 0.4 mi', perk: '15% OFF WITH LIGO', perkColor: '#EA8CE1', perkBg: 'rgba(234,140,225,0.12)' },
   { id: 'corp', name: 'The Corp · Uncommon Grounds', meta: 'On campus · student-run' },
 ];
 
-const SHOW_VENUES: Venue[] = [
+const SHOW_VENUES = [
   { id: 'orch', name: 'University Orchestra Matinee', meta: 'Gaston Hall · 3 PM' },
   { id: 'jazz', name: 'Georgetown Jazz Ensemble', meta: 'Sellinger Lounge · 9 PM' },
   { id: 'blues', name: 'Blues Alley Jazz', meta: '1073 Wisconsin Ave NW · 8 PM' },
@@ -57,16 +48,20 @@ function SheetLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+export type MeetupPayload = { hang: string; day: string; time: string; venue: string; };
+
 export function MeetupSupportSheet({
   match,
   mode = 'vibe',
   onClose,
   onSend,
+  incomingPayload,
 }: {
-  match: ConnectionNightPerson | { name: string };
-  mode?: 'vibe' | 'spark';
+  match: ConnectionNightPerson | { name: string; avatar?: string };
+  mode?: 'vibe' | 'spark' | 'meetup_invite' | 'meetup_confirmed';
   onClose: () => void;
-  onSend: () => void;
+  onSend: (payload?: MeetupPayload | { status: 'confirmed' | 'declined' }) => void;
+  incomingPayload?: MeetupPayload;
 }) {
   const [hang, setHang] = useState('coffee');
   const [day, setDay] = useState('today');
@@ -82,12 +77,100 @@ export function MeetupSupportSheet({
 
   // Dynamic Venues
   const venues = (hang === 'listen' || hang === 'show') ? SHOW_VENUES : COFFEE_VENUES;
+  if (!venues.find(v => v.id === venue)) {
+    setVenue(venues[0].id);
+  }
 
-  useEffect(() => {
-    if (!venues.some((v) => v.id === venue)) {
-      setVenue(venues[0]?.id ?? 'mug');
-    }
-  }, [hang, venue, venues]);
+  // --- RECEIVED INVITE UI ---
+  if (incomingPayload) {
+    const h = HANGS.find(x => x.id === incomingPayload.hang);
+    const d = DAYS.find(x => x.id === incomingPayload.day);
+    const t = TIMES.find(x => x.id === incomingPayload.time);
+    const vList = (incomingPayload.hang === 'listen' || incomingPayload.hang === 'show') ? SHOW_VENUES : COFFEE_VENUES;
+    const v = vList.find(x => x.id === incomingPayload.venue);
+
+    return (
+      <div style={{ position: 'absolute', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pointerEvents: 'auto' }}>
+        <div onClick={onClose} style={{
+          position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)',
+          animation: 'fadeIn 220ms ease both',
+        }} />
+        <div style={{
+          position: 'relative', 
+          background: 'rgba(255,255,255,0.03)', 
+          borderRadius: '32px 32px 0 0',
+          backdropFilter: 'blur(50px) saturate(200%)', 
+          WebkitBackdropFilter: 'blur(50px) saturate(200%)',
+          borderTop: '1px solid rgba(255,255,255,0.15)',
+          borderLeft: '1px solid rgba(255,255,255,0.05)',
+          borderRight: '1px solid rgba(255,255,255,0.05)',
+          boxShadow: '0 -20px 50px rgba(0,0,0,0.3)', 
+          padding: '24px 24px 40px',
+          animation: 'sheetUp 360ms cubic-bezier(.2,.7,.2,1) both',
+        }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+            {'avatar' in match && match.avatar && (
+              <img src={match.avatar} style={{ width: 44, height: 44, borderRadius: 99, border: '2px solid rgba(255,255,255,0.2)', objectFit: 'cover' }} alt="" />
+            )}
+            <div>
+              <div style={{ fontFamily: FF, fontWeight: 700, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#22C55E' }}>Meetup Invite</div>
+              <div style={{ fontFamily: FF, fontWeight: 600, fontSize: 18, color: '#FFF', letterSpacing: '-0.01em' }}>{name} invited you to hang</div>
+            </div>
+          </div>
+
+          {/* Plan Card */}
+          <div style={{ 
+            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', 
+            borderRadius: 20, padding: 20, marginBottom: 32 
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF' }}>
+                <Icon.Calendar width="18" height="18" />
+              </div>
+              <div>
+                <div style={{ fontFamily: FF, fontWeight: 600, fontSize: 15, color: '#FFF' }}>{d?.label} {t?.label}</div>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>Time to be determined</div>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF' }}>
+                <Icon.Music width="18" height="18" />
+              </div>
+              <div>
+                <div style={{ fontFamily: FF, fontWeight: 600, fontSize: 15, color: '#FFF' }}>{h?.label} at {v?.name}</div>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>{v && 'meta' in v ? v.meta : 'Location set'}</div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <button onClick={() => onSend({ status: 'confirmed' })} style={{
+              width: '100%', height: 56, border: 0, borderRadius: 20, cursor: 'pointer',
+              background: '#22C55E', color: '#fff',
+              fontFamily: FF, fontWeight: 600, fontSize: 16,
+              boxShadow: '0 8px 24px rgba(34,197,94,0.4)',
+              transition: 'transform 0.15s cubic-bezier(.2,.7,.2,1)',
+            }} onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'} onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+              Confirm Meetup
+            </button>
+            <button onClick={() => onSend({ status: 'declined' })} style={{
+              width: '100%', height: 56, border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, cursor: 'pointer',
+              background: 'transparent', color: 'rgba(255,255,255,0.6)',
+              fontFamily: FF, fontWeight: 600, fontSize: 15,
+            }}>
+              I can&apos;t make it
+            </button>
+          </div>
+        </div>
+        <style>{`
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        `}</style>
+      </div>
+    );
+  }
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pointerEvents: 'auto' }}>
@@ -136,9 +219,7 @@ export function MeetupSupportSheet({
           <h2 style={{ fontFamily: FF, fontWeight: 600, fontSize: 26, letterSpacing: '-0.02em', color: '#FFF', margin: '4px 0 2px' }}>
             {spark ? `Make a little spark with ${name}` : `Something low-key with ${name}`}
           </h2>
-          <p style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>
-            We&apos;ll send {name} the invite — {spark ? 'a little spark, no pressure.' : 'friendly, no pressure.'} No DMs.
-          </p>
+          <p style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>We&apos;ll send {name} the invite — {spark ? 'a little spark, no pressure.' : 'friendly, no pressure.'} No DMs.</p>
 
           {/* Hang Type - Scrollable Pills */}
           <SheetLabel>What&apos;s the vibe</SheetLabel>
@@ -234,14 +315,14 @@ export function MeetupSupportSheet({
                     <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{v.meta}</div>
                   </div>
                   
-                  {v.perk ? (
+                  {'perk' in v && v.perk && (
                     <span style={{
                       background: v.perkBg, color: v.perkColor,
                       flexShrink: 0, fontFamily: FF, fontSize: 9.5, fontWeight: 700,
                       letterSpacing: '0.04em', textTransform: 'uppercase', padding: '6px 10px', borderRadius: 99, maxWidth: 100, lineHeight: 1.2, textAlign: 'center',
                       border: `1px solid ${v.perkColor}30`,
                     }}>{v.perk}</span>
-                  ) : null}
+                  )}
                 </button>
               );
             })}
@@ -255,7 +336,7 @@ export function MeetupSupportSheet({
           borderTop: '1px solid rgba(255,255,255,0.05)',
           background: 'rgba(0,0,0,0.2)' 
         }}>
-          <button onClick={onSend} style={{
+          <button onClick={() => onSend({ hang, day, time, venue })} style={{
             width: '100%', height: 58, border: 0, borderRadius: 20, cursor: 'pointer',
             background: A, color: '#fff',
             fontFamily: FF, fontWeight: 600, fontSize: 16, letterSpacing: '-0.005em',

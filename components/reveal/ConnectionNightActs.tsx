@@ -807,8 +807,8 @@ export function ActConnectionDone({
           match={meetupPerson} 
           mode="vibe" 
           onClose={() => setMeetupPerson(null)} 
-          onSend={() => {
-            MockBackend.recordAction(activeUserId, meetupPerson.id, 'meetup_invite');
+          onSend={(payload) => {
+            MockBackend.recordAction(activeUserId, meetupPerson.id, 'meetup_invite', payload);
             setMeetupPerson(null);
             setToastMsg(`Invite sent to ${meetupPerson.name}.`);
             setTimeout(() => setToastMsg(null), 3000);
