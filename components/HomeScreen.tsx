@@ -36,6 +36,7 @@ type HomeScreenProps = {
   state: HomeState;
   setState: React.Dispatch<React.SetStateAction<HomeState>>;
   onNav: (id: NavId) => void;
+  isCN?: boolean;
 };
 
 type HomeContentState = ReturnType<typeof useHomeContent>;
@@ -1235,12 +1236,14 @@ function HomeProfileSession({
   state,
   setState,
   onNav,
+  isCN,
 }: {
   activeUserId: string;
   setActiveUserId: (id: string) => void;
   state: HomeState;
   setState: React.Dispatch<React.SetStateAction<HomeState>>;
   onNav: (id: NavId) => void;
+  isCN?: boolean;
 }) {
   const [answered] = usePersistentState(`ligo:daily:${activeUserId}:answered`, false);
   const [answer] = usePersistentState(`ligo:daily:${activeUserId}:answer`, "");
@@ -1316,7 +1319,7 @@ function HomeProfileSession({
   if (state === "reveal") {
     return (
       <>
-        <RevealScreen
+        <RevealScreen isCN={isCN}
           key={`reveal-${activeUserId}-${revealPlayIntro ? "intro" : "replay"}`}
           activeUserId={activeUserId}
           playIntro={revealPlayIntro}
@@ -1357,7 +1360,7 @@ function HomeProfileSession({
   );
 }
 
-export function HomeScreen({ state, setState, onNav }: HomeScreenProps) {
+export function HomeScreen({ state, setState, onNav, isCN }: HomeScreenProps) {
   const [activeUserId, setActiveUserId] = usePersistentState("ligo:active_user", REVEAL_DEMO_PROFILE_ID);
 
   useEffect(() => {
@@ -1372,6 +1375,7 @@ export function HomeScreen({ state, setState, onNav }: HomeScreenProps) {
       state={state}
       setState={setState}
       onNav={onNav}
+      isCN={isCN}
     />
   );
 }

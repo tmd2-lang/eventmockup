@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import { ACTIVE_REVEAL_NIGHT } from '@/lib/revealData';
+import { ACTIVE_REVEAL_NIGHT, CN_PROFILES } from '@/lib/revealData';
 import { usePersistentState } from '@/lib/usePersistentState';
 import { RevealShell, REVEAL_COLORS, roman, type ShellController } from '@/components/RevealShell';
 import { RevealOpeningIntro } from '@/components/reveal/RevealOpeningIntro';
@@ -312,6 +312,51 @@ function ActTomorrow({ night, anim }: { night: any; anim: string }) {
   );
 }
 
+// ── Act CN: Person Slide ───────────────────────────────────────────────
+function ActCNPerson({ profile, anim }: { profile: any; anim: string }) {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, zIndex: 2,
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: 'center', textAlign: 'center',
+      padding: '100px 30px 140px', animation: anim,
+    }}>
+      <div style={{
+        width: 140, height: 140, borderRadius: 999, background: profile.grad,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontFamily: FF, fontWeight: 700, fontSize: 56, color: '#FFF',
+        boxShadow: '0 8px 30px rgba(0,0,0,0.4)', marginBottom: 24,
+      }}>
+        {profile.initials}
+      </div>
+      <h2 style={{
+        fontFamily: FF, fontWeight: 600, fontSize: 32, color: '#FFF',
+        margin: '0 0 8px', textShadow: '0 2px 10px rgba(0,0,0,0.5)',
+      }}>
+        {profile.name}
+      </h2>
+      <div style={{
+        fontFamily: FF, fontSize: 14, color: 'rgba(255,255,255,0.6)',
+        marginBottom: 24, textTransform: 'uppercase', letterSpacing: '0.05em'
+      }}>
+        {profile.major} · {profile.school} {profile.year}
+      </div>
+      <div style={{
+        padding: '16px 24px', background: 'rgba(255,255,255,0.06)',
+        borderRadius: 20, border: '1px solid rgba(255,255,255,0.1)',
+        backdropFilter: 'blur(10px)',
+      }}>
+        <div style={{ fontFamily: FF, fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
+          Their Answer
+        </div>
+        <div style={{ fontFamily: FF, fontWeight: 600, fontSize: 18, color: '#FFF' }}>
+          {profile.answer}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Share sheet ───────────────────────────────────────────────────────
 function ShareSheet({ act, night, onClose }: { act: number; night: any; onClose: () => void }) {
   const CARDS = [
@@ -360,9 +405,10 @@ type Props = {
   activeUserId: string;
   /** Marcus auto-open: play cinematic intro before Act I. Replay skips this. */
   playIntro?: boolean;
+  isCN?: boolean;
 };
 
-export function RevealScreen({ onBack, activeUserId, playIntro = false }: Props) {
+export function RevealScreen({ onBack, activeUserId, playIntro = false, isCN = false }: Props) {
   const night = ACTIVE_REVEAL_NIGHT;
   const dayIndex = 0;
   const [answer] = usePersistentState(`ligo:daily:${activeUserId}:answer`, '');
@@ -373,13 +419,24 @@ export function RevealScreen({ onBack, activeUserId, playIntro = false }: Props)
   const [shareAct, setShareAct] = useState(0);
   const shell = useRef<ShellController | null>(null);
 
-  const steps = [
+  const baseSteps = [
     ({ anim }: { anim: string }) => <ActLookUp night={night} dayIndex={dayIndex} anim={anim} />,
     ({ anim }: { anim: string }) => <ActTheAnswer night={night} anim={anim} />,
+  ];
+
+  const cnSteps = isCN ? CN_PROFILES.map((profile) => {
+    const Step = ({ anim }: { anim: string }) => <ActCNPerson profile={profile} anim={anim} />;
+    Step.displayName = `ActCNPerson_${profile.id}`;
+    return Step;
+  }) : [];
+
+  const closingSteps = [
     ({ anim }: { anim: string }) => <ActYourLight night={night} userAnswer={answer} anim={anim} />,
     ({ anim }: { anim: string }) => <ActSkies night={night} anim={anim} />,
     ({ anim }: { anim: string }) => <ActTomorrow night={night} anim={anim} />,
   ];
+
+  const steps = [...baseSteps, ...cnSteps, ...closingSteps];
 
   return (
     <div style={{ position: 'absolute', inset: 0 }}>

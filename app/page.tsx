@@ -14,6 +14,7 @@ type HomeState = "normal" | "reveal";
 export default function Home() {
   const [nav, setNav] = useState<NavId>("home");
   const [homeState, setHomeState] = useState<HomeState>("normal");
+  const [cnMode, setCnMode] = useState(false);
 
   const onNav = (id: NavId) => {
     if (id === "home") {
@@ -67,6 +68,22 @@ export default function Home() {
           }}
         />
         v2 · music-first · college
+        <button
+          onClick={() => setCnMode(!cnMode)}
+          style={{
+            marginLeft: 16,
+            padding: "4px 8px",
+            borderRadius: 6,
+            background: cnMode ? "rgba(249,115,22,0.15)" : "rgba(255,255,255,0.05)",
+            color: cnMode ? "#F97316" : "rgba(255,255,255,0.4)",
+            border: cnMode ? "1px solid rgba(249,115,22,0.3)" : "1px solid rgba(255,255,255,0.1)",
+            fontSize: 11,
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          CN Mode: {cnMode ? "ON" : "OFF"}
+        </button>
       </div>
 
       <IOSDevice width={402} height={874} dark={dark}>
@@ -97,7 +114,7 @@ export default function Home() {
               <BottomNav active="profile" onChange={onNav} />
             </>
           ) : (
-            <HomeScreen state={homeState} setState={setHomeState} onNav={onNav} />
+            <HomeScreen state={homeState} setState={setHomeState} onNav={onNav} isCN={cnMode} />
           )}
         </div>
       </IOSDevice>

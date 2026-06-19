@@ -32,3 +32,47 @@ export const ACTIVE_REVEAL_NIGHT: RevealNight = {
   ],
   tomorrowTeaser: 'Tomorrow: The most iconic chorus of the last 5 years?',
 };
+
+export type CNProfile = {
+  id: string;
+  name: string;
+  initials: string;
+  grad: string; // Background gradient or color for initial circle
+  major: string;
+  school: string;
+  year: string;
+  answer: string;
+};
+
+export const CN_PROFILES: CNProfile[] = [
+  {
+    id: "cole",
+    name: "Cole",
+    initials: "C",
+    grad: "linear-gradient(135deg, #11A3A3, #096D6D)",
+    major: "Computer Science",
+    school: "Georgetown",
+    year: "'25",
+    answer: "FE!N",
+  },
+  {
+    id: "maddie",
+    name: "Maddie",
+    initials: "M",
+    grad: "linear-gradient(135deg, #D4122C, #8C0A1C)",
+    major: "Economics",
+    school: "Georgetown",
+    year: "'26",
+    answer: "Good 4 U",
+  },
+  {
+    id: "marcus",
+    name: "Marcus",
+    initials: "M",
+    grad: "linear-gradient(135deg, #FF6B00, #B34B00)",
+    major: "Government",
+    school: "Georgetown",
+    year: "'25",
+    answer: "Not Like Us",
+  }
+];
