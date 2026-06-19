@@ -857,7 +857,11 @@ function ProfileTabV2() {
             boxShadow: '0 4px 20px rgba(234,140,225,0.1)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-              <span style={{ color: '#D946C2' }}><Icon.Spark width={14} height={14} /></span>
+              <span style={{ color: '#D946C2' }}>
+                <svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" />
+                </svg>
+              </span>
               <span style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#D946C2' }}>Why you matched</span>
             </div>
             <p style={{ fontFamily: BODY, fontSize: 14, color: 'rgba(20,17,13,0.85)', lineHeight: 1.5, margin: 0, textWrap: 'pretty' }}>
