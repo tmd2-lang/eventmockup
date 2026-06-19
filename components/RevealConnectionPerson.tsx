@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Icon } from '@/components/Primitives';
 import { ProfileV2Provider, ProfileV2Shell } from '@/components/profile/ProfileScreen';
 
@@ -293,12 +294,13 @@ export function RevealConnectionPerson({
         </button>
       </div>
 
-      {expanded && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: '#FAFAF8', animation: 'sheetUp 300ms cubic-bezier(0.2, 0.7, 0.2, 1)' }}>
+      {expanded && typeof document !== 'undefined' && createPortal(
+        <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: '#FAFAF8', animation: 'sheetUp 300ms cubic-bezier(0.2, 0.7, 0.2, 1)' }}>
           <ProfileV2Provider overrideUserId={p.id} matchReason={p.matchReason} onClose={() => setExpanded(false)}>
             <ProfileV2Shell />
           </ProfileV2Provider>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
