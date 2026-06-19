@@ -24,6 +24,7 @@ import { USERS, type UserProfile } from "@/lib/users";
 import { useDailyReveal } from "@/hooks/useDailyReveal";
 import { useHomeContent } from "@/hooks/useHomeContent";
 import { RevealScreen } from "@/components/RevealScreen";
+import { ChatScreen } from "@/components/ChatScreen";
 import {
   DEMO_QUESTION,
   REVEAL_COUNTDOWN_SECONDS,
@@ -974,6 +975,45 @@ const TAG_STYLE: Record<"green" | "orange", { background: string; color: string 
   orange: { background: "rgba(249,115,22,0.12)", color: "#C2410C" },
 };
 
+function ActiveMatches({ onOpenChat }: { onOpenChat: () => void }) {
+  const alessia = USERS['alessia'];
+  if (!alessia) return null;
+  
+  return (
+    <div style={{ padding: "0 22px 24px" }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 }}>
+        <h2 style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 600, fontSize: 18, letterSpacing: "-0.015em", color: "#14110D", margin: 0 }}>
+          Your Matches
+        </h2>
+      </div>
+      <div 
+        onClick={onOpenChat}
+        style={{ 
+          background: "#fff", borderRadius: 20, padding: 16, 
+          border: "1px solid rgba(20,17,13,0.05)", boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
+          display: "flex", alignItems: "center", gap: 14, cursor: "pointer"
+        }}
+      >
+        <div style={{ position: 'relative', flexShrink: 0 }}>
+          <div style={{ width: 56, height: 56, borderRadius: 99, backgroundImage: `url(${alessia.avatar})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+          <div style={{ position: 'absolute', bottom: 0, right: -4, width: 20, height: 20, borderRadius: 99, background: '#EA8CE1', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+             <span style={{ fontSize: 10, lineHeight: 1 }}>✨</span>
+          </div>
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 700, fontSize: 16, color: '#14110D' }}>{alessia.name}</div>
+          <div style={{ fontSize: 13, color: 'rgba(20,17,13,0.5)', marginTop: 2, fontWeight: 500 }}>
+            <span style={{ color: '#EA8CE1', fontWeight: 600 }}>Mutual Spark</span> · 6d left
+          </div>
+        </div>
+        <div style={{ background: 'rgba(234, 140, 225, 0.1)', color: '#EA8CE1', padding: '6px 12px', borderRadius: 99, fontSize: 12, fontWeight: 600, fontFamily: "Bricolage Grotesque, sans-serif", flexShrink: 0 }}>
+          Message
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function NearYou({ home }: { home: HomeContentState }) {
   const { loading, error, shows } = home;
   return (
@@ -1204,6 +1244,7 @@ function HomeNormal({
   revealUnlocked,
   onRevealAnswerLocked,
   onRevealAnswerCleared,
+  onOpenChat,
 }: {
   onOpenReveal: () => void;
   home: HomeContentState;
@@ -1213,6 +1254,7 @@ function HomeNormal({
   revealUnlocked: boolean;
   onRevealAnswerLocked: () => void;
   onRevealAnswerCleared: () => void;
+  onOpenChat: () => void;
 }) {
   return (
     <div style={{ paddingBottom: 124 }}>
@@ -1224,6 +1266,7 @@ function HomeNormal({
         onRevealAnswerCleared={onRevealAnswerCleared}
       />
       <RevealTeaser onOpen={onOpenReveal} hasLockedAnswer={hasLockedAnswer} revealUnlocked={revealUnlocked} />
+      <ActiveMatches onOpenChat={onOpenChat} />
       <NewsStrip home={home} />
       <NearYou home={home} />
     </div>
@@ -1254,6 +1297,7 @@ function HomeProfileSession({
   const activeUser = USERS[activeUserId] ?? USERS.jordan;
   const home = useHomeContent(activeUserId);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
@@ -1335,26 +1379,28 @@ function HomeProfileSession({
 
   return (
     <>
-      <div ref={scrollRef} className="no-scrollbar" style={{ position: "absolute", inset: 0, overflowY: "auto", overflowX: "hidden" }}>
+      {showChat && <ChatScreen userId="alessia" onClose={() => setShowChat(false)} />}
+      <div ref={scrollRef} className="no-scrollbar" style={{ position: "absolute", inset: 0, overflowY: "auto", overflowX: "hidden", pointerEvents: showChat ? 'none' : 'auto', opacity: showChat ? 0 : 1 }}>
         <TopBar activeUser={activeUser} activeUserId={activeUserId} setActiveUserId={setActiveUserId} />
-        <div key={`${state}-${activeUserId}`} className="phase-fade">
-          <HomeNormal
-            key={activeUserId}
-            onOpenReveal={() => {
-              if (!hasLockedAnswer) return;
-              setRevealPlayIntro(false);
-              setState("reveal");
-            }}
-            home={home}
-            activeUserId={activeUserId}
-            hasLockedAnswer={hasLockedAnswer}
-            revealCountdown={revealCountdown}
-            revealUnlocked={revealUnlocked}
-            onRevealAnswerLocked={handleRevealAnswerLocked}
-            onRevealAnswerCleared={handleRevealAnswerCleared}
-          />
+          <div key={`${state}-${activeUserId}`} className="phase-fade">
+            <HomeNormal
+              key={activeUserId}
+              onOpenReveal={() => {
+                if (!hasLockedAnswer) return;
+                setRevealPlayIntro(false);
+                setState("reveal");
+              }}
+              home={home}
+              activeUserId={activeUserId}
+              hasLockedAnswer={hasLockedAnswer}
+              revealCountdown={revealCountdown}
+              revealUnlocked={revealUnlocked}
+              onRevealAnswerLocked={handleRevealAnswerLocked}
+              onRevealAnswerCleared={handleRevealAnswerCleared}
+              onOpenChat={() => setShowChat(true)}
+            />
+          </div>
         </div>
-      </div>
       <BottomNav active="home" onChange={onNav} />
     </>
   );
