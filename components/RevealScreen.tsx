@@ -7,6 +7,7 @@ import { RevealShell, REVEAL_COLORS, roman, type ShellController } from '@/compo
 import { RevealOpeningIntro } from '@/components/reveal/RevealOpeningIntro';
 import { ActConnectionIntro, ActConnectionSealed } from './RevealConnectionIntro';
 import { RevealConnectionPerson } from './RevealConnectionPerson';
+import { ActConnectionDone } from './RevealConnectionDone';
 
 const FF = "'Bricolage Grotesque', sans-serif";
 const EASE = 'cubic-bezier(.2,.7,.2,1)';
@@ -377,6 +378,7 @@ export function RevealScreen({ onBack, activeUserId, playIntro = false, isCN = f
   const [shareOpen, setShareOpen] = useState(false);
   const [shareAct, setShareAct] = useState(0);
   const [vibeToast, setVibeToast] = useState<string | null>(null);
+  const [cnActions, setCnActions] = useState<Record<number, string>>({});
   const shell = useRef<ShellController | null>(null);
 
   const handleVibe = (name: string) => {
@@ -415,6 +417,7 @@ export function RevealScreen({ onBack, activeUserId, playIntro = false, isCN = f
           song={{ name: profile.answer, artist: night.topArtist, art: night.topArt }}
           anim={anim} 
           onAct={(kind) => {
+            setCnActions(prev => ({ ...prev, [i]: kind }));
             if (kind === 'vibe' || kind === 'spark') {
               handleVibe(profile.name);
             } else {
@@ -426,7 +429,11 @@ export function RevealScreen({ onBack, activeUserId, playIntro = false, isCN = f
       Step.displayName = `ActCNPerson_${profile.id}`;
       return Step;
     }),
-    ({ anim }: { anim: string }) => <ActTomorrow night={night} anim={anim} />,
+    ({ anim }: { anim: string }) => (
+      <div onClick={onBack} style={{ position: 'absolute', inset: 0, zIndex: 10 }}>
+        <ActConnectionDone people={CN_PROFILES} actions={cnActions} anim={anim} night={night} />
+      </div>
+    ),
   ];
 
   const steps = isCN ? cnSequence : standardSteps;
