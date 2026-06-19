@@ -13,8 +13,19 @@ export function ChatScreen({
 }) {
   const user = USERS[userId];
   const [msg, setMsg] = useState("");
+  const [history, setHistory] = useState<{ id: number; text: string; time: string }[]>([]);
 
   if (!user) return null;
+
+  const handleSend = () => {
+    if (msg.trim().length === 0) return;
+    
+    // Format current time like "8:05 AM"
+    const time = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    
+    setHistory([...history, { id: Date.now(), text: msg, time }]);
+    setMsg("");
+  };
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 9999, background: '#14110D', display: 'flex', flexDirection: 'column' }}>
@@ -55,6 +66,18 @@ export function ChatScreen({
           TODAY 8:02 AM
         </div>
 
+        {/* Render Sent Messages */}
+        {history.map((m) => (
+          <div key={m.id} style={{ alignSelf: 'flex-end', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginBottom: 12, maxWidth: '80%' }}>
+            <div style={{ background: '#F97316', color: '#fff', padding: '10px 14px', borderRadius: 20, borderBottomRightRadius: 4, fontSize: 15, lineHeight: 1.4 }}>
+              {m.text}
+            </div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 4, fontWeight: 500 }}>
+              {m.time}
+            </div>
+          </div>
+        ))}
+
       </div>
 
       {/* Input Area */}
@@ -65,9 +88,15 @@ export function ChatScreen({
             placeholder="Message..." 
             value={msg}
             onChange={(e) => setMsg(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSend();
+            }}
             style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', fontSize: 15, outline: 'none' }} 
           />
-          <button style={{ width: 36, height: 36, borderRadius: 99, background: msg.trim().length > 0 ? '#F97316' : 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', cursor: 'pointer' }}>
+          <button 
+            onClick={handleSend}
+            style={{ width: 36, height: 36, borderRadius: 99, background: msg.trim().length > 0 ? '#F97316' : 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', cursor: 'pointer' }}
+          >
             <Icon.ArrowUp width={18} height={18} strokeWidth={2.5} />
           </button>
         </div>
