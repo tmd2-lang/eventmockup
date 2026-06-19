@@ -295,12 +295,12 @@ export function RevealConnectionPerson({
       </div>
 
       {expanded && typeof document !== 'undefined' && createPortal(
-        <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: '#FAFAF8', animation: 'sheetUp 300ms cubic-bezier(0.2, 0.7, 0.2, 1)' }}>
+        <div style={{ position: 'absolute', inset: 0, zIndex: 99999, background: '#FAFAF8', animation: 'sheetUp 300ms cubic-bezier(0.2, 0.7, 0.2, 1)' }}>
           <ProfileV2Provider overrideUserId={p.id} matchReason={p.matchReason} onClose={() => setExpanded(false)}>
             <ProfileV2Shell />
           </ProfileV2Provider>
         </div>,
-        document.body
+        document.querySelector('.ios-device') || document.body
       )}
     </div>
   );
