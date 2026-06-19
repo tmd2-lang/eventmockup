@@ -3,14 +3,12 @@
 import { useEffect, useState } from "react";
 import type { HomeNewsRow, HomeShowRow } from "@/lib/supabase/types";
 import { getFidelityNews, getFidelityShows } from "@/lib/homeFidelity";
-import { parseWrappedContent } from "@/lib/wrappedUtils";
 
 type HomeContentState = {
   loading: boolean;
   error: string | null;
   news: HomeNewsRow[];
   shows: HomeShowRow[];
-  wrapped: Record<string, unknown> | null;
 };
 
 const EMPTY: HomeContentState = {
@@ -18,7 +16,6 @@ const EMPTY: HomeContentState = {
   error: null,
   news: [],
   shows: [],
-  wrapped: null,
 };
 
 export function useHomeContent(profileId: string): HomeContentState {
@@ -28,7 +25,7 @@ export function useHomeContent(profileId: string): HomeContentState {
     let cancelled = false;
 
     async function load() {
-      setState({ loading: true, error: null, news: [], shows: [], wrapped: null });
+      setState({ loading: true, error: null, news: [], shows: [] });
 
       try {
         const res = await fetch(`/api/home?profile=${encodeURIComponent(profileId)}`);
@@ -49,7 +46,6 @@ export function useHomeContent(profileId: string): HomeContentState {
           error: null,
           news: apiNews.length ? apiNews : useFidelity ? getFidelityNews(profileId) : [],
           shows: apiShows.length ? apiShows : useFidelity ? getFidelityShows(profileId) : [],
-          wrapped: parseWrappedContent(data.wrapped),
         });
       } catch (err) {
         if (cancelled) return;
@@ -59,7 +55,6 @@ export function useHomeContent(profileId: string): HomeContentState {
           error: message,
           news: getFidelityNews(profileId),
           shows: getFidelityShows(profileId),
-          wrapped: null,
         });
       }
     }
