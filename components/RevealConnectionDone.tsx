@@ -31,7 +31,8 @@ export function ActConnectionDone({
   const sparks = people.filter((p, i) => actions[i] === 'spark');
   const passed = people.filter((p, i) => actions[i] === 'pass');
 
-  const [expandedProfile, setExpandedProfile] = useState<any>(null);
+  const [expandedAction, setExpandedAction] = useState<{ profile: any, action: string } | null>(null);
+  const [showFullProfile, setShowFullProfile] = useState(false);
 
   const vibeCount = vibes.length;
   const sparkCount = sparks.length;
@@ -89,7 +90,7 @@ export function ActConnectionDone({
           return (
             <div
               key={p.id}
-              onClick={(e) => { e.stopPropagation(); setExpandedProfile(p); }}
+              onClick={(e) => { e.stopPropagation(); setExpandedAction({ profile: p, action: a }); setShowFullProfile(false); }}
               style={{
                 background: a === 'vibe' ? 'rgba(249, 115, 22, 0.05)' : (a === 'spark' ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)'),
                 border: a === 'vibe' ? '1px solid rgba(249, 115, 22, 0.15)' : (a === 'spark' ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(255,255,255,0.03)'),
@@ -150,9 +151,59 @@ export function ActConnectionDone({
         tap screen to return home →
       </div>
 
-      {expandedProfile && createPortal(
+      {expandedAction && !showFullProfile && createPortal(
+        <div 
+          onClick={(e) => { e.stopPropagation(); setExpandedAction(null); }}
+          style={{ position: 'absolute', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{ 
+              background: '#1A1A1A', borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: '32px 24px', 
+              animation: 'sheetUp 400ms cubic-bezier(0.2, 0.8, 0.2, 1) both',
+              borderTop: '1px solid rgba(255,255,255,0.1)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
+              <div style={{ width: 56, height: 56, borderRadius: 99, backgroundImage: `url(${expandedAction.profile.avatar})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: expandedAction.action === 'pass' ? 'grayscale(100%)' : 'none' }} />
+              <div>
+                <div style={{ fontFamily: FF, fontWeight: 700, fontSize: 20, color: '#FFF' }}>{expandedAction.profile.name}</div>
+                <div style={{ fontSize: 13, marginTop: 4, fontWeight: 600, color: expandedAction.action === 'vibe' ? '#F97316' : (expandedAction.action === 'spark' ? '#EA8CE1' : 'rgba(255,255,255,0.4)') }}>
+                  {expandedAction.action === 'vibe' && "Sent a Vibe"}
+                  {expandedAction.action === 'spark' && "Sent a Spark"}
+                  {expandedAction.action === 'pass' && "Passed"}
+                </div>
+              </div>
+            </div>
+            
+            <div style={{ fontSize: 15, lineHeight: 1.5, color: 'rgba(255,255,255,0.8)', marginBottom: 32 }}>
+              {expandedAction.action === 'vibe' && "If the feeling is mutual, they'll appear on your home screen tomorrow morning. You'll have 7 days to message them and plan a meetup."}
+              {expandedAction.action === 'spark' && "Sparks are secret! This stays completely anonymous unless they spark you back. If they do, you'll both find out tomorrow morning."}
+              {expandedAction.action === 'pass' && "You passed. You won't see their profile again tonight."}
+            </div>
+
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                onClick={() => setExpandedAction(null)}
+                style={{ flex: 1, padding: '16px', borderRadius: 16, background: 'rgba(255,255,255,0.08)', border: 'none', color: '#FFF', fontFamily: FF, fontWeight: 600, fontSize: 15, cursor: 'pointer' }}
+              >
+                Close
+              </button>
+              <button
+                onClick={() => setShowFullProfile(true)}
+                style={{ flex: 1, padding: '16px', borderRadius: 16, background: 'rgba(255,255,255,0.15)', border: 'none', color: '#FFF', fontFamily: FF, fontWeight: 600, fontSize: 15, cursor: 'pointer' }}
+              >
+                View Profile
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.querySelector('.ios-device') || document.body
+      )}
+
+      {expandedAction && showFullProfile && createPortal(
         <div style={{ position: 'absolute', inset: 0, zIndex: 9999 }}>
-          <ProfileV2Provider overrideUserId={expandedProfile.id} matchReason={expandedProfile.matchReason} onClose={() => setExpandedProfile(null)}>
+          <ProfileV2Provider overrideUserId={expandedAction.profile.id} matchReason={expandedAction.profile.matchReason} onClose={() => setShowFullProfile(false)}>
             <ProfileV2Shell />
           </ProfileV2Provider>
         </div>,
