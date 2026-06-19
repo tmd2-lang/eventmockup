@@ -431,7 +431,16 @@ export function RevealScreen({ onBack, activeUserId, playIntro = false, isCN = f
     }),
     ({ anim }: { anim: string }) => (
       <div onClick={onBack} style={{ position: 'absolute', inset: 0, zIndex: 10 }}>
-        <ActConnectionDone people={CN_PROFILES} actions={cnActions} anim={anim} night={night} />
+        <ActConnectionDone 
+          people={CN_PROFILES} 
+          actions={cnActions} 
+          anim={anim} 
+          night={night} 
+          onRestart={() => {
+            setCnActions({});
+            if (shell.current) shell.current.go(-shell.current.cur);
+          }}
+        />
       </div>
     ),
   ];

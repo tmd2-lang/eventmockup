@@ -19,11 +19,13 @@ export function ActConnectionDone({
   actions,
   anim,
   night,
+  onRestart,
 }: {
   people: any[];
   actions: Record<number, string>;
   anim: string;
   night: any;
+  onRestart: () => void;
 }) {
   const vibes = people.filter((p, i) => actions[i] === 'vibe');
   const sparks = people.filter((p, i) => actions[i] === 'spark');
@@ -118,7 +120,7 @@ export function ActConnectionDone({
 
       <div style={{ marginTop: 24, flexShrink: 0, width: '100%' }}>
         <button
-          onClick={(e) => { e.stopPropagation(); window.location.reload(); }}
+          onClick={(e) => { e.stopPropagation(); onRestart(); }}
           style={{
             width: '100%', padding: '14px 16px', borderRadius: 16, background: 'rgba(255,255,255,0.08)',
             border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontFamily: FF, fontWeight: 700, fontSize: 14,
