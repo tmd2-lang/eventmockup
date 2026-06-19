@@ -812,6 +812,20 @@ function ProfileTabV2() {
 
       <div style={{ padding: `${onClose ? 40 : 76}px ${EDGE}px 0`, position: 'relative', zIndex: 1 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {!onClose ? (
+            <button type="button" aria-label="Settings" onClick={() => openSheet('settings')} style={{
+              width: 40, height: 40, borderRadius: 13, border: '1px solid rgba(20,17,13,0.06)',
+              background: 'rgba(20,17,13,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', transition: 'transform 0.15s ease',
+            }} onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'} onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+              <Icon.Settings width={20} height={20} />
+            </button>
+          ) : <div style={{ width: 40 }} />}
+          
+          <div style={{ color: '#F97316' }}>
+            <Wordmark size={24} />
+          </div>
+
           {onClose ? (
             <button type="button" aria-label="Close" onClick={onClose} style={{
               width: 40, height: 40, borderRadius: 13, border: '1px solid rgba(20,17,13,0.06)',
@@ -821,20 +835,6 @@ function ProfileTabV2() {
               <Icon.Close width={20} height={20} />
             </button>
           ) : (
-            <button type="button" aria-label="Settings" onClick={() => openSheet('settings')} style={{
-              width: 40, height: 40, borderRadius: 13, border: '1px solid rgba(20,17,13,0.06)',
-              background: 'rgba(20,17,13,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', transition: 'transform 0.15s ease',
-            }} onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'} onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-              <Icon.Settings width={20} height={20} />
-            </button>
-          )}
-          
-          <div style={{ color: '#F97316' }}>
-            <Wordmark size={24} />
-          </div>
-
-          {!onClose ? (
             <button type="button" aria-label="Share" onClick={() => openSheet('share')} style={{
               padding: '8px 16px', borderRadius: 99, border: 0,
               background: '#14110D', color: '#fff',
@@ -844,7 +844,7 @@ function ProfileTabV2() {
             }} onMouseEnter={(e) => e.currentTarget.style.background = '#2A2520'} onMouseLeave={(e) => { e.currentTarget.style.background = '#14110D'; e.currentTarget.style.transform = 'scale(1)'; }} onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'} onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}>
               <Icon.Share width={14} height={14} /> Share
             </button>
-          ) : <div style={{ width: 40 }} />}
+          )}
         </div>
 
         {matchReason && (

@@ -99,9 +99,10 @@ export function RevealConnectionPerson({
           {p.matchType} · {p.score}
         </div>
 
-        <div 
+        <button 
           onClick={() => setExpanded(true)}
-          style={{ display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}
+          style={{ display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', background: 'none', border: 'none', padding: 0, textAlign: 'left', outline: 'none' }}
+          data-no-advance="true"
         >
           <div
             style={{
@@ -143,7 +144,7 @@ export function RevealConnectionPerson({
               <A width="12" height="12" /> {p.archetype}
             </div>
           </div>
-        </div>
+        </button>
 
         <div
           style={{
@@ -293,7 +294,7 @@ export function RevealConnectionPerson({
       </div>
 
       {expanded && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: '#FAFAF8', animation: 'slideUp 300ms cubic-bezier(0.2, 0.7, 0.2, 1)' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: '#FAFAF8', animation: 'sheetUp 300ms cubic-bezier(0.2, 0.7, 0.2, 1)' }}>
           <ProfileV2Provider overrideUserId={p.id} matchReason={p.matchReason} onClose={() => setExpanded(false)}>
             <ProfileV2Shell />
           </ProfileV2Provider>
