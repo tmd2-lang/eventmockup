@@ -42,6 +42,7 @@ export type CNProfile = {
   school: string;
   year: string;
   answer: string;
+  matchReason: string;
 };
 
 export const CN_PROFILES: CNProfile[] = [
@@ -54,6 +55,7 @@ export const CN_PROFILES: CNProfile[] = [
     school: "Georgetown",
     year: "'25",
     answer: "FE!N",
+    matchReason: "Cole finds the hypnotic thread in everything. You matched on pace this week — slow burn, same destination."
   },
   {
     id: "maddie",
@@ -64,6 +66,7 @@ export const CN_PROFILES: CNProfile[] = [
     school: "Georgetown",
     year: "'26",
     answer: "Good 4 U",
+    matchReason: "Maddie picks like every night could be a video. You matched on energy before you matched on titles — the kind of overlap that shows up at the same pregame."
   },
   {
     id: "marcus",
@@ -74,5 +77,6 @@ export const CN_PROFILES: CNProfile[] = [
     school: "Georgetown",
     year: "'25",
     answer: "Not Like Us",
+    matchReason: "Marcus commits to a chorus like it's a promise. You matched twice this week without trying — mainstream doesn't mean predictable between you two."
   }
 ];
