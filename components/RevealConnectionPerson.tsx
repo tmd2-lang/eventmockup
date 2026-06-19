@@ -299,6 +299,53 @@ export function RevealConnectionPerson({
           <ProfileV2Provider overrideUserId={p.id} matchReason={p.matchReason} onClose={() => setExpanded(false)}>
             <ProfileV2Shell />
           </ProfileV2Provider>
+
+          {/* Sticky Action Bar for Expanded Profile */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0,
+            padding: '14px 18px 40px',
+            background: 'rgba(250,250,248,0.85)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            borderTop: '1px solid rgba(20,17,13,0.06)',
+            zIndex: 100,
+          }}>
+            <div style={{ display: 'flex', gap: 9, marginBottom: 8 }}>
+              <button
+                type="button"
+                onClick={() => { setExpanded(false); onAct('vibe'); }}
+                style={{
+                  flex: 1, padding: '12px 8px', borderRadius: 14, cursor: 'pointer',
+                  border: '1.5px solid rgba(20,17,13,0.06)', background: 'rgba(20,17,13,0.04)',
+                  color: '#14110D', fontFamily: FF, fontWeight: 700, fontSize: 14,
+                }}
+              >
+                Vibe
+              </button>
+              <button
+                type="button"
+                onClick={() => { setExpanded(false); onAct('spark'); }}
+                style={{
+                  flex: 1, padding: '12px 8px', borderRadius: 14, cursor: 'pointer',
+                  border: 0, background: '#EA8CE1',
+                  color: '#fff', fontFamily: FF, fontWeight: 700, fontSize: 14,
+                }}
+              >
+                Spark
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setExpanded(false); onAct('pass'); }}
+              style={{
+                display: 'block', width: '100%', textAlign: 'center',
+                fontSize: 12, fontWeight: 600, color: 'rgba(20,17,13,0.4)',
+                cursor: 'pointer', padding: 4, background: 'none', border: 0, fontFamily: FF,
+              }}
+            >
+              Not right now
+            </button>
+          </div>
         </div>,
         document.querySelector('.ios-device') || document.body
       )}
