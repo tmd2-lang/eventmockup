@@ -98,6 +98,15 @@ export const Icon = {
   ),
   Plus: svg(<path d="M12 5v14M5 12h14" />),
   Check: svg(<path d="M20 6L9 17l-5-5" />),
+  ChevronLeft: svg(<path d="M15 18l-6-6 6-6" />),
+  MoreHorizontal: svg(
+    <>
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="19" cy="12" r="1" />
+      <circle cx="5" cy="12" r="1" />
+    </>
+  ),
+  ArrowUp: svg(<path d="M12 19V5M5 12l7-7 7 7" />),
   Eye: svg(
     <>
       <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
