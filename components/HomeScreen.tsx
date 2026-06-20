@@ -1103,10 +1103,16 @@ function NotificationsDropdown({ activeUserId, onClose, onOpenChat }: { activeUs
   const matches = getMatchesForUser(activeUserId);
   return (
     <>
-      <div style={{ position: 'absolute', inset: 0, zIndex: 4999 }} onClick={onClose} />
-      <div style={{ position: 'absolute', top: 96, right: 16, width: 340, maxHeight: '70vh', zIndex: 5000, background: '#FAFAF8', borderRadius: 24, boxShadow: '0 8px 32px rgba(0,0,0,0.12)', border: '1px solid rgba(20,17,13,0.08)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <style>{`
+        @keyframes dropdownEnter {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+      <div style={{ position: 'fixed', inset: 0, zIndex: 4999 }} onClick={onClose} />
+      <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 12, width: 320, maxHeight: '60vh', zIndex: 5000, background: '#FAFAF8', borderRadius: 24, boxShadow: '0 8px 32px rgba(0,0,0,0.12)', border: '1px solid rgba(20,17,13,0.08)', display: 'flex', flexDirection: 'column', overflow: 'hidden', animation: 'dropdownEnter 0.15s ease-out forwards', textAlign: 'left' }}>
         <div style={{ padding: '16px 20px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 700, fontSize: 18, color: '#14110D' }}>
+          <div style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 700, fontSize: 16, color: '#14110D' }}>
             Notifications
           </div>
         </div>
@@ -1303,14 +1309,15 @@ function TopBar({
   activeUser,
   activeUserId,
   setActiveUserId,
-  onOpenNotifications,
+  onOpenChat,
 }: {
   activeUser: UserProfile;
   activeUserId: string;
   setActiveUserId: (id: string) => void;
-  onOpenNotifications: () => void;
+  onOpenChat: (match: any) => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   return (
     <div style={{ padding: "56px 22px 4px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative", zIndex: 100 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -1320,10 +1327,11 @@ function TopBar({
         </span>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <button
-          type="button"
-          onClick={onOpenNotifications}
-          style={{
+        <div style={{ position: "relative" }}>
+          <button
+            type="button"
+            onClick={() => setShowNotifications(!showNotifications)}
+            style={{
             width: 38,
             height: 38,
             borderRadius: 99,
@@ -1340,6 +1348,14 @@ function TopBar({
           <Icon.Bell width="18" height="18" />
           <span style={{ position: "absolute", top: 8, right: 9, width: 7, height: 7, borderRadius: 99, background: "#F97316", boxShadow: "0 0 0 2px #FAFAF8" }} />
         </button>
+        {showNotifications && (
+          <NotificationsDropdown 
+            activeUserId={activeUserId} 
+            onClose={() => setShowNotifications(false)} 
+            onOpenChat={onOpenChat} 
+          />
+        )}
+        </div>
         <div style={{ position: "relative" }}>
           <div
             onClick={() => setMenuOpen(!menuOpen)}
@@ -1494,7 +1510,6 @@ function HomeProfileSession({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showChat, setShowChat] = useState<any>(null);
   const [showAllMatches, setShowAllMatches] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
@@ -1576,11 +1591,10 @@ function HomeProfileSession({
 
   return (
     <>
-      {showNotifications && <NotificationsDropdown activeUserId={activeUserId} onClose={() => setShowNotifications(false)} onOpenChat={(m) => setShowChat(m)} />}
       {showAllMatches && <AllMatchesOverlay activeUserId={activeUserId} onClose={() => setShowAllMatches(false)} onOpenChat={(m) => setShowChat(m)} />}
       {showChat && <ChatScreen match={showChat} onClose={() => setShowChat(null)} />}
-      <div ref={scrollRef} className="no-scrollbar" style={{ position: "absolute", inset: 0, overflowY: "auto", overflowX: "hidden", pointerEvents: (showChat || showAllMatches || showNotifications) ? 'none' : 'auto', opacity: (showChat || showAllMatches || showNotifications) ? 0 : 1 }}>
-        <TopBar activeUser={activeUser} activeUserId={activeUserId} setActiveUserId={setActiveUserId} onOpenNotifications={() => setShowNotifications(true)} />
+      <div ref={scrollRef} className="no-scrollbar" style={{ position: "absolute", inset: 0, overflowY: "auto", overflowX: "hidden", pointerEvents: (showChat || showAllMatches) ? 'none' : 'auto', opacity: (showChat || showAllMatches) ? 0 : 1 }}>
+        <TopBar activeUser={activeUser} activeUserId={activeUserId} setActiveUserId={setActiveUserId} onOpenChat={(m) => setShowChat(m)} />
           <div key={`${state}-${activeUserId}`} className="phase-fade">
             <HomeNormal
               key={activeUserId}
