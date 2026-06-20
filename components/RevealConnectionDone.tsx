@@ -78,10 +78,10 @@ export function ActConnectionDone({
         <Icon.Check width="26" height="26" />
       </div>
       <div style={{ fontFamily: FF, fontWeight: 700, fontSize: 24, letterSpacing: '-0.025em', marginBottom: 8, lineHeight: 1.15 }}>
-        That's tonight's connections.
+        That&apos;s tonight&apos;s connections.
       </div>
       <div style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.42)', lineHeight: 1.6, maxWidth: 280, marginBottom: 32 }}>
-        If it's mutual, check your home profile. You'll be able to message them for 7 days.
+        If it&apos;s mutual, check your home profile. You&apos;ll be able to message them for 7 days.
       </div>
 
       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 7, flexShrink: 0 }}>
