@@ -25,6 +25,7 @@ import { useDailyReveal } from "@/hooks/useDailyReveal";
 import { useHomeContent } from "@/hooks/useHomeContent";
 import { RevealScreen } from "@/components/RevealScreen";
 import { ChatScreen } from "@/components/ChatScreen";
+import { TheReceiptsScreen } from "@/components/profile/ProfileScreen";
 import {
   DEMO_QUESTION,
   REVEAL_COUNTDOWN_SECONDS,
@@ -1210,97 +1211,32 @@ function ActiveMatches({ activeUserId, onSeeAll, onOpenChat }: { activeUserId: s
   );
 }
 
-function NearYou({ home }: { home: HomeContentState }) {
-  const { loading, error, shows } = home;
+function ReceiptsCard({ onOpenReceipts }: { onOpenReceipts: () => void }) {
   return (
-    <div>
-      <div style={{ padding: "24px 22px 12px", display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-        <h2 style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 600, fontSize: 18, letterSpacing: "-0.015em", color: "#14110D", margin: 0 }}>
-          Near you
-        </h2>
-        <span style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontSize: 12, fontWeight: 600, color: "#F97316" }}>All shows</span>
-      </div>
-      <div style={{ padding: "0 22px", display: "flex", flexDirection: "column", gap: 8 }}>
-        {loading ? (
-          <p style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 500, fontSize: 14, color: "rgba(20,17,13,0.45)", margin: "8px 0 12px" }}>
-            Loading shows near you…
-          </p>
-        ) : error ? (
-          <p style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 500, fontSize: 14, color: "rgba(200,50,50,0.85)", margin: "8px 0 12px" }}>
-            {error}
-          </p>
-        ) : !shows.length ? (
-          <p style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 500, fontSize: 14, color: "rgba(20,17,13,0.45)", margin: "8px 0 12px" }}>
-            Nothing here yet
-          </p>
-        ) : (
-          shows.map((s, i) => (
-            <div
-              key={s.id || i}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                padding: 10,
-                borderRadius: 18,
-                background: "#fff",
-                border: "1px solid rgba(20,17,13,0.05)",
-                boxShadow: "0 1px 0 rgba(20,17,13,0.02), 0 6px 18px -12px rgba(20,17,13,0.08)",
-              }}
-            >
-              <div
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 12,
-                  flexShrink: 0,
-                  backgroundImage: `url(${s.art_url})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }}
-              />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontFamily: "Bricolage Grotesque, sans-serif",
-                    fontWeight: 600,
-                    fontSize: 14.5,
-                    letterSpacing: "-0.01em",
-                    color: "#14110D",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {s.name}
-                </div>
-                <div style={{ fontSize: 12, color: "rgba(20,17,13,0.5)", marginTop: 2, display: "flex", alignItems: "center", gap: 5 }}>
-                  <Icon.Pin width="12" height="12" style={{ opacity: 0.6 }} /> {s.venue}
-                </div>
-              </div>
-              <div style={{ textAlign: "right", flexShrink: 0 }}>
-                <span
-                  style={{
-                    ...TAG_STYLE[s.tag_style],
-                    fontFamily: "Bricolage Grotesque, sans-serif",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                    padding: "4px 8px",
-                    borderRadius: 99,
-                  }}
-                >
-                  {s.tag}
-                </span>
-                <div style={{ fontSize: 11, color: "rgba(20,17,13,0.5)", marginTop: 6, fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 600 }}>
-                  {s.when_label}
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+    <div style={{ padding: "12px 22px 24px" }}>
+      <button type="button" onClick={onOpenReceipts} style={{
+        width: '100%', border: 0, cursor: 'pointer', textAlign: 'left',
+        background: '#fff', borderRadius: 22, padding: '16px 18px',
+        border: '1px solid rgba(20,17,13,0.06)', boxShadow: "0 4px 14px rgba(0,0,0,0.03)",
+        display: 'flex', alignItems: 'center', gap: 14,
+      }}>
+        <div style={{
+          width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+          background: 'linear-gradient(145deg, rgba(249,115,22,0.14), rgba(245,215,131,0.22))',
+          border: '1px solid rgba(249,115,22,0.15)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 700, fontSize: 18, color: '#C2410C',
+        }}>📋</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 600, fontSize: 17, letterSpacing: '-0.015em', color: '#14110D' }}>
+            The Receipts
+          </div>
+          <div style={{ fontSize: 12.5, color: 'rgba(20,17,13,0.50)', marginTop: 3, lineHeight: 1.4 }}>
+            Streaks, rare picks, taste shifts — your full answer history.
+          </div>
+        </div>
+        <Icon.Chev width={18} height={18} color="rgba(20,17,13,0.35)" />
+      </button>
     </div>
   );
 }
@@ -1455,6 +1391,7 @@ function HomeNormal({
   onRevealAnswerCleared,
   onOpenChat,
   onSeeAll,
+  onOpenReceipts,
 }: {
   onOpenReveal: () => void;
   home: HomeContentState;
@@ -1466,6 +1403,7 @@ function HomeNormal({
   onRevealAnswerCleared: () => void;
   onOpenChat: (match: any) => void;
   onSeeAll: () => void;
+  onOpenReceipts: () => void;
 }) {
   return (
     <div style={{ paddingBottom: 124 }}>
@@ -1479,7 +1417,7 @@ function HomeNormal({
       <RevealTeaser onOpen={onOpenReveal} hasLockedAnswer={hasLockedAnswer} revealUnlocked={revealUnlocked} />
       <ActiveMatches activeUserId={activeUserId} onSeeAll={onSeeAll} onOpenChat={onOpenChat} />
       <NewsStrip home={home} />
-      <NearYou home={home} />
+      <ReceiptsCard onOpenReceipts={onOpenReceipts} />
     </div>
   );
 }
@@ -1510,6 +1448,7 @@ function HomeProfileSession({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showChat, setShowChat] = useState<any>(null);
   const [showAllMatches, setShowAllMatches] = useState(false);
+  const [showReceipts, setShowReceipts] = useState(false);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
@@ -1591,6 +1530,7 @@ function HomeProfileSession({
 
   return (
     <>
+      {showReceipts && <TheReceiptsScreen onClose={() => setShowReceipts(false)} />}
       {showAllMatches && <AllMatchesOverlay activeUserId={activeUserId} onClose={() => setShowAllMatches(false)} onOpenChat={(m) => setShowChat(m)} />}
       {showChat && <ChatScreen match={showChat} onClose={() => setShowChat(null)} />}
       <div ref={scrollRef} className="no-scrollbar" style={{ position: "absolute", inset: 0, overflowY: "auto", overflowX: "hidden", pointerEvents: (showChat || showAllMatches) ? 'none' : 'auto', opacity: (showChat || showAllMatches) ? 0 : 1 }}>
@@ -1612,6 +1552,7 @@ function HomeProfileSession({
               onRevealAnswerCleared={handleRevealAnswerCleared}
               onOpenChat={(match) => setShowChat(match)}
               onSeeAll={() => setShowAllMatches(true)}
+              onOpenReceipts={() => setShowReceipts(true)}
             />
           </div>
         </div>

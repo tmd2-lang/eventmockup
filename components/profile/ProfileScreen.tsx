@@ -931,31 +931,6 @@ function ProfileTabV2() {
         </div>
       </Reveal>
 
-      <Reveal style={{ padding: `14px ${EDGE}px 0` }} onInView={onScoreInView}>
-        <div style={{ background: '#fff', borderRadius: 22, padding: 20, border: '1px solid rgba(20,17,13,0.06)', boxShadow: CARD }}>
-          <Eyebrow>Mainstream score</Eyebrow>
-          <div style={{ marginTop: 12, fontFamily: DISPLAY, fontWeight: 600, lineHeight: 1.04, letterSpacing: '-0.025em' }}>
-            <span style={{ fontSize: 36, color: '#F97316' }}>{profile.mainstreamScoreAccent}</span>{' '}
-            <span style={{ fontSize: 24, color: '#14110D' }}>{profile.mainstreamScoreRest}</span>
-          </div>
-          <div className="pv2-meter-track" style={{ marginTop: 16, height: 8, borderRadius: 99, position: 'relative', background: 'linear-gradient(90deg, rgba(20,17,13,0.10), rgba(249,115,22,0.22) 70%, #F97316)' }}>
-            <div
-              className={`pv2-meter-marker ${meterOn ? 'set' : ''}`}
-              style={{ left: meterOn ? `${profile.mainstreamMeterPct}%` : '6%' }}
-            />
-          </div>
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', marginTop: 8,
-            fontFamily: DISPLAY, fontWeight: 600, fontSize: 10, letterSpacing: '0.12em',
-            textTransform: 'uppercase', color: 'rgba(20,17,13,0.35)',
-          }}>
-            <span>Mainstream</span><span>Niche</span>
-          </div>
-          <p style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(20,17,13,0.06)', fontSize: 13.5, lineHeight: 1.5, color: 'rgba(20,17,13,0.60)' }}>
-            {profile.mainstreamFootnote}
-          </p>
-        </div>
-      </Reveal>
 
       <Reveal style={{ padding: `14px ${EDGE}px 0` }}>
         <div style={{
@@ -1029,31 +1004,6 @@ function ProfileTabV2() {
         </div>
       </Reveal>
 
-      <Reveal style={{ padding: `12px ${EDGE}px 0` }}>
-        <button type="button" onClick={openReceipts} style={{
-          width: '100%', border: 0, cursor: 'pointer', textAlign: 'left',
-          background: '#fff', borderRadius: 22, padding: '16px 18px',
-          border: '1px solid rgba(20,17,13,0.06)', boxShadow: CARD,
-          display: 'flex', alignItems: 'center', gap: 14,
-        }}>
-          <div style={{
-            width: 48, height: 48, borderRadius: 14, flexShrink: 0,
-            background: 'linear-gradient(145deg, rgba(249,115,22,0.14), rgba(245,215,131,0.22))',
-            border: '1px solid rgba(249,115,22,0.15)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: DISPLAY, fontWeight: 700, fontSize: 18, color: '#C2410C',
-          }}>📋</div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontFamily: DISPLAY, fontWeight: 600, fontSize: 17, letterSpacing: '-0.015em', color: '#14110D' }}>
-              The Receipts
-            </div>
-            <div style={{ fontSize: 12.5, color: 'rgba(20,17,13,0.50)', marginTop: 3, lineHeight: 1.4 }}>
-              Streaks, rare picks, taste shifts — your full answer history.
-            </div>
-          </div>
-          <Icon.Chev width={18} height={18} color="rgba(20,17,13,0.35)" />
-        </button>
-      </Reveal>
 
       <Reveal style={{ marginTop: 26 }}>
         <div style={{
@@ -1303,9 +1253,8 @@ function ReceiptRow({ stat, label, sub }) {
   );
 }
 
-function TheReceiptsScreen() {
+export function TheReceiptsScreen({ onClose }: { onClose: () => void }) {
   const profile = useActiveUserProfile();
-  const { closeReceipts } = usePV2();
 
   return (
     <div style={{
@@ -1316,7 +1265,7 @@ function TheReceiptsScreen() {
         padding: '56px 12px 12px', display: 'flex', alignItems: 'center', gap: 8,
         borderBottom: '1px solid rgba(20,17,13,0.06)', flexShrink: 0, background: '#FAFAF8',
       }}>
-        <button type="button" onClick={closeReceipts} aria-label="Back" style={{
+        <button type="button" onClick={onClose} aria-label="Back" style={{
           width: 40, height: 40, borderRadius: 13, border: '1px solid rgba(20,17,13,0.06)',
           background: 'rgba(20,17,13,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer', color: '#14110D',
@@ -1452,9 +1401,7 @@ function ProfileScreenRouter() {
           100% { opacity: 1; transform: scale(1) translateY(0); }
         }
       `}</style>
-      
-      {screen === "receipts" && <TheReceiptsScreen />}
-      
+
       {screen === "archetype-gallery" && (
         <ArchetypeGalleryScreen
           earnedId={profile.earnedArchetypeId}
