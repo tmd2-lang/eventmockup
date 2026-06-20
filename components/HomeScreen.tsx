@@ -1099,68 +1099,68 @@ function AllMatchesOverlay({ activeUserId, onClose, onOpenChat }: { activeUserId
   );
 }
 
-function NotificationsOverlay({ activeUserId, onClose, onOpenChat }: { activeUserId: string, onClose: () => void, onOpenChat: (match: any) => void }) {
+function NotificationsDropdown({ activeUserId, onClose, onOpenChat }: { activeUserId: string, onClose: () => void, onOpenChat: (match: any) => void }) {
   const matches = getMatchesForUser(activeUserId);
   return (
-    <div style={{ position: 'absolute', inset: 0, zIndex: 5000, background: '#FAFAF8', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px', paddingTop: 'max(env(safe-area-inset-top, 20px), 20px)', position: 'relative', borderBottom: '1px solid rgba(20,17,13,0.05)' }}>
-        <div style={{ flex: 1, textAlign: 'center', fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 700, fontSize: 18, color: '#14110D' }}>
-          Notifications
-        </div>
-        <button onClick={onClose} style={{ position: 'absolute', right: 12, background: 'none', border: 'none', color: '#14110D', padding: 8, cursor: 'pointer', fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 600, fontSize: 15 }}>
-          Done
-        </button>
-      </div>
-      <div style={{ flex: 1, overflowY: 'auto', padding: "16px 22px 24px", display: 'flex', flexDirection: 'column', gap: 12 }}>
-        
-        {matches.map((m, i) => {
-          const user = USERS[m.id];
-          if (!user) return null;
-          return (
-            <div 
-              key={i}
-              onClick={() => { onClose(); onOpenChat({ ...user, matchType: m.type, daysLeft: m.daysLeft }); }}
-              style={{ 
-                background: "#fff", borderRadius: 20, padding: 16, 
-                border: "1px solid rgba(20,17,13,0.05)", boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
-                display: "flex", gap: 14, cursor: "pointer"
-              }}
-            >
-              <div style={{ position: 'relative', flexShrink: 0 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 99, backgroundImage: `url(${user.avatar})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-                <div style={{ position: 'absolute', bottom: -2, right: -2, width: 20, height: 20, borderRadius: 99, background: m.type === 'spark' ? '#EA8CE1' : '#F97316', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                   <span style={{ fontSize: 10, lineHeight: 1 }}>{m.type === 'spark' ? '✨' : '🍊'}</span>
-                </div>
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, color: '#14110D', lineHeight: 1.4, fontWeight: 500 }}>
-                  <span style={{ fontWeight: 700 }}>It's mutual!</span> You and <span style={{ fontWeight: 700 }}>{user.name.split(' ')[0]}</span> both sent a {m.type === 'spark' ? 'Spark' : 'Vibe'}.
-                </div>
-                <div style={{ fontSize: 12, color: 'rgba(20,17,13,0.4)', marginTop: 4, fontWeight: 600 }}>
-                  Tap to plan a meetup · {m.daysLeft}d left
-                </div>
-              </div>
-            </div>
-          );
-        })}
-
-        {/* Mock Generic Notification */}
-        <div style={{ background: "#fff", borderRadius: 20, padding: 16, border: "1px solid rgba(20,17,13,0.05)", display: "flex", gap: 14, opacity: 0.8 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 99, background: 'rgba(249, 115, 22, 0.1)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F97316', fontSize: 24 }}>
-            🍊
-          </div>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <div style={{ fontSize: 14, color: '#14110D', lineHeight: 1.4, fontWeight: 500 }}>
-              Someone caught your vibe! Join tonight's Connection Night to see who it is.
-            </div>
-            <div style={{ fontSize: 12, color: 'rgba(20,17,13,0.4)', marginTop: 4, fontWeight: 600 }}>
-              2 hours ago
-            </div>
+    <>
+      <div style={{ position: 'absolute', inset: 0, zIndex: 4999 }} onClick={onClose} />
+      <div style={{ position: 'absolute', top: 96, right: 16, width: 340, maxHeight: '70vh', zIndex: 5000, background: '#FAFAF8', borderRadius: 24, boxShadow: '0 8px 32px rgba(0,0,0,0.12)', border: '1px solid rgba(20,17,13,0.08)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ padding: '16px 20px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 700, fontSize: 18, color: '#14110D' }}>
+            Notifications
           </div>
         </div>
+        <div style={{ flex: 1, overflowY: 'auto', padding: "0 12px 16px", display: 'flex', flexDirection: 'column', gap: 8 }}>
+          
+          {matches.map((m, i) => {
+            const user = USERS[m.id];
+            if (!user) return null;
+            return (
+              <div 
+                key={i}
+                onClick={() => { onClose(); onOpenChat({ ...user, matchType: m.type, daysLeft: m.daysLeft }); }}
+                style={{ 
+                  background: "#fff", borderRadius: 16, padding: 12, 
+                  border: "1px solid rgba(20,17,13,0.05)",
+                  display: "flex", gap: 12, cursor: "pointer"
+                }}
+              >
+                <div style={{ position: 'relative', flexShrink: 0 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 99, backgroundImage: `url(${user.avatar})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                  <div style={{ position: 'absolute', bottom: -2, right: -2, width: 20, height: 20, borderRadius: 99, background: m.type === 'spark' ? '#EA8CE1' : '#F97316', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                     <span style={{ fontSize: 10, lineHeight: 1 }}>{m.type === 'spark' ? '✨' : '🍊'}</span>
+                  </div>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, color: '#14110D', lineHeight: 1.4, fontWeight: 500 }}>
+                    <span style={{ fontWeight: 700 }}>It's mutual!</span> You and <span style={{ fontWeight: 700 }}>{user.name.split(' ')[0]}</span> both sent a {m.type === 'spark' ? 'Spark' : 'Vibe'}.
+                  </div>
+                  <div style={{ fontSize: 11, color: 'rgba(20,17,13,0.4)', marginTop: 4, fontWeight: 600 }}>
+                    Tap to plan a meetup · {m.daysLeft}d left
+                  </div>
+                </div>
+              </div>
+            );
+          })}
 
+          {/* Mock Generic Notification */}
+          <div style={{ background: "#fff", borderRadius: 16, padding: 12, border: "1px solid rgba(20,17,13,0.05)", display: "flex", gap: 12, opacity: 0.8 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 99, background: 'rgba(249, 115, 22, 0.1)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F97316', fontSize: 20 }}>
+              🍊
+            </div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div style={{ fontSize: 13, color: '#14110D', lineHeight: 1.4, fontWeight: 500 }}>
+                Someone caught your vibe! Join tonight's Connection Night to see who it is.
+              </div>
+              <div style={{ fontSize: 11, color: 'rgba(20,17,13,0.4)', marginTop: 4, fontWeight: 600 }}>
+                2 hours ago
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -1576,7 +1576,7 @@ function HomeProfileSession({
 
   return (
     <>
-      {showNotifications && <NotificationsOverlay activeUserId={activeUserId} onClose={() => setShowNotifications(false)} onOpenChat={(m) => setShowChat(m)} />}
+      {showNotifications && <NotificationsDropdown activeUserId={activeUserId} onClose={() => setShowNotifications(false)} onOpenChat={(m) => setShowChat(m)} />}
       {showAllMatches && <AllMatchesOverlay activeUserId={activeUserId} onClose={() => setShowAllMatches(false)} onOpenChat={(m) => setShowChat(m)} />}
       {showChat && <ChatScreen match={showChat} onClose={() => setShowChat(null)} />}
       <div ref={scrollRef} className="no-scrollbar" style={{ position: "absolute", inset: 0, overflowY: "auto", overflowX: "hidden", pointerEvents: (showChat || showAllMatches || showNotifications) ? 'none' : 'auto', opacity: (showChat || showAllMatches || showNotifications) ? 0 : 1 }}>
