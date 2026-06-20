@@ -1510,7 +1510,7 @@ function HomeProfileSession({
   }, [hasLockedAnswer, revealCountdown, revealUnlocked, setRevealUnlocked, setState]);
 
   function handleRevealAnswerLocked() {
-    if (!hasLockedAnswer || revealUnlocked) return;
+    if (revealUnlocked) return;
     setRevealCountdown(REVEAL_COUNTDOWN_SECONDS);
   }
 
