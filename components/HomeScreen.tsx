@@ -1128,7 +1128,7 @@ function NotificationsDropdown({ activeUserId, onClose, onOpenChat }: { activeUs
                 {USERS[activeUserId]?.profile?.currentStreak || 12}-Day Streak!
               </div>
               <div style={{ fontSize: 12, color: 'rgba(20,17,13,0.5)', marginTop: 2, fontWeight: 500 }}>
-                You're on fire. Keep it up.
+                Answer today's drop to keep your streak alive.
               </div>
             </div>
           </div>
