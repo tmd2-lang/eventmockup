@@ -202,7 +202,7 @@ export function ActConnectionDone({
       )}
 
       {expandedAction && showFullProfile && createPortal(
-        <div style={{ position: 'absolute', inset: 0, zIndex: 9999 }}>
+        <div style={{ position: 'absolute', inset: 0, zIndex: 9999 }} onClick={(e) => e.stopPropagation()}>
           <ProfileV2Provider overrideUserId={expandedAction.profile.id} matchReason={expandedAction.profile.matchReason} onClose={() => { setShowFullProfile(false); }}>
             <ProfileV2Shell />
           </ProfileV2Provider>

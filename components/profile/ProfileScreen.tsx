@@ -827,7 +827,7 @@ function ProfileTabV2() {
           </div>
 
           {onClose ? (
-            <button type="button" aria-label="Close" onClick={onClose} style={{
+            <button type="button" aria-label="Close" onClick={(e) => { e.stopPropagation(); onClose(); }} style={{
               width: 40, height: 40, borderRadius: 13, border: '1px solid rgba(20,17,13,0.06)',
               background: 'rgba(20,17,13,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', transition: 'transform 0.15s ease',
