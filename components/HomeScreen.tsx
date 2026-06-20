@@ -1000,19 +1000,19 @@ function getMatchesForUser(userId: string) {
   return result;
 }
 
-function ActiveMatches({ activeUserId, onOpenChat }: { activeUserId: string, onOpenChat: (match: any) => void }) {
+function AllMatchesOverlay({ activeUserId, onClose, onOpenChat }: { activeUserId: string, onClose: () => void, onOpenChat: (match: any) => void }) {
   const matches = getMatchesForUser(activeUserId);
-  
-  if (!matches.length) return null;
-  
   return (
-    <div style={{ padding: "0 22px 24px" }}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 }}>
-        <h2 style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 600, fontSize: 18, letterSpacing: "-0.015em", color: "#14110D", margin: 0 }}>
+    <div style={{ position: 'absolute', inset: 0, zIndex: 5000, background: '#FAFAF8', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px', paddingTop: 'max(env(safe-area-inset-top, 20px), 20px)', position: 'relative', borderBottom: '1px solid rgba(20,17,13,0.05)' }}>
+        <button onClick={onClose} style={{ position: 'absolute', left: 12, background: 'none', border: 'none', color: '#14110D', padding: 8, cursor: 'pointer' }}>
+          <Icon.ChevronLeft width={28} height={28} />
+        </button>
+        <div style={{ flex: 1, textAlign: 'center', fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 700, fontSize: 18, color: '#14110D' }}>
           Your Matches
-        </h2>
+        </div>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: "16px 22px 24px", display: 'flex', flexDirection: 'column', gap: 10 }}>
         {matches.map((m, i) => {
           const user = USERS[m.id];
           if (!user) return null;
@@ -1040,6 +1040,46 @@ function ActiveMatches({ activeUserId, onOpenChat }: { activeUserId: string, onO
               </div>
               <div style={{ background: m.type === 'spark' ? 'rgba(234, 140, 225, 0.1)' : 'rgba(249, 115, 22, 0.1)', color: m.type === 'spark' ? '#EA8CE1' : '#F97316', padding: '6px 12px', borderRadius: 99, fontSize: 12, fontWeight: 600, fontFamily: "Bricolage Grotesque, sans-serif", flexShrink: 0 }}>
                 Message
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ActiveMatches({ activeUserId, onSeeAll, onOpenChat }: { activeUserId: string, onSeeAll: () => void, onOpenChat: (match: any) => void }) {
+  const matches = getMatchesForUser(activeUserId);
+  
+  if (!matches.length) return null;
+  
+  return (
+    <div style={{ padding: "0 0 24px" }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12, padding: "0 22px" }}>
+        <h2 style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 600, fontSize: 18, letterSpacing: "-0.015em", color: "#14110D", margin: 0 }}>
+          Your Matches
+        </h2>
+        <span onClick={onSeeAll} style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontSize: 12, fontWeight: 600, color: "#F97316", cursor: 'pointer' }}>See all</span>
+      </div>
+      <div style={{ display: 'flex', gap: 16, overflowX: 'auto', padding: "0 22px", scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
+        {matches.map((m, i) => {
+          const user = USERS[m.id];
+          if (!user) return null;
+          return (
+            <div 
+              key={i}
+              onClick={() => onOpenChat({ ...user, matchType: m.type, daysLeft: m.daysLeft })}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: "pointer", flexShrink: 0 }}
+            >
+              <div style={{ position: 'relative' }}>
+                <div style={{ width: 72, height: 72, borderRadius: 99, backgroundImage: `url(${user.avatar})`, backgroundSize: 'cover', backgroundPosition: 'center', border: m.type === 'spark' ? '2px solid #EA8CE1' : '2px solid #F97316', padding: 2, backgroundClip: 'content-box' }} />
+                <div style={{ position: 'absolute', bottom: -2, right: 0, width: 24, height: 24, borderRadius: 99, background: m.type === 'spark' ? '#EA8CE1' : '#F97316', border: '2px solid #FAFAF8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                   <span style={{ fontSize: 12, lineHeight: 1 }}>{m.type === 'spark' ? '✨' : '🍊'}</span>
+                </div>
+              </div>
+              <div style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 600, fontSize: 13, color: '#14110D' }}>
+                {user.name.split(' ')[0]}
               </div>
             </div>
           );
@@ -1290,6 +1330,7 @@ function HomeNormal({
   onRevealAnswerLocked: () => void;
   onRevealAnswerCleared: () => void;
   onOpenChat: (match: any) => void;
+  onSeeAll: () => void;
 }) {
   return (
     <div style={{ paddingBottom: 124 }}>
@@ -1301,7 +1342,7 @@ function HomeNormal({
         onRevealAnswerCleared={onRevealAnswerCleared}
       />
       <RevealTeaser onOpen={onOpenReveal} hasLockedAnswer={hasLockedAnswer} revealUnlocked={revealUnlocked} />
-      <ActiveMatches activeUserId={activeUserId} onOpenChat={onOpenChat} />
+      <ActiveMatches activeUserId={activeUserId} onSeeAll={onSeeAll} onOpenChat={onOpenChat} />
       <NewsStrip home={home} />
       <NearYou home={home} />
     </div>
@@ -1333,6 +1374,7 @@ function HomeProfileSession({
   const home = useHomeContent(activeUserId);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showChat, setShowChat] = useState<any>(null);
+  const [showAllMatches, setShowAllMatches] = useState(false);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
@@ -1414,8 +1456,9 @@ function HomeProfileSession({
 
   return (
     <>
+      {showAllMatches && <AllMatchesOverlay activeUserId={activeUserId} onClose={() => setShowAllMatches(false)} onOpenChat={(m) => setShowChat(m)} />}
       {showChat && <ChatScreen match={showChat} onClose={() => setShowChat(null)} />}
-      <div ref={scrollRef} className="no-scrollbar" style={{ position: "absolute", inset: 0, overflowY: "auto", overflowX: "hidden", pointerEvents: showChat ? 'none' : 'auto', opacity: showChat ? 0 : 1 }}>
+      <div ref={scrollRef} className="no-scrollbar" style={{ position: "absolute", inset: 0, overflowY: "auto", overflowX: "hidden", pointerEvents: (showChat || showAllMatches) ? 'none' : 'auto', opacity: (showChat || showAllMatches) ? 0 : 1 }}>
         <TopBar activeUser={activeUser} activeUserId={activeUserId} setActiveUserId={setActiveUserId} />
           <div key={`${state}-${activeUserId}`} className="phase-fade">
             <HomeNormal
@@ -1433,6 +1476,7 @@ function HomeProfileSession({
               onRevealAnswerLocked={handleRevealAnswerLocked}
               onRevealAnswerCleared={handleRevealAnswerCleared}
               onOpenChat={(match) => setShowChat(match)}
+              onSeeAll={() => setShowAllMatches(true)}
             />
           </div>
         </div>
