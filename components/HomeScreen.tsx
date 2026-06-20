@@ -1236,7 +1236,7 @@ function ReceiptsCard({ onOpenReceipts }: { onOpenReceipts: () => void }) {
   return (
     <div style={{ padding: "12px 22px 24px" }}>
       <button type="button" onClick={onOpenReceipts} style={{
-        width: '100%', border: 0, cursor: 'pointer', textAlign: 'left',
+        width: '100%', cursor: 'pointer', textAlign: 'left',
         background: '#fff', borderRadius: 22, padding: '16px 18px',
         border: '1px solid rgba(20,17,13,0.06)', boxShadow: "0 4px 14px rgba(0,0,0,0.03)",
         display: 'flex', alignItems: 'center', gap: 14,
