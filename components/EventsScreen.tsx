@@ -316,10 +316,10 @@ function EventsMemberView({ isOpen, rsvps, onRsvp, onOpenEvent }: any) {
       <div className="editorial-header" style={{ paddingTop: 'max(env(safe-area-inset-top, 56px), 56px)' }}>
         <div className="eyebrow"><span className="dot" /> Campus · Georgetown</div>
         <h1>
-          <React.Fragment>Everything else<br/>on campus.</React.Fragment>
+          <React.Fragment>What's happening<br/>on campus.</React.Fragment>
         </h1>
         <p className="sub">
-          Greek, pre-pro, service, media and campus life. Same cards, no soundtrack.
+          Greek, pre-pro, service, media and campus life.
         </p>
       </div>
 
