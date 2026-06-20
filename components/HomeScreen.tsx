@@ -1492,8 +1492,6 @@ function HomeProfileSession({
       if (state === "reveal") setState("normal");
       return;
     }
-    if (revealUnlocked || revealCountdown !== null) return;
-    setRevealCountdown(REVEAL_COUNTDOWN_SECONDS);
   }, [activeUserId, hasLockedAnswer, revealUnlocked, revealCountdown, state, setRevealUnlocked, setState]);
 
   useEffect(() => {
