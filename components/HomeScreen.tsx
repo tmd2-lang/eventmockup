@@ -1119,6 +1119,20 @@ function NotificationsDropdown({ activeUserId, onClose, onOpenChat }: { activeUs
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: "0 12px 16px", display: 'flex', flexDirection: 'column', gap: 8 }}>
           
+          <div style={{ background: 'linear-gradient(160deg, rgba(249,115,22,0.08), rgba(245,215,131,0.1))', border: '1px solid rgba(249,115,22,0.15)', borderRadius: 16, padding: 12, display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(145deg, rgba(249,115,22,0.15), rgba(245,215,131,0.25))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
+              🔥
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 600, fontSize: 14, color: '#14110D', letterSpacing: '-0.01em' }}>
+                {USERS[activeUserId]?.profile?.currentStreak || 12}-Day Streak!
+              </div>
+              <div style={{ fontSize: 12, color: 'rgba(20,17,13,0.5)', marginTop: 2, fontWeight: 500 }}>
+                You're on fire. Keep it up.
+              </div>
+            </div>
+          </div>
+          
           {matches.map((m, i) => {
             const user = USERS[m.id];
             if (!user) return null;
@@ -1261,6 +1275,10 @@ function TopBar({
         <span style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 700, fontSize: 26, letterSpacing: "-0.03em", color: "#14110D", lineHeight: 1 }}>
           Ligo
         </span>
+        <div style={{ marginLeft: 6, display: 'flex', alignItems: 'center', gap: 4, background: 'linear-gradient(160deg, rgba(249,115,22,0.12), rgba(245,215,131,0.15))', border: '1px solid rgba(249,115,22,0.2)', padding: '4px 10px', borderRadius: 99 }}>
+          <span style={{ fontSize: 13 }}>🔥</span>
+          <span style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 700, fontSize: 13, color: '#C2410C' }}>{activeUser.profile?.currentStreak || 12}</span>
+        </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ position: "relative" }}>
@@ -1416,8 +1434,8 @@ function HomeNormal({
       />
       <RevealTeaser onOpen={onOpenReveal} hasLockedAnswer={hasLockedAnswer} revealUnlocked={revealUnlocked} />
       <ActiveMatches activeUserId={activeUserId} onSeeAll={onSeeAll} onOpenChat={onOpenChat} />
-      <NewsStrip home={home} />
       <ReceiptsCard onOpenReceipts={onOpenReceipts} />
+      <NewsStrip home={home} />
     </div>
   );
 }
