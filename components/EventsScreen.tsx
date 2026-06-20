@@ -291,12 +291,11 @@ const SOURCE_GROUPS = [
   { id: 'shared', label: 'Shared with Georgetown' },
 ];
 
-function EventsMemberView({ segment, setSegment, isOpen, rsvps, onRsvp, onOpenEvent }: any) {
+function EventsMemberView({ isOpen, rsvps, onRsvp, onOpenEvent }: any) {
   const [filter, setFilter] = useStateEV('All');
   const [scope, setScope] = useStateEV('all');
 
-  // events in the active segment
-  const segEvents = EVENTS.filter(e => (e.feed || 'music') === segment);
+  const segEvents = EVENTS;
   // categories present → filter chips, scoped to segment
   const cats: string[] = [];
   segEvents.forEach((e: any) => { if (!cats.includes(e.tag)) cats.push(e.tag); });
@@ -316,27 +315,13 @@ function EventsMemberView({ segment, setSegment, isOpen, rsvps, onRsvp, onOpenEv
 
   return (
     <div className="screen-fade">
-      {/* Music-first main segment */}
-      <div className="main-segment">
-        <button className={segment === 'music' ? 'active' : ''} onClick={() => setSegment('music')}>
-          <span className="seg-ic"><EVI.Music /></span> Music
-        </button>
-        <button className={segment === 'other' ? 'active' : ''} onClick={() => setSegment('other')}>
-          <span className="seg-ic"><EVI.Grid /></span> Everything else
-        </button>
-      </div>
-
-      <div className="editorial-header" style={{ paddingTop: 18 }}>
-        <div className="eyebrow"><span className="dot" /> {segment === 'music' ? 'Music' : 'Campus'} · Georgetown</div>
+      <div className="editorial-header" style={{ paddingTop: 24 }}>
+        <div className="eyebrow"><span className="dot" /> Campus · Georgetown</div>
         <h1>
-          {segment === 'music'
-            ? <React.Fragment>Rooms where<br/>your taste shows up.</React.Fragment>
-            : <React.Fragment>Everything else<br/>on campus.</React.Fragment>}
+          <React.Fragment>Everything else<br/>on campus.</React.Fragment>
         </h1>
         <p className="sub">
-          {segment === 'music'
-            ? 'Campus groups, DC venues and shared shows — ranked by your listening.'
-            : 'Greek, pre-pro, service, media and campus life. Same cards, no soundtrack.'}
+          Greek, pre-pro, service, media and campus life. Same cards, no soundtrack.
         </p>
       </div>
 
@@ -358,33 +343,17 @@ function EventsMemberView({ segment, setSegment, isOpen, rsvps, onRsvp, onOpenEv
         {scope === 'invited' ? ' · invited & nudged' : ''}{filter !== 'All' ? ' · ' + filter : ''}
       </div>
 
-      {/* Music feed: group by source. Everything-else: flat grid. */}
-      {segment === 'music' && filter === 'All' && scope === 'all' ? (
-        <div className="event-grid">
-          {SOURCE_GROUPS.map(g => {
-            const rows = visible.filter(e => e.source === g.id);
-            if (rows.length === 0) return null;
-            return (
-              <React.Fragment key={g.id}>
-                <div className="source-label">{g.label}<span className="ln" /></div>
-                {rows.map(renderCard)}
-              </React.Fragment>
-            );
-          })}
-          {visible.length === 0 && <EmptyState segment={segment} filter={filter} scope={scope} />}
-        </div>
-      ) : (
-        <div className="event-grid">
-          {visible.map(renderCard)}
-          {visible.length === 0 && <EmptyState segment={segment} filter={filter} scope={scope} />}
-        </div>
-      )}
+      {/* Flat grid. */}
+      <div className="event-grid">
+        {visible.map(renderCard)}
+        {visible.length === 0 && <EmptyState filter={filter} scope={scope} />}
+      </div>
       <div style={{ height: 24 }} />
     </div>
   );
 }
 
-function EmptyState({ segment, filter, scope }: any) {
+function EmptyState({ filter, scope }: any) {
   return (
     <div className="empty-events">
       <div className="ttl">{scope === 'invited' ? 'Nothing you’re invited to' : 'No '}{filter === 'All' ? (scope === 'invited' ? '' : 'events') : filter + ' events'} yet.</div>
@@ -652,7 +621,6 @@ function CreateEventSheet({ club, onClose, onPublish }: any) {
 
 // ── Orchestrator ───────────────────────────────────────────
 export function EventsScreen({ onTab }: any) {
-  const [segment, setSegment] = useStateEV('music');
   const [eventId, setEventId] = useStateEV<any>(null);
   const [sheetOpen, setSheetOpen] = useStateEV(false);
   const [reach, setReach] = useStateEV<Record<string, any>>({});
@@ -673,10 +641,10 @@ export function EventsScreen({ onTab }: any) {
 
   return (
     <div className="screen">
-      <div className="scroll" key={detail ? 'd-' + eventId : segment}>
+      <div className="scroll" key={detail ? 'd-' + eventId : 'events-main'}>
         {detail
           ? <EventDetailView e={detail} open={isOpen(detail)} onToggleReach={toggleReach} onBack={() => setEventId(null)} />
-          : <EventsMemberView segment={segment} setSegment={setSegment} isOpen={isOpen} rsvps={rsvps} onRsvp={setRsvpForId} onOpenEvent={setEventId} />}
+          : <EventsMemberView isOpen={isOpen} rsvps={rsvps} onRsvp={setRsvpForId} onOpenEvent={setEventId} />}
       </div>
 
       {!detail && <button className="create-fab" onClick={() => setSheetOpen(true)}><EVI.Plus /> Create event</button>}
