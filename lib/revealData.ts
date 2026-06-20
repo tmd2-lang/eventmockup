@@ -55,7 +55,7 @@ export const CN_PROFILES: CNProfile[] = [
     id: "cole",
     name: "Cole",
     initials: "C",
-    avatar: "/assets/cole-profile.png",
+    avatar: "/assets/Cole-profile.png",
     grad: "linear-gradient(135deg, #11A3A3, #096D6D)",
     major: "Computer Science",
     school: "Georgetown",
