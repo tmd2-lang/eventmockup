@@ -982,7 +982,7 @@ const MOCK_MATCH_PAIRS = [
   [{ id: 'cole', type: 'vibe', daysLeft: 5 }, { id: 'caroline', type: 'vibe', daysLeft: 5 }],
   [{ id: 'bennett', type: 'vibe', daysLeft: 1 }, { id: 'alessia', type: 'vibe', daysLeft: 1 }],
   [{ id: 'marcus', type: 'vibe', daysLeft: 4 }, { id: 'sofia', type: 'vibe', daysLeft: 4 }],
-  [{ id: 'maddie', type: 'vibe', daysLeft: 3 }, { id: 'jordan', type: 'vibe', daysLeft: 3 }],
+  [{ id: 'maddie', type: 'vibe', daysLeft: 3 }, { id: 'marcus', type: 'vibe', daysLeft: 3 }],
 
   // Same-Gender Vibe Pairs
   [{ id: 'jordan', type: 'vibe', daysLeft: 5 }, { id: 'cole', type: 'vibe', daysLeft: 5 }],
