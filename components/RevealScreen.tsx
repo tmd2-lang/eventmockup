@@ -42,7 +42,7 @@ function NightLabel({ text, color, dotBg, dotGlow }: { text: string; color: stri
     <>
       <div style={{ position: 'absolute', top: 40, display: 'flex', alignItems: 'center', gap: 6, opacity: 0.8, background: 'rgba(255,255,255,0.1)', padding: '6px 14px', borderRadius: 99, backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.15)' }}>
         <span style={{ fontFamily: FF, fontWeight: 600, fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.7)' }}>Presented by</span>
-        <img src="/assets/starbucks-logo.svg" alt="Starbucks" style={{ height: 14 }} onError={(e) => (e.currentTarget.style.display = 'none')} />
+        <img src="/assets/starbucks-logo.webp" alt="Starbucks" style={{ height: 14 }} onError={(e) => (e.currentTarget.style.display = 'none')} />
       </div>
       <span style={{
         fontFamily: FF, fontWeight: 700, fontSize: 13, letterSpacing: '0.08em',
@@ -69,7 +69,6 @@ function ActCampusPulse({ night, anim }: { night: any; anim: string }) {
     }}>
 
 
-      <NightLabel text="Campus Pulse" color="#F5D783" dotBg="#F5D783" dotGlow="0 0 10px rgba(245,215,131,0.5)" />
 
       <h3 style={{ fontFamily: FF, fontSize: 18, color: 'rgba(255,255,255,0.7)', marginTop: 24, fontStyle: 'italic' }}>
         &ldquo;{night.question}&rdquo;
@@ -114,7 +113,6 @@ function ActCampusMood({ night, anim }: { night: any; anim: string }) {
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 0 }} />
 
       <div style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <NightLabel text="Campus Mood" color="#A271FF" dotBg="#A271FF" dotGlow="0 0 10px rgba(162,113,255,0.5)" />
         
         <h2 style={{
           fontFamily: FF, fontWeight: 700, fontSize: 52, lineHeight: 1.05,
@@ -140,7 +138,6 @@ function ActRarity({ anim }: { anim: string }) {
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
       padding: '40px 24px', animation: anim,
     }}>
-      <NightLabel text="Your Identity" color="#EA8CE1" dotBg="#EA8CE1" dotGlow="0 0 10px rgba(234,140,225,0.5)" />
       
       <h2 style={{ fontFamily: FF, fontWeight: 700, fontSize: 36, lineHeight: 1.1, letterSpacing: '-0.03em', color: '#FFFFFF', margin: '30px 0' }}>
         You went against the grain tonight.
@@ -179,7 +176,6 @@ function ActPercentile({ anim }: { anim: string }) {
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
       padding: '40px 24px', animation: anim,
     }}>
-      <NightLabel text="Personal Standing" color="#EA8CE1" dotBg="#EA8CE1" dotGlow="0 0 10px rgba(234,140,225,0.5)" />
       
       <div style={{ marginTop: 60, marginBottom: 40, position: 'relative' }}>
         <div style={{ position: 'absolute', top: -20, right: -30, fontSize: 40, animation: 'float 3s ease-in-out infinite' }}>🔥</div>
@@ -213,7 +209,6 @@ function ActSocialProof({ night, anim }: { night: any; anim: string }) {
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
       padding: '40px 24px', animation: anim,
     }}>
-      <NightLabel text="Network Pulse" color="#71C07F" dotBg="#71C07F" dotGlow="0 0 10px rgba(113,192,127,0.5)" />
       
       <h2 style={{ fontFamily: FF, fontWeight: 700, fontSize: 38, lineHeight: 1.05, letterSpacing: '-0.03em', color: '#FFFFFF', margin: '40px 0' }}>
         Nobody in your network agreed with you.
@@ -271,7 +266,6 @@ function ActForwardHook({ night, anim, dayIndex }: { night: any; anim: string; d
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
       padding: '40px 24px', animation: anim,
     }}>
-      <NightLabel text="Tomorrow · 8 PM" color="#F5D783" dotBg="#F5D783" dotGlow="0 0 10px rgba(245,215,131,0.5)" />
       
       <div style={{ margin: '50px 0', animation: 'soft-pulse 3s infinite' }}>
         <div style={{ fontFamily: FF, fontWeight: 800, fontSize: 64, letterSpacing: '-0.04em', lineHeight: 1, color: '#F5D783', textShadow: '0 10px 40px rgba(245,215,131,0.4)' }}>
@@ -313,7 +307,7 @@ function ActSponsorCTA({ anim }: { anim: string }) {
         <div style={{ position: 'absolute', top: 20, width: 120, height: 120, background: '#fff', borderRadius: 99, filter: 'blur(40px)', opacity: 0.2 }} />
         
         <div style={{ width: 80, height: 80, background: '#fff', borderRadius: 99, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24, boxShadow: '0 10px 20px rgba(0,0,0,0.3)', zIndex: 1 }}>
-          <img src="/assets/starbucks-logo.svg" alt="Starbucks" style={{ width: 60, height: 60, objectFit: 'contain' }} onError={(e) => (e.currentTarget.style.display = 'none')} />
+          <img src="/assets/starbucks-logo.webp" alt="Starbucks" style={{ width: 60, height: 60, objectFit: 'contain' }} onError={(e) => (e.currentTarget.style.display = 'none')} />
         </div>
         
         <h2 style={{ fontFamily: FF, fontWeight: 800, fontSize: 32, lineHeight: 1.05, letterSpacing: '-0.03em', color: '#FFFFFF', marginBottom: 12, zIndex: 1 }}>
@@ -386,7 +380,7 @@ function ActSpotifyWrapped({ night, anim, dayIndex }: { night: any; anim: string
 
         <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'rgba(0,0,0,0.3)', padding: '12px 20px', borderRadius: 99, backdropFilter: 'blur(10px)' }}>
           <span style={{ fontFamily: FF, fontWeight: 700, fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Presented by</span>
-          <img src="/assets/starbucks-logo.svg" style={{ height: 20 }} onError={(e) => (e.currentTarget.style.display = 'none')} />
+          <img src="/assets/starbucks-logo.webp" style={{ height: 20 }} onError={(e) => (e.currentTarget.style.display = 'none')} />
         </div>
       </div>
       
@@ -454,7 +448,7 @@ function ShareSheet({ act, night, onClose }: { act: number; night: any; onClose:
           <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontFamily: FF, fontSize: 10, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>Presented by</span>
-              <img src="/assets/starbucks-logo.svg" alt="Starbucks" style={{ height: 18, filter: 'grayscale(1) brightness(1.5)' }} onError={(e) => (e.currentTarget.style.display = 'none')} />
+              <img src="/assets/starbucks-logo.webp" alt="Starbucks" style={{ height: 18, filter: 'grayscale(1) brightness(1.5)' }} onError={(e) => (e.currentTarget.style.display = 'none')} />
             </div>
             <span style={{ fontFamily: FF, fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>10/24/23</span>
           </div>
@@ -487,7 +481,7 @@ export function RevealScreen({ onBack, activeUserId, playIntro = false, isCN = f
     if (matches && matches.length > 0) {
       night.topSong = matches[0].title;
       night.topArtist = matches[0].artist;
-      night.topArt = matches[0].art;
+      night.topArt = (matches[0] as any).cover;
     }
   }
 

@@ -687,7 +687,7 @@ function DailyPick({
               >
                 Presented to you by Starbucks™
               </span>
-              <img src="/assets/starbucks-logo.svg" style={{ height: 14, filter: 'grayscale(1) opacity(0.7)' }} alt="Starbucks" onError={(e) => (e.currentTarget.style.display = 'none')} />
+              <img src="/assets/starbucks-logo.webp" style={{ height: 14, filter: 'grayscale(1) opacity(0.7)' }} alt="Starbucks" onError={(e) => (e.currentTarget.style.display = 'none')} />
             </div>
           </div>
           {loading ? (

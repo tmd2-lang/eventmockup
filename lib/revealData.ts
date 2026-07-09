@@ -15,7 +15,7 @@ export type RevealNight = {
 export const ACTIVE_REVEAL_NIGHT: RevealNight = {
   nightLabel: 'Night one · the reveal',
   nightOrdinal: 'one',
-  question: 'What song would play first at a Hoya house party right now?',
+  question: 'What song do you wish you could hear again for the first time?',
   topSong: 'Not Like Us',
   topArtist: 'Kendrick Lamar',
   topArt: '/artists/kendrick.png',
@@ -99,12 +99,4 @@ export const CN_PROFILES: CNProfile[] = [
     matchType: "Chorus Match",
     score: "91% Sync",
   }
-];
-
-export const MOCK_CATALOG = [
-  { title: "Espresso", artist: "Sabrina Carpenter", art: "/assets/covers/sabrina.webp" },
-  { title: "Snooze", artist: "SZA", art: "/assets/covers/sos.webp" },
-  { title: "Good 4 U", artist: "Olivia Rodrigo", art: "/assets/covers/sour.webp" },
-  { title: "Starboy", artist: "The Weeknd", art: "/assets/covers/starboy.webp" },
-  { title: "Feather", artist: "Sabrina Carpenter", art: "/assets/covers/sabrina.webp" }
 ];
