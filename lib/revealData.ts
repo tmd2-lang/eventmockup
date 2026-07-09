@@ -30,7 +30,7 @@ export const ACTIVE_REVEAL_NIGHT: RevealNight = {
     { word: 'Starboy', size: 'sm' },
     { word: 'Good 4 U', size: 'sm' },
   ],
-  tomorrowTeaser: 'Tomorrow: The most iconic chorus of the last 5 years?',
+  tomorrowTeaser: 'What’s the "most iconic chorus of the last 5 years"',
 };
 
 export type CNProfile = {
