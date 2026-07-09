@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
+import { toBlob } from 'html-to-image';
 import { ACTIVE_REVEAL_NIGHT, CN_PROFILES } from '@/lib/revealData';
 import { searchCharlotteCatalog } from "@/lib/charlotte-catalog";
 import { searchColeCatalog } from "@/lib/cole-catalog";
@@ -331,7 +332,7 @@ function ActSponsorCTA({ anim }: { anim: string }) {
 }
 
 // ── Act VIII: Spotify Wrapped Summary ─────────────────────────────────
-function ActSpotifyWrapped({ night, anim, dayIndex }: { night: any; anim: string; dayIndex: number }) {
+function ActSpotifyWrapped({ night, anim, dayIndex, onShare }: { night: any; anim: string; dayIndex: number; onShare?: () => void }) {
   const streakCount = Math.min(dayIndex + 1, 7);
   return (
     <div style={{
@@ -384,7 +385,7 @@ function ActSpotifyWrapped({ night, anim, dayIndex }: { night: any; anim: string
         </div>
       </div>
       
-      <button style={{
+      <button onClick={onShare} style={{
         position: 'absolute', bottom: 120, width: 'calc(100% - 48px)', height: 56,
         background: '#FFFFFF', color: '#000', border: 0, borderRadius: 999,
         fontFamily: FF, fontWeight: 800, fontSize: 16, cursor: 'pointer',
@@ -398,6 +399,38 @@ function ActSpotifyWrapped({ night, anim, dayIndex }: { night: any; anim: string
 
 // ── Share sheet (Festival Poster Recap) ───────────────────────────────
 function ShareSheet({ act, night, onClose }: { act: number; night: any; onClose: () => void }) {
+  const [sharing, setSharing] = useState(false);
+
+  async function handleShare() {
+    const node = document.getElementById('share-card');
+    if (!node) return;
+    setSharing(true);
+    try {
+      const blob = await toBlob(node, { quality: 0.95 });
+      if (!blob) throw new Error('Failed to generate image');
+      const file = new File([blob], 'ligo-reveal.png', { type: 'image/png' });
+      if (navigator.share) {
+        await navigator.share({
+          title: 'My Ligo Reveal',
+          files: [file]
+        });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'ligo-reveal.png';
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+      onClose();
+    } catch (err) {
+      console.error(err);
+      alert('Oops! Sharing failed.');
+    } finally {
+      setSharing(false);
+    }
+  }
+
   return (
     <>
       <div onClick={onClose} style={{ position: 'absolute', inset: 0, zIndex: 60, background: 'rgba(0,0,0,0.5)', animation: 'fadeIn 220ms ease both', backdropFilter: 'blur(15px)' }} />
@@ -454,8 +487,8 @@ function ShareSheet({ act, night, onClose }: { act: number; night: any; onClose:
           </div>
         </div>
 
-        <button onClick={onClose} style={{ width: '100%', height: 56, border: 0, borderRadius: 16, background: '#000', color: '#fff', fontFamily: FF, fontWeight: 800, fontSize: 16, cursor: 'pointer', boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}>
-          Share to Instagram Story
+        <button onClick={handleShare} disabled={sharing} style={{ width: '100%', height: 56, border: 0, borderRadius: 16, background: '#000', color: '#fff', fontFamily: FF, fontWeight: 800, fontSize: 16, cursor: 'pointer', boxShadow: '0 10px 20px rgba(0,0,0,0.1)', opacity: sharing ? 0.7 : 1 }}>
+          {sharing ? 'Preparing...' : 'Share to Instagram Story'}
         </button>
       </div>
     </>
@@ -513,7 +546,7 @@ export function RevealScreen({ onBack, activeUserId, playIntro = false, isCN = f
     ({ anim }: { anim: string }) => <ActSocialProof night={night} anim={anim} />,
     ({ anim }: { anim: string }) => <ActForwardHook night={night} dayIndex={dayIndex} anim={anim} />,
     ({ anim }: { anim: string }) => <ActSponsorCTA anim={anim} />,
-    ({ anim }: { anim: string }) => <ActSpotifyWrapped night={night} dayIndex={dayIndex} anim={anim} />,
+    ({ anim }: { anim: string }) => <ActSpotifyWrapped night={night} dayIndex={dayIndex} anim={anim} onShare={() => setShareOpen(true)} />,
   ];
 
   const cnSequence = [
