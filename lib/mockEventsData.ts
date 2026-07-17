@@ -26,7 +26,11 @@ export type EventItem = {
   day: string;
   dateLabel?: string;
   time: string;
+  endTime?: string;
   name: string;
+  summary?: string;
+  flyerUrl?: string;
+  selectedSubgroups?: string[];
   host: string;
   hostOrganizationId: string;
   venue: string;
