@@ -33,6 +33,7 @@ export type EventItem = {
   selectedSubgroups?: string[];
   selectedGuests?: any[];
   host: string;
+  hostName?: string;
   hostOrganizationId: string;
   venue: string;
   description?: string;
