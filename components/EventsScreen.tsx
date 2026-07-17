@@ -38,6 +38,9 @@ export function EventsScreen({ onTab }: any) {
   const [mainTab, setMainTab] = useState<'home' | 'invites'>('home');
   const [activeOrgId, setActiveOrgId] = useState<string | null>(null);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
+  
+  const [showSwipeableInvites, setShowSwipeableInvites] = useState(false);
+  const lastViewedUserId = React.useRef<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [importContactsOpen, setImportContactsOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -56,9 +59,34 @@ export function EventsScreen({ onTab }: any) {
 
   function flash(msg: string) { setToast(msg); setTimeout(() => setToast(null), 2600); }
 
+  const pendingInvites = events.filter(e => e.currentUserStatus === 'pending' && ['private', 'members_only', 'invite_only'].includes(e.visibility));
+
+  React.useEffect(() => {
+    // When active user changes, trigger stack if they have invites
+    if (activeUserId !== lastViewedUserId.current) {
+      if (pendingInvites.length > 0) {
+        setShowSwipeableInvites(true);
+      } else {
+        setShowSwipeableInvites(false);
+      }
+      lastViewedUserId.current = activeUserId;
+    }
+  }, [activeUserId, pendingInvites.length]);
+
   function handleRsvp(id: string, action: 'going'|'maybe'|'declined'|null) {
-    setEvents(prev => prev.map(e => e.id === id ? { ...e, currentUserStatus: action } : e));
+    setEvents(prev => prev.map(e => {
+      if (e.id === id) {
+        let newStatus = action;
+        // If undoing an RSVP for a private/invite-only event, revert to pending so it goes back to Needs Response
+        if (action === null && ['private', 'members_only', 'invite_only'].includes(e.visibility)) {
+          newStatus = 'pending' as any;
+        }
+        return { ...e, currentUserStatus: newStatus as any };
+      }
+      return e;
+    }));
     if (action) flash(`RSVP updated to ${action}`);
+    else flash('RSVP removed');
   }
 
   function handlePublish(newEvent: Partial<EventItem>, isDraft: boolean) {
@@ -155,26 +183,26 @@ export function EventsScreen({ onTab }: any) {
   const activeEvent = activeEventId ? events.find(e => e.id === activeEventId) : null;
   const activeOrg = activeOrgId ? MOCK_ORGANIZATIONS[activeOrgId] : null;
 
-  const pendingInvites = events.filter(e => e.currentUserStatus === 'pending' && ['private', 'members_only', 'invite_only'].includes(e.visibility));
-  const hasInvites = pendingInvites.length > 0;
-
   const managedOrgs = activeUser.organizations
     .filter((o: any) => ['officer', 'social_chair', 'admin'].includes(o.role))
     .map((o: any) => MOCK_ORGANIZATIONS[o.organizationId])
     .filter(Boolean);
   const isAdmin = managedOrgs.length > 0;
   
-  // Disable old swipeable invites onboarding
-  const showSwipeableInvites = false;
-
   return (
     <div className="screen" style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: 'var(--ligo-paper)' }}>
       
       {showSwipeableInvites && (
         <SwipeableInvites 
           invites={pendingInvites} 
-          onComplete={() => setHasCompletedOnboarding(true)} 
+          hidden={view === 'event-detail'}
+          onComplete={() => setShowSwipeableInvites(false)} 
+          onClose={() => setShowSwipeableInvites(false)}
           onRsvp={handleRsvp} 
+          onViewDetails={(id) => {
+            setActiveEventId(id);
+            setView('event-detail');
+          }}
         />
       )}
 

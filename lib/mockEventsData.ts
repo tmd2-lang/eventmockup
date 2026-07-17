@@ -22,6 +22,7 @@ export type OrganizationRole =
 
 export type EventItem = {
   id: string;
+  type?: 'event' | 'group_invite';
   day: string;
   dateLabel?: string;
   time: string;
