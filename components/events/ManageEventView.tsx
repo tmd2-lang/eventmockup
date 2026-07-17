@@ -142,7 +142,7 @@ export function ManageEventView({
                   </div>
                 )}
               </>
-            ) : event.id === 30 || event.id === 31 ? (
+            ) : event.id === '30' || event.id === '31' ? (
               <>
                 <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
                   <div style={{ width: 12, height: 12, background: 'var(--orange)', marginTop: 4 }} />

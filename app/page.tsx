@@ -39,7 +39,6 @@ export default function Home() {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
         gap: 18,
         padding: "40px 24px",
       }}

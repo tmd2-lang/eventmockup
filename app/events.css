@@ -4,7 +4,7 @@
    home-screen styles. Edit event data in components/EventsScreen.tsx (EVENTS array).
    ============================================================ */
 .ligo-events {
-  --h-font: 'Bricolage Grotesque', -apple-system, system-ui, sans-serif;
+  --h-font: var(--font-display), -apple-system, system-ui, sans-serif;
   --body-font: -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
   --orange: #f97316;
   --orange-soft: rgba(249, 115, 22, 0.12);

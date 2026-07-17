@@ -85,7 +85,7 @@ export function PoshEventDetail({ eventId, onBack }: Props) {
             <h1 style={{ fontSize: '48px', fontWeight: 800, margin: '0 0 24px 0', lineHeight: 1.1 }}>{event.title}</h1>
             
             <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '24px 0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ fontSize: 16, fontWeight: 700 }}>{event.day}, {event.date?.split('·')[1]?.trim() || ''}</div>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>{(event as any).day}, {event.date?.split('·')[1]?.trim() || ''}</div>
               <div style={{ fontSize: 14, color: '#a0a0a0' }}>{event.timeFull || event.time}</div>
             </div>
           </div>
@@ -185,8 +185,8 @@ export function PoshEventDetail({ eventId, onBack }: Props) {
             <div style={{ marginTop: '24px', textAlign: 'center', opacity: titleOpacity, transition: 'opacity 0.1s', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 800 }}>{event.title}</h2>
               <p style={{ margin: 0, fontSize: '15px', color: '#a0a0a0' }}>
-                {event.timeFull.split(' at ')[0]}<br />
-                {event.timeFull.split(' at ')[1]}
+                {event.timeFull?.split(' at ')[0]}<br />
+                {event.timeFull?.split(' at ')[1]}
               </p>
             </div>
           </div>
