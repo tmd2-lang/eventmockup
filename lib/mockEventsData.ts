@@ -31,6 +31,7 @@ export type EventItem = {
   summary?: string;
   flyerUrl?: string;
   selectedSubgroups?: string[];
+  selectedGuests?: any[];
   host: string;
   hostOrganizationId: string;
   venue: string;
