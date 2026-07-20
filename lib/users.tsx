@@ -1290,8 +1290,8 @@ export const USERS: Record<string, UserProfile> = {
       rarestPicks: [],
       connectedSongs: [],
       firstToPick: [],
-      horoscope: null,
-      anthem: null,
+      horoscope: undefined,
+      anthem: undefined,
     }
   }
 };
