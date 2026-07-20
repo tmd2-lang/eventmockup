@@ -23,8 +23,6 @@ export function CreateEventSheet({ club, onClose, onPublish, currentUserId }: { 
   const [endTime, setEndTime] = useState('');
   const [venue, setVenue] = useState('');
   const [summary, setSummary] = useState('');
-  const [capacityToggle, setCapacityToggle] = useState(false);
-  const [capacity, setCapacity] = useState<number | ''>('');
   const [flyerUrl, setFlyerUrl] = useState<string | null>('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1974&auto=format&fit=crop');
   const [mode, setMode] = useState<DistributionMode | null>(null);
   const [selectedSubgroups, setSelectedSubgroups] = useState<string[]>(() => {
@@ -46,7 +44,6 @@ export function CreateEventSheet({ club, onClose, onPublish, currentUserId }: { 
       endTime: endTime || undefined,
       venue: venue,
       summary: summary || undefined,
-      capacity: capacityToggle && capacity !== '' ? Number(capacity) : undefined,
       flyerUrl: flyerUrl || undefined,
       visibility: mode || 'members_only',
       inviteOnly: mode === 'invite_only',
@@ -68,48 +65,67 @@ export function CreateEventSheet({ club, onClose, onPublish, currentUserId }: { 
       <div className="sheet-content screen-fade" style={{ background: 'var(--ligo-paper)', height: '90%', borderRadius: '24px 24px 0 0', display: 'flex', flexDirection: 'column' }}>
         
         <div style={{ padding: '24px 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--ink)' }}>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink)', cursor: 'pointer' }}>Cancel</button>
-          <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)' }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 13, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink)', cursor: 'pointer' }}>Cancel</button>
+          <div style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)' }}>
             Step {step} of 3
           </div>
-          <button onClick={() => finish(true)} style={{ background: 'none', border: 'none', fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--orange)', cursor: 'pointer' }}>Save Draft</button>
+          <button onClick={() => finish(true)} style={{ background: 'none', border: 'none', fontSize: 13, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--orange)', cursor: 'pointer' }}>Save Draft</button>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '40px 20px' }}>
           {step === 1 && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40 }}>
-                <h2 style={{ fontSize: 40, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--ink)', lineHeight: 1, textTransform: 'uppercase', margin: 0 }}>The Basics</h2>
-                {club.id === 'sigma_phi_epsilon' && (
-                  <button 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setName('Saturday Darty ☀️');
-                      setDate('Saturday, September 19, 2026');
-                      setTime('2:00 PM');
-                      setEndTime('6:00 PM');
-                      setVenue('SigEp House');
-                      setSummary("The forecast says 75 and sunny, so we're doing what we always do. Backyard open, speakers turned all the way up, drinks on ice, and everyone's invited. Hydrate now. You'll thank yourself later. Backyard opens at 2. See you there. Grab your roommates and send it.");
-                      setFlyerUrl('/posh/SigEpFrat.png');
-                    }}
-                    style={{ background: 'rgba(20,17,13,0.05)', color: 'var(--ink)', border: 'none', padding: '8px 16px', borderRadius: 16, fontSize: 11, fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}
-                  >
-                    Autofill Darty
-                  </button>
-                )}
+                <h2 style={{ fontSize: 40, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--ink)', lineHeight: 1, textTransform: 'uppercase', margin: 0 }}>The Basics</h2>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {club.id === 'sigma_phi_epsilon' && (
+                    <button 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setName('Saturday Darty ☀️');
+                        setDate('Saturday, September 19, 2026');
+                        setTime('2:00 PM');
+                        setEndTime('6:00 PM');
+                        setVenue('SigEp House');
+                        setSummary("The forecast says 75 and sunny, so we're doing what we always do. Backyard open, speakers turned all the way up, drinks on ice, and everyone's invited. Hydrate now. You'll thank yourself later. Backyard opens at 2. See you there. Grab your roommates and send it.");
+                        setFlyerUrl('/posh/SigEpFrat.png');
+                      }}
+                      style={{ background: 'rgba(20,17,13,0.05)', color: 'var(--ink)', border: 'none', padding: '8px 16px', borderRadius: 16, fontSize: 11, fontWeight: 500, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                    >
+                      Autofill Darty
+                    </button>
+                  )}
+                  {club.id === 'phantoms' && (
+                    <button 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setName('Phantoms Fall Concert');
+                        setDate('Saturday, December 12');
+                        setTime('8:00 PM');
+                        setEndTime('9:30 PM');
+                        setVenue('Gaston Hall');
+                        setSummary("Join the Georgetown Phantoms for our fall concert featuring a new set of pop, rock, and R&B arrangements. Come hear what we’ve been working on all semester. Doors open at 7:30 PM.");
+                        setFlyerUrl('/Posh/SofiaPrefill.png');
+                      }}
+                      style={{ background: 'rgba(20,17,13,0.05)', color: 'var(--ink)', border: 'none', padding: '8px 16px', borderRadius: 16, fontSize: 11, fontWeight: 500, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                    >
+                      Autofill Concert
+                    </button>
+                  )}
+                </div>
               </div>
               
               <div style={{ marginBottom: 32 }}>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 12 }}>Upload Flyer</label>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 12 }}>Upload Flyer</label>
                 <div style={{ width: '100%', aspectRatio: '3/4', background: flyerUrl ? `url(${flyerUrl}) center/cover` : 'rgba(20,17,13,0.05)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', border: flyerUrl ? 'none' : '2px dashed rgba(20,17,13,0.2)' }}>
                   {!flyerUrl ? (
-                    <div style={{ color: 'rgba(20,17,13,0.4)', fontSize: 14, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                    <div style={{ color: 'rgba(20,17,13,0.4)', fontSize: 14, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                       <EVI.Plus style={{ width: 24, height: 24 }} />
                       Upload Flyer
                     </div>
                   ) : (
                     <>
-                      <div style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(255,255,255,0.9)', color: 'var(--ink)', padding: '8px 12px', borderRadius: 20, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', pointerEvents: 'none' }}>
+                      <div style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(255,255,255,0.9)', color: 'var(--ink)', padding: '8px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', pointerEvents: 'none' }}>
                         Replace
                       </div>
                       <button onClick={(e) => { e.preventDefault(); setFlyerUrl('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1974&auto=format&fit=crop'); }} style={{ position: 'absolute', top: 16, left: 16, width: 32, height: 32, borderRadius: 16, background: 'rgba(255,255,255,0.9)', color: 'var(--ink)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 10 }}>
@@ -124,38 +140,38 @@ export function CreateEventSheet({ club, onClose, onPublish, currentUserId }: { 
               </div>
 
               <div style={{ marginBottom: 32 }}>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 12 }}>Event Name</label>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 12 }}>Event Name</label>
                 <input 
                   type="text" 
                   placeholder="E.g. Fall Concert" 
                   value={name} 
                   onChange={e => setName(e.target.value)}
-                  style={{ width: '100%', fontSize: 24, fontWeight: 800, fontFamily: 'var(--font-display)', border: 'none', borderBottom: '2px solid var(--ink)', background: 'transparent', padding: '8px 0', outline: 'none', color: 'var(--ink)', textTransform: 'uppercase' }} 
+                  style={{ width: '100%', fontSize: 24, fontWeight: 500, fontFamily: 'var(--font-display)', border: 'none', borderBottom: '2px solid var(--ink)', background: 'transparent', padding: '8px 0', outline: 'none', color: 'var(--ink)', textTransform: 'uppercase' }} 
                 />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 32 }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 12 }}>Date</label>
-                  <input type="text" placeholder="Sat, Dec 12" value={date} onChange={e => setDate(e.target.value)} style={{ width: '100%', fontSize: 16, fontWeight: 800, color: 'var(--ink)', border: 'none', borderBottom: '2px solid rgba(20,17,13,0.2)', paddingBottom: 8, background: 'transparent', outline: 'none' }} />
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 12 }}>Date</label>
+                  <input type="text" placeholder="Sat, Dec 12" value={date} onChange={e => setDate(e.target.value)} style={{ width: '100%', fontSize: 16, fontWeight: 500, color: 'var(--ink)', border: 'none', borderBottom: '2px solid rgba(20,17,13,0.2)', paddingBottom: 8, background: 'transparent', outline: 'none' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 12 }}>Start Time</label>
-                  <input type="text" placeholder="10:00 PM" value={time} onChange={e => setTime(e.target.value)} style={{ width: '100%', fontSize: 16, fontWeight: 800, color: 'var(--ink)', border: 'none', borderBottom: '2px solid rgba(20,17,13,0.2)', paddingBottom: 8, background: 'transparent', outline: 'none' }} />
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 12 }}>Start Time</label>
+                  <input type="text" placeholder="10:00 PM" value={time} onChange={e => setTime(e.target.value)} style={{ width: '100%', fontSize: 16, fontWeight: 500, color: 'var(--ink)', border: 'none', borderBottom: '2px solid rgba(20,17,13,0.2)', paddingBottom: 8, background: 'transparent', outline: 'none' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 12 }}>End Time</label>
-                  <input type="text" placeholder="1:00 AM" value={endTime} onChange={e => setEndTime(e.target.value)} style={{ width: '100%', fontSize: 16, fontWeight: 800, color: 'var(--ink)', border: 'none', borderBottom: '2px solid rgba(20,17,13,0.2)', paddingBottom: 8, background: 'transparent', outline: 'none' }} />
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 12 }}>End Time</label>
+                  <input type="text" placeholder="1:00 AM" value={endTime} onChange={e => setEndTime(e.target.value)} style={{ width: '100%', fontSize: 16, fontWeight: 500, color: 'var(--ink)', border: 'none', borderBottom: '2px solid rgba(20,17,13,0.2)', paddingBottom: 8, background: 'transparent', outline: 'none' }} />
                 </div>
               </div>
 
               <div style={{ marginBottom: 32 }}>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 12 }}>Location</label>
-                <input type="text" placeholder="E.g. The Tombs" value={venue} onChange={e => setVenue(e.target.value)} style={{ width: '100%', fontSize: 16, fontWeight: 800, color: 'var(--ink)', border: 'none', borderBottom: '2px solid rgba(20,17,13,0.2)', paddingBottom: 8, background: 'transparent', outline: 'none' }} />
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 12 }}>Location</label>
+                <input type="text" placeholder="E.g. The Tombs" value={venue} onChange={e => setVenue(e.target.value)} style={{ width: '100%', fontSize: 16, fontWeight: 500, color: 'var(--ink)', border: 'none', borderBottom: '2px solid rgba(20,17,13,0.2)', paddingBottom: 8, background: 'transparent', outline: 'none' }} />
               </div>
 
               <div style={{ marginBottom: 32 }}>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 12 }}>Event Summary</label>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 12 }}>Event Summary</label>
                 <textarea 
                   placeholder="What should people know?" 
                   value={summary} 
@@ -163,34 +179,18 @@ export function CreateEventSheet({ club, onClose, onPublish, currentUserId }: { 
                   style={{ width: '100%', fontSize: 16, fontWeight: 500, color: 'var(--ink)', border: '2px solid rgba(20,17,13,0.1)', borderRadius: 12, padding: 16, background: 'transparent', outline: 'none', resize: 'none', minHeight: 100 }} 
                 />
               </div>
-
-              <div style={{ marginBottom: capacityToggle ? 16 : 32, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <label style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)' }}>Limit Capacity</label>
-                <button onClick={() => setCapacityToggle(!capacityToggle)} style={{ width: 44, height: 24, borderRadius: 12, background: capacityToggle ? 'var(--orange)' : 'rgba(20,17,13,0.1)', border: 'none', position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}>
-                  <div style={{ width: 20, height: 20, borderRadius: 10, background: '#fff', position: 'absolute', top: 2, left: capacityToggle ? 22 : 2, transition: 'left 0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} />
-                </button>
-              </div>
-              
-              {capacityToggle && (
-                <div style={{ marginBottom: 32 }}>
-                  <label style={{ display: 'block', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 12 }}>Max Capacity</label>
-                  <input type="number" placeholder="150" value={capacity} onChange={e => setCapacity(e.target.value ? Number(e.target.value) : '')} style={{ width: '100%', fontSize: 16, fontWeight: 800, color: 'var(--ink)', border: 'none', borderBottom: '2px solid var(--ink)', paddingBottom: 8, background: 'transparent', outline: 'none' }} />
-                </div>
-              )}
             </div>
           )}
 
           {step === 2 && (
             <div>
-              <h2 style={{ fontSize: 40, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--ink)', lineHeight: 1, textTransform: 'uppercase', marginBottom: 16 }}>Distribution</h2>
+              <h2 style={{ fontSize: 40, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--ink)', lineHeight: 1, textTransform: 'uppercase', marginBottom: 16 }}>Distribution</h2>
               <div style={{ fontSize: 16, color: 'rgba(20,17,13,0.6)', fontWeight: 500, marginBottom: 40 }}>Who gets to see and attend this event?</div>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {[
-                  { id: 'members_only', title: 'Members Only', desc: `Only visible to members of ${club.name}.` },
-                  { id: 'invite_only', title: 'Invited Guests', desc: 'Private event. Guests cannot invite others.' },
-                  { id: 'campus', title: 'Georgetown', desc: 'Visible on the Explore feed at Georgetown.' },
-                  { id: 'public', title: 'Public & Cross-Campus', desc: 'Visible to everyone in the DC network.' }
+                  { id: 'members_only', title: 'Members Only', desc: `Only visible to members of ${club.name}.`, icon: <EVI.Lock style={{ width: 20, height: 20 }} /> },
+                  { id: 'campus', title: 'Georgetown', desc: 'Visible on the Explore feed at Georgetown.', icon: <EVI.Globe style={{ width: 20, height: 20 }} /> }
                 ].map(m => (
                   <div key={m.id}>
                     <button 
@@ -198,16 +198,38 @@ export function CreateEventSheet({ club, onClose, onPublish, currentUserId }: { 
                       style={{ 
                         width: '100%',
                         padding: 24, 
-                        background: mode === m.id ? 'var(--ink)' : 'transparent',
-                        color: mode === m.id ? '#fff' : 'var(--ink)',
-                        border: mode === m.id ? '2px solid var(--ink)' : '2px solid rgba(20,17,13,0.2)',
+                        background: mode === m.id ? 'var(--ligo-paper)' : 'rgba(255, 255, 255, 0.4)',
+                        backdropFilter: 'blur(12px)',
+                        color: 'var(--ink)',
+                        border: mode === m.id ? '2px solid transparent' : '2px solid rgba(20,17,13,0.1)',
+                        boxShadow: mode === m.id ? '0 0 0 2px var(--orange), 0 12px 32px rgba(249,115,22,0.15)' : 'none',
                         textAlign: 'left',
                         cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        borderRadius: 16
+                        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                        borderRadius: 20,
+                        transform: mode === m.id ? 'translateY(-2px)' : 'translateY(0)',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 16
                       }}>
-                      <div style={{ fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-display)', textTransform: 'uppercase', marginBottom: 8 }}>{m.title}</div>
-                      <div style={{ fontSize: 14, color: mode === m.id ? 'rgba(255,255,255,0.7)' : 'rgba(20,17,13,0.6)', fontWeight: 500 }}>{m.desc}</div>
+                      <div style={{
+                        width: 44, 
+                        height: 44, 
+                        borderRadius: '50%', 
+                        background: mode === m.id ? 'var(--orange)' : 'rgba(20,17,13,0.05)', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        color: mode === m.id ? '#fff' : 'var(--ink)',
+                        flexShrink: 0,
+                        transition: 'all 0.3s'
+                      }}>
+                        {m.icon}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 20, fontWeight: 500, fontFamily: 'var(--font-display)', textTransform: 'uppercase', marginBottom: 4 }}>{m.title}</div>
+                        <div style={{ fontSize: 14, color: 'rgba(20,17,13,0.6)', fontWeight: 500, lineHeight: 1.4 }}>{m.desc}</div>
+                      </div>
                     </button>
                     
                     {mode === m.id && m.id === 'members_only' && (
@@ -247,7 +269,7 @@ export function CreateEventSheet({ club, onClose, onPublish, currentUserId }: { 
                             </label>
                           );
                         })}
-                        <div style={{ marginTop: 16, fontSize: 14, fontWeight: 700, color: 'var(--ink)', paddingTop: 16, borderTop: '1px solid rgba(20,17,13,0.1)' }}>
+                        <div style={{ marginTop: 16, fontSize: 14, fontWeight: 500, color: 'var(--ink)', paddingTop: 16, borderTop: '1px solid rgba(20,17,13,0.1)' }}>
                           {(() => {
                             const allMembers = club.groups.find(g => g.name === 'All Members');
                             const alumni = club.groups.find(g => g.name === 'Alumni');
@@ -273,7 +295,7 @@ export function CreateEventSheet({ club, onClose, onPublish, currentUserId }: { 
                         {selectedGuests.length > 0 && (
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
                             {selectedGuests.map(g => (
-                              <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--ink)', color: '#fff', padding: '6px 10px 6px 14px', borderRadius: 20, fontSize: 13, fontWeight: 700 }}>
+                              <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--ink)', color: '#fff', padding: '6px 10px 6px 14px', borderRadius: 20, fontSize: 13, fontWeight: 500 }}>
                                 {g.name}
                                 <button onClick={() => setSelectedGuests(prev => prev.filter(x => x.id !== g.id))} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}>
                                   <EVI.Close style={{ width: 14, height: 14 }} />
@@ -296,18 +318,18 @@ export function CreateEventSheet({ club, onClose, onPublish, currentUserId }: { 
                               onClick={() => setSelectedGuests(prev => [...prev, g])}
                               style={{ width: '100%', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, background: 'none', border: 'none', borderBottom: '1px solid rgba(20,17,13,0.05)', cursor: 'pointer', textAlign: 'left' }}
                             >
-                              <div style={{ width: 32, height: 32, borderRadius: g.type === 'org' ? 6 : 16, background: 'rgba(20,17,13,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: 'var(--ink)' }}>
+                              <div style={{ width: 32, height: 32, borderRadius: g.type === 'org' ? 6 : 16, background: 'rgba(20,17,13,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 500, color: 'var(--ink)' }}>
                                 {g.name.charAt(0)}
                               </div>
                               <div>
-                                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)' }}>{g.name}</div>
-                                <div style={{ fontSize: 12, color: 'rgba(20,17,13,0.4)', fontWeight: 600 }}>{g.type === 'org' ? 'Group' : 'Person'}</div>
+                                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>{g.name}</div>
+                                <div style={{ fontSize: 12, color: 'rgba(20,17,13,0.4)', fontWeight: 500 }}>{g.type === 'org' ? 'Group' : 'Person'}</div>
                               </div>
                             </button>
                           ))}
                         </div>
                         
-                        <div style={{ marginTop: 16, fontSize: 14, fontWeight: 700, color: 'var(--ink)', paddingTop: 16, borderTop: '1px solid rgba(20,17,13,0.1)' }}>
+                        <div style={{ marginTop: 16, fontSize: 14, fontWeight: 500, color: 'var(--ink)', paddingTop: 16, borderTop: '1px solid rgba(20,17,13,0.1)' }}>
                           Invites {selectedGuests.length} guests · hidden from everyone else.
                         </div>
                       </div>
@@ -332,7 +354,7 @@ export function CreateEventSheet({ club, onClose, onPublish, currentUserId }: { 
 
           {step === 3 && (
             <div>
-              <h2 style={{ fontSize: 40, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--ink)', lineHeight: 1, textTransform: 'uppercase', marginBottom: 40 }}>Review</h2>
+              <h2 style={{ fontSize: 40, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--ink)', lineHeight: 1, textTransform: 'uppercase', marginBottom: 40 }}>Review</h2>
               
               <div style={{ background: '#fff', borderRadius: 24, overflow: 'hidden', border: '1px solid rgba(20,17,13,0.1)', marginBottom: 40 }}>
                 {/* Flyer */}
@@ -342,13 +364,13 @@ export function CreateEventSheet({ club, onClose, onPublish, currentUserId }: { 
                 
                 {/* Details */}
                 <div style={{ padding: 24 }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--orange)', marginBottom: 8 }}>Ready to Publish</div>
-                  <div style={{ fontSize: 32, fontWeight: 800, fontFamily: 'var(--font-display)', textTransform: 'uppercase', lineHeight: 1, marginBottom: 16 }}>{name}</div>
+                  <div style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--orange)', marginBottom: 8 }}>Ready to Publish</div>
+                  <div style={{ fontSize: 32, fontWeight: 500, fontFamily: 'var(--font-display)', textTransform: 'uppercase', lineHeight: 1, marginBottom: 16 }}>{name}</div>
                   
-                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>
+                  <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)', marginBottom: 4 }}>
                     {date} • {time}{endTime ? `–${endTime}` : ''}
                   </div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: 'rgba(20,17,13,0.6)', marginBottom: 24 }}>
+                  <div style={{ fontSize: 15, fontWeight: 500, color: 'rgba(20,17,13,0.6)', marginBottom: 24 }}>
                     {venue}
                   </div>
                   
@@ -358,11 +380,11 @@ export function CreateEventSheet({ club, onClose, onPublish, currentUserId }: { 
                     </div>
                   )}
                   
-                  <div style={{ display: 'flex', gap: 16, marginBottom: capacityToggle && capacity ? 16 : 0 }}>
+                  <div style={{ display: 'flex', gap: 16, marginBottom: 0 }}>
                     <EVI.Globe style={{ color: 'var(--orange)', flexShrink: 0 }} />
                     <div>
-                      <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 4 }}>Audience</div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink)' }}>
+                      <div style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 4 }}>Audience</div>
+                      <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)' }}>
                         {(() => {
                           if (mode === 'members_only') {
                             const allMembers = club.groups.find(g => g.name === 'All Members');
@@ -381,16 +403,6 @@ export function CreateEventSheet({ club, onClose, onPublish, currentUserId }: { 
                       </div>
                     </div>
                   </div>
-
-                  {capacityToggle && capacity !== '' && (
-                    <div style={{ display: 'flex', gap: 16 }}>
-                      <EVI.Check style={{ color: 'var(--orange)', flexShrink: 0 }} />
-                      <div>
-                        <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 4 }}>Capacity</div>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink)' }}>{capacity} people</div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -402,15 +414,15 @@ export function CreateEventSheet({ club, onClose, onPublish, currentUserId }: { 
             <button 
               onClick={handleNext} 
               disabled={(step === 1 && (!name.trim() || !date.trim() || !time.trim() || !venue.trim())) || (step === 2 && !mode)} 
-              style={{ width: '100%', padding: '20px', background: ((step === 1 && (!name.trim() || !date.trim() || !time.trim() || !venue.trim())) || (step === 2 && !mode)) ? 'rgba(20,17,13,0.1)' : 'var(--ink)', color: ((step === 1 && (!name.trim() || !date.trim() || !time.trim() || !venue.trim())) || (step === 2 && !mode)) ? 'rgba(20,17,13,0.4)' : '#fff', fontSize: 14, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer', borderRadius: 16 }}>
+              style={{ width: '100%', padding: '20px', background: ((step === 1 && (!name.trim() || !date.trim() || !time.trim() || !venue.trim())) || (step === 2 && !mode)) ? 'rgba(20,17,13,0.1)' : 'var(--ink)', color: ((step === 1 && (!name.trim() || !date.trim() || !time.trim() || !venue.trim())) || (step === 2 && !mode)) ? 'rgba(20,17,13,0.4)' : '#fff', fontSize: 14, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer', borderRadius: 16 }}>
               Next Step
             </button>
           ) : (
             <div style={{ display: 'flex', gap: 12 }}>
-              <button onClick={() => finish(true)} style={{ flex: 1, padding: 20, borderRadius: 16, background: 'rgba(20,17,13,0.05)', color: 'var(--ink)', fontSize: 16, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer' }}>
+              <button onClick={() => finish(true)} style={{ flex: 1, padding: 20, borderRadius: 16, background: 'rgba(20,17,13,0.05)', color: 'var(--ink)', fontSize: 16, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer' }}>
                 Save Draft
               </button>
-              <button onClick={() => finish(false)} style={{ flex: 1, padding: 20, borderRadius: 16, background: 'var(--ink)', color: '#fff', fontSize: 16, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer' }}>
+              <button onClick={() => finish(false)} style={{ flex: 1, padding: 20, borderRadius: 16, background: 'var(--ink)', color: '#fff', fontSize: 16, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer' }}>
                 Publish
               </button>
             </div>

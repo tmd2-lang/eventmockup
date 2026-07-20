@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getDailyRevealForProfile } from "@/lib/supabase/queries/daily";
+import { getDailyRevealForProfile, getDailyQuestions } from "@/lib/supabase/queries/daily";
+import { resolveCurrentDayNumber, getQuestionForDay } from "@/lib/dailyReveal";
 import { createServerSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import {
   EMPTY_DAILY_RESPONSE,
@@ -34,9 +35,19 @@ export async function GET(request: Request) {
     try {
       const bundle = await getDailyRevealForProfile(supabase, profileId);
       if (!bundle) {
+        const questions = await getDailyQuestions(supabase);
+        let currentDayNumber = null;
+        let currentQuestion = null;
+        if (questions.length > 0) {
+          currentDayNumber = resolveCurrentDayNumber(questions);
+          currentQuestion = getQuestionForDay(questions, currentDayNumber);
+        }
+
         return NextResponse.json({
           profileId,
           ...EMPTY_DAILY_RESPONSE,
+          currentDayNumber,
+          currentQuestion,
           meta: { trailCount: 0, empty: true },
         });
       }

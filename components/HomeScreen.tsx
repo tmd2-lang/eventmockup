@@ -20,6 +20,7 @@ import { searchMaddieCatalog } from "@/lib/maddie-catalog";
 import { searchAlessiaCatalog } from "@/lib/alessia-catalog";
 import { searchSofiaCatalog } from "@/lib/sofia-catalog";
 import { searchMarcusCatalog } from "@/lib/marcus-catalog";
+import { searchLigoCatalog } from "@/lib/ligo-catalog";
 import { USERS, type UserProfile } from "@/lib/users";
 import { useDailyReveal } from "@/hooks/useDailyReveal";
 import { useHomeContent } from "@/hooks/useHomeContent";
@@ -147,6 +148,8 @@ function searchCatalog(activeUserId: string, draft: string, limit = 8): CatalogS
       return searchMarcusCatalog(draft, limit);
     case "sofia":
       return searchSofiaCatalog(draft, limit);
+    case "ligo":
+      return searchLigoCatalog(draft, limit);
     default:
       return searchJordanCatalog(draft, limit);
   }

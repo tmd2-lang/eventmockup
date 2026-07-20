@@ -42,13 +42,13 @@ export function EventCard({ e, onOpen, onRsvp }: { e: EventItem, onOpen: () => v
       )}
       
       <div className="body" style={{ padding: 16 }}>
-        <div className="name" style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--ink)' }}>{e.name}</div>
+        <div className="name" style={{ fontSize: 18, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--ink)' }}>{e.name}</div>
         <div className="host" style={{ fontSize: 14, fontWeight: 500, color: 'rgba(20,17,13,0.6)', marginTop: 4 }}>{e.host}</div>
         <div className="venue" style={{ fontSize: 14, fontWeight: 500, color: 'rgba(20,17,13,0.6)' }}>{e.venue}</div>
         
         <div className="footer" style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span className="tag" style={{ background: e.tagBg, color: e.tagFg, width: 'fit-content', padding: '4px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' }}>{e.tag}</span>
+            <span className="tag" style={{ background: e.tagBg, color: e.tagFg, width: 'fit-content', padding: '4px 8px', borderRadius: 6, fontSize: 11, fontWeight: 500, textTransform: 'uppercase' }}>{e.tag}</span>
             {socialSignal && <span style={{ fontSize: 12, color: 'rgba(20,17,13,0.6)', fontWeight: 500 }}>{socialSignal}</span>}
           </div>
           
@@ -62,7 +62,7 @@ export function EventCard({ e, onOpen, onRsvp }: { e: EventItem, onOpen: () => v
                 onRsvp(e.id, 'going');
               }
             }}
-            style={{ padding: '8px 16px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, background: (e.currentUserStatus === 'going' || e.currentUserStatus === 'hosting') ? 'rgba(20,17,13,0.05)' : 'var(--ink)', color: (e.currentUserStatus === 'going' || e.currentUserStatus === 'hosting') ? 'var(--ink)' : '#fff' }}
+            style={{ padding: '8px 16px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 500, background: (e.currentUserStatus === 'going' || e.currentUserStatus === 'hosting') ? 'rgba(20,17,13,0.05)' : 'var(--ink)', color: (e.currentUserStatus === 'going' || e.currentUserStatus === 'hosting') ? 'var(--ink)' : '#fff' }}
           >
             {(e.currentUserStatus === 'going' || e.currentUserStatus === 'hosting') ? <React.Fragment><EVI.Check /> Going</React.Fragment> : 'RSVP'}
           </button>
@@ -78,8 +78,8 @@ export function InviteCard({ e, onOpen, onAction }: { e: EventItem, onOpen: () =
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
         <div style={{ width: 48, height: 48, borderRadius: 12, background: e.color, flexShrink: 0 }} />
         <div>
-          <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--ink)' }}>{e.name}</div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--orange)', marginTop: 2 }}>{e.day} · {e.time}</div>
+          <div style={{ fontSize: 16, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--ink)' }}>{e.name}</div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--orange)', marginTop: 2 }}>{e.day} · {e.time}</div>
           <div style={{ fontSize: 13, color: 'rgba(20,17,13,0.6)' }}>{e.venue}</div>
         </div>
       </div>
@@ -92,9 +92,9 @@ export function InviteCard({ e, onOpen, onAction }: { e: EventItem, onOpen: () =
       )}
       
       <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={(ev) => { ev.stopPropagation(); onAction(e.id, 'declined'); }} style={{ flex: 1, padding: '8px 0', borderRadius: 8, background: 'rgba(20,17,13,0.05)', color: 'rgba(20,17,13,0.7)', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>Decline</button>
-        <button onClick={(ev) => { ev.stopPropagation(); onAction(e.id, 'maybe'); }} style={{ flex: 1, padding: '8px 0', borderRadius: 8, background: 'rgba(20,17,13,0.05)', color: 'rgba(20,17,13,0.7)', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>Maybe</button>
-        <button onClick={(ev) => { ev.stopPropagation(); onAction(e.id, 'going'); }} style={{ flex: 1.5, padding: '8px 0', borderRadius: 8, background: 'var(--orange)', color: '#fff', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>Going</button>
+        <button onClick={(ev) => { ev.stopPropagation(); onAction(e.id, 'declined'); }} style={{ flex: 1, padding: '8px 0', borderRadius: 8, background: 'rgba(20,17,13,0.05)', color: 'rgba(20,17,13,0.7)', fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer' }}>Decline</button>
+        <button onClick={(ev) => { ev.stopPropagation(); onAction(e.id, 'maybe'); }} style={{ flex: 1, padding: '8px 0', borderRadius: 8, background: 'rgba(20,17,13,0.05)', color: 'rgba(20,17,13,0.7)', fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer' }}>Maybe</button>
+        <button onClick={(ev) => { ev.stopPropagation(); onAction(e.id, 'going'); }} style={{ flex: 1.5, padding: '8px 0', borderRadius: 8, background: 'var(--orange)', color: '#fff', fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer' }}>Going</button>
       </div>
     </div>
   );

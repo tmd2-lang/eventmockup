@@ -46,13 +46,13 @@ export function InvitesView({
       <div key={e.id} style={{ display: 'flex', flexDirection: 'column', padding: '16px 20px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', gap: 16, cursor: 'pointer', alignItems: 'center' }} onClick={() => onOpenEvent(e.id)}>
           {/* Thumbnail */}
-          <div style={{ width: 64, height: 64, borderRadius: 12, background: e.image ? `url(${e.image}) center/cover` : (e.hostAvatarColor || '#eee'), flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20, fontWeight: 800 }}>
+          <div style={{ width: 64, height: 64, borderRadius: 12, background: e.image ? `url(${e.image}) center/cover` : (e.hostAvatarColor || '#eee'), flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20, fontWeight: 500 }}>
             {!e.image && e.hostAvatar}
           </div>
           
           {/* Info */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#111', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 4 }}>
+            <div style={{ fontSize: 16, fontWeight: 500, color: '#111', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 4 }}>
               {e.title}
             </div>
             
@@ -60,7 +60,7 @@ export function InvitesView({
               {getContextLine(e)}
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, color: '#444' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 500, color: '#444' }}>
               {e.date}
               {e.visibility === 'private' && (
                 <>
@@ -74,7 +74,7 @@ export function InvitesView({
           {/* Right side (countdown + status chip) */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
             {showDaysOut && (
-              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--ligo-orange)', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--ligo-orange)', whiteSpace: 'nowrap' }}>
                 in {daysOut} day{daysOut !== 1 ? 's' : ''}
               </div>
             )}
@@ -88,7 +88,7 @@ export function InvitesView({
                   background: e.currentUserStatus === 'going' ? 'rgba(249,115,22,0.1)' : 'transparent',
                   border: e.currentUserStatus === 'going' ? '1px solid rgba(249,115,22,0.2)' : '1px solid rgba(0,0,0,0.15)',
                   color: e.currentUserStatus === 'going' ? 'var(--ligo-orange)' : '#444',
-                  fontSize: 13, fontWeight: 700, cursor: 'pointer'
+                  fontSize: 13, fontWeight: 500, cursor: 'pointer'
                 }}
               >
                 {e.currentUserStatus === 'going' ? 'Going ✓' : 'Maybe'}
@@ -99,10 +99,17 @@ export function InvitesView({
 
         {/* Action Controls */}
         {mode === 'pending' || editingResponseId === e.id ? (
-          <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-            <button onClick={() => { onAction(e.id, 'declined'); setEditingResponseId(null); }} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid rgba(0,0,0,0.1)', background: 'transparent', fontSize: 14, fontWeight: 700, color: '#444', cursor: 'pointer' }}>Decline</button>
-            <button onClick={() => { onAction(e.id, 'maybe'); setEditingResponseId(null); }} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid rgba(0,0,0,0.1)', background: 'transparent', fontSize: 14, fontWeight: 700, color: '#444', cursor: 'pointer' }}>Maybe</button>
-            <button onClick={() => { onAction(e.id, 'going'); setEditingResponseId(null); }} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: 'var(--ligo-orange)', fontSize: 14, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>Going</button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => { onAction(e.id, 'declined'); setEditingResponseId(null); }} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid rgba(0,0,0,0.1)', background: 'transparent', fontSize: 14, fontWeight: 500, color: '#444', cursor: 'pointer' }}>Decline</button>
+              <button onClick={() => { onAction(e.id, 'maybe'); setEditingResponseId(null); }} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid rgba(0,0,0,0.1)', background: 'transparent', fontSize: 14, fontWeight: 500, color: '#444', cursor: 'pointer' }}>Maybe</button>
+              <button onClick={() => { onAction(e.id, 'going'); setEditingResponseId(null); }} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: 'var(--ligo-orange)', fontSize: 14, fontWeight: 500, color: '#fff', cursor: 'pointer' }}>Going</button>
+            </div>
+            {e.currentUserStatus && (
+              <button onClick={() => { onAction(e.id, null); setEditingResponseId(null); }} style={{ background: 'none', border: 'none', color: '#888', fontSize: 13, fontWeight: 500, cursor: 'pointer', alignSelf: 'center', padding: '4px 8px' }}>
+                Undo RSVP
+              </button>
+            )}
           </div>
         ) : null}
       </div>
@@ -114,7 +121,7 @@ export function InvitesView({
       {/* 1. Needs Response */}
       {pendingEvents.length > 0 && (
         <div style={{ marginBottom: 24 }}>
-          <div style={{ padding: '24px 20px 8px', fontSize: 14, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#111' }}>
+          <div style={{ padding: '24px 20px 8px', fontSize: 14, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#111' }}>
             Needs Response
           </div>
           {pendingEvents.map(e => renderEventRow(e, 'pending'))}
@@ -124,7 +131,7 @@ export function InvitesView({
       {/* 2. Upcoming */}
       {upcomingEvents.length > 0 && (
         <div style={{ marginBottom: 24 }}>
-          <div style={{ padding: '24px 20px 8px', fontSize: 14, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#111' }}>
+          <div style={{ padding: '24px 20px 8px', fontSize: 14, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#111' }}>
             Upcoming
           </div>
           {upcomingEvents.map(e => renderEventRow(e, 'upcoming'))}
@@ -136,7 +143,7 @@ export function InvitesView({
         <div>
           <div 
             onClick={() => setShowPast(!showPast)}
-            style={{ padding: '16px 20px', fontSize: 14, fontWeight: 700, color: 'rgba(20,17,13,0.6)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', borderTop: '1px solid rgba(0,0,0,0.05)', borderBottom: showPast ? '1px solid rgba(0,0,0,0.05)' : 'none' }}
+            style={{ padding: '16px 20px', fontSize: 14, fontWeight: 500, color: 'rgba(20,17,13,0.6)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', borderTop: '1px solid rgba(0,0,0,0.05)', borderBottom: showPast ? '1px solid rgba(0,0,0,0.05)' : 'none' }}
           >
             Past & declined ({pastAndDeclinedEvents.length})
             <div style={{ transform: showPast ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</div>
@@ -150,7 +157,7 @@ export function InvitesView({
       )}
       
       {pendingEvents.length === 0 && upcomingEvents.length === 0 && pastAndDeclinedEvents.length === 0 && (
-        <div style={{ padding: 40, textAlign: 'center', color: 'rgba(20,17,13,0.4)', fontSize: 15, fontWeight: 600 }}>
+        <div style={{ padding: 40, textAlign: 'center', color: 'rgba(20,17,13,0.4)', fontSize: 15, fontWeight: 500 }}>
           No events found.
         </div>
       )}

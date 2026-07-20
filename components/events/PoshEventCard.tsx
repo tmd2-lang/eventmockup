@@ -32,18 +32,18 @@ export function PoshEventCard({ event, onClick, layout = "carousel", index = 0 }
         
         {/* Org Badge Top Left */}
         {event.hostAvatar && (
-          <div style={{ position: 'absolute', top: 12, left: 12, background: event.hostAvatarColor || '#000', color: '#fff', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+          <div style={{ position: 'absolute', top: 12, left: 12, background: event.hostAvatarColor || '#000', color: '#fff', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 500, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
             {event.hostAvatar}
           </div>
         )}
 
         {/* Date/Time Chip Bottom Left */}
-        <div style={{ position: 'absolute', bottom: 12, left: 12, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)', color: '#000', padding: '4px 8px', borderRadius: '6px', fontSize: 11, fontWeight: 700, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        <div style={{ position: 'absolute', bottom: 12, left: 12, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)', color: '#000', padding: '4px 8px', borderRadius: '6px', fontSize: 11, fontWeight: 500, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
           {event.day} · {event.time}
         </div>
       </div>
       
-      <div style={{ fontSize: '16px', fontWeight: 800, margin: '0 0 2px 0', letterSpacing: '-0.3px', lineHeight: 1.2, color: '#111' }}>
+      <div style={{ fontSize: '16px', fontWeight: 500, margin: '0 0 2px 0', letterSpacing: '-0.3px', lineHeight: 1.2, color: '#111' }}>
         {event.name}
       </div>
       <div style={{ fontSize: '13px', color: '#444', margin: '0 0 2px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 500 }}>

@@ -60,6 +60,18 @@ export function HomeFeedView({
     return publicEvents.filter(e => !capturedIds.has(e.id));
   }, [publicEvents, nightlifeEvents, liveMusicEvents, cultureEvents]);
 
+  if (publicEvents.length === 0) {
+    return (
+      <div className="screen-fade" style={{ background: '#FAFAF8', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 24px 120px' }}>
+        <div style={{ width: 64, height: 64, borderRadius: 99, background: 'rgba(20,17,13,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+          <EVI.Calendar style={{ width: 32, height: 32, color: 'rgba(20,17,13,0.3)' }} />
+        </div>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 600, color: '#14110D', margin: '0 0 12px', letterSpacing: '-0.02em', textAlign: 'center' }}>No upcoming events</h2>
+        <p style={{ margin: 0, color: 'rgba(20,17,13,0.5)', fontSize: 16, lineHeight: 1.5, textAlign: 'center', maxWidth: 280 }}>It's quiet on campus right now. Check back later to see what's happening around Georgetown.</p>
+      </div>
+    );
+  }
+
   // Construct Category Rows
   const categoryRows = [
     { title: "Free This Week", subtitle: "No cover, just pull up", events: freeEvents, forceRender: false },
@@ -76,7 +88,7 @@ export function HomeFeedView({
           <button onClick={() => setActiveCategory(null)} style={{ background: 'none', border: 'none', padding: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <EVI.Chevron style={{ width: 24, height: 24, transform: 'rotate(90deg)' }} />
           </button>
-          <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, fontFamily: 'var(--font-display)', letterSpacing: '-0.5px' }}>{activeCategory.title}</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 500, margin: 0, fontFamily: 'var(--font-display)', letterSpacing: '-0.5px' }}>{activeCategory.title}</h1>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -122,11 +134,11 @@ function CarouselSection({ title, subtitle, events, onEventClick, onViewAll }: {
     <div style={{ marginTop: 24 }}> {/* Tightened from 32 */}
       <div style={{ padding: '0 20px', marginBottom: 12, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
         <div>
-          <h2 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px 0', letterSpacing: '-0.5px', color: '#111', fontFamily: 'var(--font-display)' }}>{title}</h2>
+          <h2 style={{ fontSize: 22, fontWeight: 500, margin: '0 0 4px 0', letterSpacing: '-0.5px', color: '#111', fontFamily: 'var(--font-display)' }}>{title}</h2>
           <p style={{ fontSize: 14, color: '#666', margin: 0, fontWeight: 500 }}>{subtitle}</p>
         </div>
         {onViewAll && (
-          <div onClick={onViewAll} style={{ fontSize: 14, color: 'var(--orange)', fontWeight: 700, cursor: 'pointer' }}>all →</div>
+          <div onClick={onViewAll} style={{ fontSize: 14, color: 'var(--orange)', fontWeight: 500, cursor: 'pointer' }}>all →</div>
         )}
       </div>
 

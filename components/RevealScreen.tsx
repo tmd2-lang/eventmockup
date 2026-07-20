@@ -12,6 +12,7 @@ import { searchMaddieCatalog } from "@/lib/maddie-catalog";
 import { searchMarcusCatalog } from "@/lib/marcus-catalog";
 import { searchSofiaCatalog } from "@/lib/sofia-catalog";
 import { searchJordanCatalog } from "@/lib/jordan-catalog";
+import { searchLigoCatalog } from "@/lib/ligo-catalog";
 
 function searchCatalogLocal(activeUserId: string, draft: string, limit = 8) {
   switch (activeUserId) {
@@ -23,6 +24,7 @@ function searchCatalogLocal(activeUserId: string, draft: string, limit = 8) {
     case "maddie": return searchMaddieCatalog(draft, limit);
     case "marcus": return searchMarcusCatalog(draft, limit);
     case "sofia": return searchSofiaCatalog(draft, limit);
+    case "ligo": return searchLigoCatalog(draft, limit);
     default: return searchJordanCatalog(draft, limit);
   }
 }

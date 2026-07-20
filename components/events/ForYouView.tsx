@@ -33,10 +33,10 @@ export function ForYouView({
       {managedOrgs.map(org => (
         <div key={org.id} onClick={() => onOpenOrgWorkspace(org.id)} style={{ background: '#fff', borderRadius: 16, border: '1px solid rgba(20,17,13,0.06)', padding: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--orange)', marginBottom: 4 }}>Managing</div>
-            <div style={{ fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--ink)', lineHeight: 1 }}>{org.name}</div>
+            <div style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--orange)', marginBottom: 4 }}>Managing</div>
+            <div style={{ fontSize: 20, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--ink)', lineHeight: 1 }}>{org.name}</div>
           </div>
-          <div style={{ color: 'rgba(20,17,13,0.4)', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <div style={{ color: 'rgba(20,17,13,0.4)', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Workspace <EVI.Chevron style={{ width: 14, height: 14, transform: 'rotate(-90deg)' }} />
           </div>
         </div>
@@ -45,7 +45,7 @@ export function ForYouView({
       <div>
         {forYouEvents.length === 0 ? (
           <div style={{ padding: 20 }}>
-            <div style={{ fontSize: 24, fontWeight: 800, fontFamily: 'var(--font-display)', textTransform: 'uppercase' }}>Nothing for you right now.</div>
+            <div style={{ fontSize: 24, fontWeight: 500, fontFamily: 'var(--font-display)', textTransform: 'uppercase' }}>Nothing for you right now.</div>
             <div style={{ fontSize: 14, color: 'rgba(20,17,13,0.6)', marginTop: 8 }}>Check the Explore tab to find campus events.</div>
           </div>
         ) : (

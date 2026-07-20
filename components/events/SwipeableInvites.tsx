@@ -66,7 +66,7 @@ export function SwipeableInvites({
       padding: 'max(env(safe-area-inset-top, 40px), 40px) 20px max(env(safe-area-inset-bottom, 40px), 40px)',
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div style={{ color: '#fff', fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <div style={{ color: '#fff', fontSize: 13, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           Needs Response ({currentIndex + 1} of {sortedInvites.length})
         </div>
         <button 
@@ -121,10 +121,10 @@ export function SwipeableInvites({
                 {isGroupInvite ? (
                   // Group Invite Layout
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 32, textAlign: 'center' }}>
-                    <div style={{ width: 120, height: 120, borderRadius: '50%', background: invite.hostAvatarColor || 'var(--orange)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, fontWeight: 800, marginBottom: 24 }}>
+                    <div style={{ width: 120, height: 120, borderRadius: '50%', background: invite.hostAvatarColor || 'var(--orange)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, fontWeight: 500, marginBottom: 24 }}>
                       {invite.hostAvatar || invite.host.substring(0, 2).toUpperCase()}
                     </div>
-                    <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--ink)', fontFamily: 'var(--font-display)', textTransform: 'uppercase', lineHeight: 1.1, marginBottom: 12 }}>
+                    <div style={{ fontSize: 24, fontWeight: 500, color: 'var(--ink)', fontFamily: 'var(--font-display)', textTransform: 'uppercase', lineHeight: 1.1, marginBottom: 12 }}>
                       {invite.host}
                     </div>
                     <div style={{ fontSize: 16, fontWeight: 500, color: 'rgba(20,17,13,0.6)' }}>
@@ -140,16 +140,16 @@ export function SwipeableInvites({
                       )}
                       {/* Countdown badge */}
                       {invite.relativeDays !== undefined && (
-                        <div style={{ position: 'absolute', top: 16, right: 16, background: '#fff', padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink)' }}>
+                        <div style={{ position: 'absolute', top: 16, right: 16, background: '#fff', padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink)' }}>
                           {invite.relativeDays === 0 ? 'Today' : `In ${invite.relativeDays} days`}
                         </div>
                       )}
                     </div>
                     <div style={{ padding: 24, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                      <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--ink)', lineHeight: 1, letterSpacing: '-0.02em', textTransform: 'uppercase', margin: '0 0 12px 0' }}>
+                      <h2 style={{ fontSize: 32, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--ink)', lineHeight: 1, letterSpacing: '-0.02em', textTransform: 'uppercase', margin: '0 0 12px 0' }}>
                         {invite.name || invite.title}
                       </h2>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--orange)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
+                      <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--orange)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
                         Invited by {invite.hostName || invite.host}
                       </div>
                       <div style={{ fontSize: 15, fontWeight: 500, color: 'rgba(20,17,13,0.6)' }}>
@@ -167,13 +167,13 @@ export function SwipeableInvites({
       <div style={{ display: 'flex', gap: 16, marginTop: 'auto', position: 'relative', zIndex: 20 }}>
         <button 
           onClick={() => handleAction('declined')}
-          style={{ flex: 1, padding: 20, borderRadius: 40, background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: 14, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+          style={{ flex: 1, padding: 20, borderRadius: 40, background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: 14, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
         >
           Pass
         </button>
         <button 
           onClick={() => handleAction('going')}
-          style={{ flex: 1, padding: 20, borderRadius: 40, background: '#fff', color: 'var(--ink)', fontSize: 14, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}
+          style={{ flex: 1, padding: 20, borderRadius: 40, background: '#fff', color: 'var(--ink)', fontSize: 14, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}
         >
           {currentInvite.type === 'group_invite' ? 'Join' : "I'm In"}
         </button>

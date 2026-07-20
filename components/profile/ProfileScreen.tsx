@@ -57,7 +57,7 @@ export function useActiveUserProfile() {
   const overrideUserId = ctx?.overrideUserId;
   const [activeUserId] = usePersistentState('ligo:active_user', 'jordan');
   const user = USERS[overrideUserId || activeUserId] || USERS['jordan'];
-  return { ...PROFILE_PRESENTATION_DEFAULTS, ...user.profile };
+  return { id: user.id, ...PROFILE_PRESENTATION_DEFAULTS, ...user.profile };
 }
 
 export function useActiveUser() {
@@ -153,13 +153,20 @@ export function ProfileV2Provider({ children, overrideUserId, matchReason, onClo
 
   const closeReceipts = useCallback(() => setScreen('profile'), []);
 
+  const openPastReads = useCallback(() => {
+    setSheet(null);
+    setScreen('past-reads');
+  }, []);
+
+  const closePastReads = useCallback(() => setScreen('profile'), []);
+
   return (
     <ProfileV2Ctx.Provider value={{
       screen, setScreen, sheet, openSheet, closeSheet, sheetOrigin,
       toastMsg, toastOn, toast, notifUnread,
       openArchetypeGallery, closeArchetypeGallery, openArchetypeFromGallery,
       playingIdx, toggleTrack, meterOn, overrideUserId, matchReason, onClose,
-      openReceipts, closeReceipts, runMeterAnim
+      openReceipts, closeReceipts, openPastReads, closePastReads, runMeterAnim
     }}>
       {children}
     </ProfileV2Ctx.Provider>
@@ -210,9 +217,9 @@ function TrophySheet({ trophyId }) {
   const trophy = STREAK_TROPHIES.find((t) => t.id === trophyId);
   if (!trophy) return null;
 
-  const earned = currentProfile.longestStreak >= trophy.days;
-  const daysLeft = Math.max(0, trophy.days - currentProfile.longestStreak);
-  const isCurrentTier = earned && [...STREAK_TROPHIES].filter((x) => x.days <= currentProfile.currentStreak).pop()?.id === trophy.id;
+  const earned = profile.longestStreak >= trophy.days;
+  const daysLeft = Math.max(0, trophy.days - profile.longestStreak);
+  const isCurrentTier = earned && [...STREAK_TROPHIES].filter((x) => x.days <= profile.currentStreak).pop()?.id === trophy.id;
 
   return (
     <div style={{ paddingBottom: 24 }}>
@@ -281,7 +288,7 @@ function TrophySheet({ trophyId }) {
               {daysLeft} more day{daysLeft === 1 ? '' : 's'} to unlock
             </div>
             <div style={{ fontSize: 12.5, color: 'rgba(20,17,13,0.55)', marginTop: 6, lineHeight: 1.4 }}>
-              Answer daily at Georgetown. Your longest streak so far is {currentProfile.longestStreak} day{currentProfile.longestStreak === 1 ? '' : 's'}.
+              Answer daily at Georgetown. Your longest streak so far is {profile.longestStreak} day{profile.longestStreak === 1 ? '' : 's'}.
             </div>
           </>
         )}
@@ -824,8 +831,7 @@ function ProfileTabV2() {
   const renderSlot = (idx, variant) => {
     const promptData = userPrompts[idx];
     if (!promptData || !promptData.answer) {
-      if (isEditing) return <EmptyPromptSlot key={`empty-${idx}`} onClick={() => setActiveEditSheet({ type: 'prompt', slotIndex: idx })} />;
-      return null;
+      return <EmptyPromptSlot key={`empty-${idx}`} onClick={() => setActiveEditSheet({ type: 'prompt', slotIndex: idx })} />;
     }
     const libraryDef = PROMPT_LIBRARY.find(p => p.id === promptData.id) || { stem: 'Missing Prompt' };
     return (
@@ -986,9 +992,9 @@ function ProfileTabV2() {
     
           
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-            <span style={{ ...LIQUID_GLASS, padding: '6px 12px', borderRadius: 99, fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 12, color: '#14110D' }}>{activeUser.yearLevel}</span>
-            <span style={{ ...LIQUID_GLASS, padding: '6px 12px', borderRadius: 99, fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 12, color: '#14110D' }}>{activeUser.pronouns}</span>
-            <span style={{ fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 12, color: 'rgba(20,17,13,0.40)', marginLeft: 4 }}>{activeUser.school}</span>
+            <span style={{ ...LIQUID_GLASS, padding: '6px 12px', borderRadius: 99, fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 12, color: '#14110D' }}>{activeUser.yearLevel || '+ Add Year'}</span>
+            <span style={{ ...LIQUID_GLASS, padding: '6px 12px', borderRadius: 99, fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 12, color: '#14110D' }}>{activeUser.pronouns || '+ Add Pronouns'}</span>
+            <span style={{ fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 12, color: 'rgba(20,17,13,0.40)', marginLeft: 4 }}>{activeUser.school || 'Georgetown'}</span>
           </div>
 
 
@@ -1010,34 +1016,60 @@ function ProfileTabV2() {
         onEditArtists={() => setActiveEditSheet({ type: 'artists', initialValue: currentProfile.artists })}
       />
       {renderSlot(1, 'accent')}
-      {isSelfView && (
-        <Reveal style={{ padding: `10px ${EDGE}px 0` }}>
-          <div style={{
-            borderRadius: 22, padding: 20,
-            background: 'linear-gradient(165deg, rgba(245,215,131,0.16), rgba(249,115,22,0.05))',
-            border: '1px solid rgba(245,215,131,0.45)',
-          }}>
-            <Eyebrow dotColor="#C2410C">Your Ligo horoscope</Eyebrow>
-            <h2 style={{
-              fontFamily: DISPLAY, fontWeight: 600, fontSize: 22, marginTop: 12,
-              letterSpacing: '-0.02em', lineHeight: 1.12,
-            }}>{currentProfile.horoscope?.headline}</h2>
-            <p style={{ marginTop: 10, fontSize: 14.5, lineHeight: 1.55, color: 'rgba(20,17,13,0.60)' }}>
-              {currentProfile.horoscope?.body}
-            </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 14 }}>
-              {currentProfile.horoscope?.chips.map((chip) => (
-                <ChipTag key={chip.label} tone={chip.tone}>{chip.label}</ChipTag>
-              ))}
-            </div>
-            <button type="button" onClick={() => openSheet('pastreads')} style={{
-              marginTop: 14, border: 0, background: 'none', padding: 0, cursor: 'pointer',
-              fontFamily: DISPLAY, fontWeight: 600, fontSize: 12.5, color: '#F97316',
-              display: 'inline-flex', alignItems: 'center', gap: 5,
-            }}>Past reads <Icon.Chev width={14} height={14} /></button>
-          </div>
-        </Reveal>
-      )}
+      <Reveal style={{ padding: `10px ${EDGE}px 0` }}>
+        <div style={{
+          borderRadius: 22, padding: 20,
+          background: 'linear-gradient(165deg, rgba(245,215,131,0.16), rgba(249,115,22,0.05))',
+          border: '1px solid rgba(245,215,131,0.45)',
+        }}>
+          <Eyebrow dotColor="#C2410C">Your Ligo horoscope</Eyebrow>
+          {currentProfile.horoscope ? (
+            <>
+              {currentProfile.horoscope.dailyLine && (
+                <>
+                  <div style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#F97316', marginTop: 12, marginBottom: 4 }}>
+                    TODAY
+                  </div>
+                  <div style={{ fontSize: 13, lineHeight: 1.4, color: 'rgba(20,17,13,0.70)' }}>
+                    {currentProfile.horoscope.dailyLine}
+                  </div>
+                  <div style={{ height: 1, background: 'rgba(20,17,13,0.06)', margin: '16px 0' }} />
+                  <div style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(20,17,13,0.4)', marginBottom: 4 }}>
+                    THIS WEEK'S READING — SUNDAY, JULY 19
+                  </div>
+                </>
+              )}
+              <h2 style={{
+                fontFamily: DISPLAY, fontWeight: 600, fontSize: 22, marginTop: currentProfile.horoscope.dailyLine ? 4 : 12,
+                letterSpacing: '-0.02em', lineHeight: 1.12,
+              }}>{currentProfile.horoscope.headline}</h2>
+              <p style={{ marginTop: 10, fontSize: 14.5, lineHeight: 1.55, color: 'rgba(20,17,13,0.60)' }}>
+                {currentProfile.horoscope.body}
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 14 }}>
+                {currentProfile.horoscope.chips.map((chip) => (
+                  <ChipTag key={chip.label} tone={chip.tone}>{chip.label}</ChipTag>
+                ))}
+              </div>
+              <button type="button" onClick={() => openPastReads()} style={{
+                marginTop: 14, border: 0, background: 'none', padding: 0, cursor: 'pointer',
+                fontFamily: DISPLAY, fontWeight: 600, fontSize: 12.5, color: '#F97316',
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+              }}>Past reads <Icon.Chev width={14} height={14} /></button>
+            </>
+          ) : (
+            <>
+              <h2 style={{
+                fontFamily: DISPLAY, fontWeight: 600, fontSize: 22, marginTop: 12,
+                letterSpacing: '-0.02em', lineHeight: 1.12,
+              }}>Check back later</h2>
+              <p style={{ marginTop: 10, fontSize: 14.5, lineHeight: 1.55, color: 'rgba(20,17,13,0.60)' }}>
+                Hey, you need to answer like five times before you can get your Ligo Horoscope. Keep playing!
+              </p>
+            </>
+          )}
+        </div>
+      </Reveal>
 
       {renderSlot(2, 'light')}
       {!isOwnProfile && <CountdownBanner />}
@@ -1124,8 +1156,8 @@ function ReceiptsSection({ title, children }) {
 function StreakTrophyRail() {
   const profile = useActiveUserProfile();
   const { openSheet } = usePV2();
-  const earnedCount = STREAK_TROPHIES.filter((t) => currentProfile.longestStreak >= t.days).length;
-  const next = STREAK_TROPHIES.find((t) => currentProfile.longestStreak < t.days);
+  const earnedCount = STREAK_TROPHIES.filter((t) => profile.longestStreak >= t.days).length;
+  const next = STREAK_TROPHIES.find((t) => profile.longestStreak < t.days);
 
   return (
     <div style={{ marginTop: 20 }}>
@@ -1145,8 +1177,8 @@ function StreakTrophyRail() {
         scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch',
       }}>
         {STREAK_TROPHIES.map((t) => {
-          const earned = currentProfile.longestStreak >= t.days;
-          const currentTier = [...STREAK_TROPHIES].filter((x) => x.days <= currentProfile.currentStreak).pop();
+          const earned = profile.longestStreak >= t.days;
+          const currentTier = [...STREAK_TROPHIES].filter((x) => x.days <= profile.currentStreak).pop();
           const highlight = earned && currentTier && t.id === currentTier.id;
           return (
             <button
@@ -1198,7 +1230,7 @@ function StreakTrophyRail() {
         <p style={{
           padding: `10px ${EDGE}px 0`, fontSize: 12, color: 'rgba(20,17,13,0.45)', lineHeight: 1.4,
         }}>
-          Next up: <b style={{ fontFamily: DISPLAY, color: '#14110D' }}>{next.label}</b> — {next.days - currentProfile.longestStreak} more day{next.days - currentProfile.longestStreak === 1 ? '' : 's'} at your campus.
+          Next up: <b style={{ fontFamily: DISPLAY, color: '#14110D' }}>{next.label}</b> — {next.days - profile.longestStreak} more day{next.days - profile.longestStreak === 1 ? '' : 's'} at your campus.
         </p>
       )}
     </div>
@@ -1230,7 +1262,7 @@ export function TheReceiptsScreen({ onClose }: { onClose: () => void }) {
 
   return (
     <div style={{
-      position: 'absolute', inset: 0, zIndex: 50, background: '#FAFAF8',
+      position: 'absolute', inset: 0, zIndex: 200, background: '#FAFAF8',
       display: 'flex', flexDirection: 'column', overflow: 'hidden',
     }}>
       <header style={{
@@ -1248,12 +1280,24 @@ export function TheReceiptsScreen({ onClose }: { onClose: () => void }) {
       </header>
 
       <div id="receipts-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 40, scrollbarWidth: 'none' }}>
-        {/* Streak summary */}
+        {profile.id === 'ligo' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 32px', textAlign: 'center', marginTop: 120 }}>
+            <div style={{ width: 80, height: 80, borderRadius: 99, background: 'rgba(249,115,22,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24, boxShadow: '0 0 0 1px rgba(249,115,22,0.2)' }}>
+              <span style={{ fontSize: 40 }}>🏆</span>
+            </div>
+            <h2 style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 24, letterSpacing: '-0.02em', color: '#14110D', margin: '0 0 12px' }}>Start your streak</h2>
+            <p style={{ margin: 0, fontSize: 16, color: 'rgba(20,17,13,0.6)', lineHeight: 1.5 }}>
+              Answer the daily question every day to unlock your stats, earn trophies, and see how your music taste evolves over time!
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Streak summary */}
         <div style={{ padding: `14px 0 0` }}>
           <div style={{ display: 'flex', gap: 10, padding: `0 ${EDGE}px` }}>
             {[
-              { label: 'Current streak', value: String(currentProfile.currentStreak), unit: 'days' },
-              { label: 'Longest streak', value: String(currentProfile.longestStreak), unit: 'days' },
+              { label: 'Current streak', value: String(profile.currentStreak), unit: 'days' },
+              { label: 'Longest streak', value: String(profile.longestStreak), unit: 'days' },
             ].map((s) => (
               <div key={s.label} style={{
                 flex: 1, background: '#fff', borderRadius: 18, padding: '16px 14px',
@@ -1296,7 +1340,8 @@ export function TheReceiptsScreen({ onClose }: { onClose: () => void }) {
           </div>
           <StreakTrophyRail />
         </div>
-
+        </>
+        )}
       </div>
     </div>
   );
@@ -1308,7 +1353,22 @@ export function TheReceiptsScreen({ onClose }: { onClose: () => void }) {
 
 
 function AnthemCard({ anthem, toast, isEditing, onClick }) {
-  if (!anthem) return null;
+  if (!anthem) {
+    return (
+      <Reveal style={{ padding: `10px ${EDGE}px 0` }}>
+        <div onClick={onClick} style={{ 
+          border: '2px dashed rgba(20,17,13,0.2)', borderRadius: 24, padding: '32px 20px', 
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12,
+          cursor: 'pointer', background: 'rgba(20,17,13,0.02)', aspectRatio: '1 / 1'
+        }}>
+          <div style={{ width: 48, height: 48, borderRadius: 99, background: 'rgba(20,17,13,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(20,17,13,0.4)' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <div style={{ fontFamily: DISPLAY, fontWeight: 600, color: 'rgba(20,17,13,0.5)', fontSize: 16 }}>Set Profile Anthem</div>
+        </div>
+      </Reveal>
+    );
+  }
   return (
     <Reveal style={{ padding: `10px ${EDGE}px 0` }}>
       <div onClick={isEditing ? onClick : () => toast(`Playing 30s preview of ${anthem.title}`)} style={{
@@ -1338,7 +1398,9 @@ function AnthemCard({ anthem, toast, isEditing, onClick }) {
 }
 
 function TasteBlock({ artists, genres, isEditing, onEditGenres, onEditArtists }) {
-  if (!artists || !genres) return null;
+  const displayArtists = artists?.length > 0 ? artists : [];
+  const displayGenres = genres?.length > 0 ? genres : [];
+
   return (
     <Reveal style={{ marginTop: 10 }}>
       <div onClick={isEditing ? onEditArtists : undefined} style={{ cursor: isEditing ? 'pointer' : 'default', position: 'relative' }}>
@@ -1347,7 +1409,7 @@ function TasteBlock({ artists, genres, isEditing, onEditGenres, onEditArtists })
            {isEditing && <div style={{ position: 'absolute', top: 0, right: 24, background: '#F97316', color: '#fff', padding: '4px 8px', borderRadius: 99, fontSize: 10, fontWeight: 700 }}>EDIT ARTISTS</div>}
         </div>
         <div style={{ display: 'flex', gap: 14, overflowX: 'auto', padding: `0 ${EDGE}px 8px`, scrollbarWidth: 'none' }}>
-        {artists.map((a) => (
+        {displayArtists.length > 0 ? displayArtists.map((a) => (
           <div key={a.name} style={{ flexShrink: 0, width: 84, textAlign: 'center' }}>
             <div style={{
               width: 84, height: 84, borderRadius: 99,
@@ -1355,6 +1417,17 @@ function TasteBlock({ artists, genres, isEditing, onEditGenres, onEditArtists })
               boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.12), 0 4px 12px rgba(20,17,13,0.1)',
             }} />
             <div style={{ marginTop: 10, fontFamily: DISPLAY, fontWeight: 600, fontSize: 13, color: '#14110D' }}>{a.name}</div>
+          </div>
+        )) : Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} style={{ flexShrink: 0, width: 84, textAlign: 'center' }}>
+            <div style={{
+              width: 84, height: 84, borderRadius: 99,
+              border: '2px dashed rgba(20,17,13,0.2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(20,17,13,0.3)'
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            </div>
+            <div style={{ marginTop: 10, fontFamily: DISPLAY, fontWeight: 600, fontSize: 13, color: 'rgba(20,17,13,0.3)' }}>Add Artist</div>
           </div>
         ))}
       </div>
@@ -1365,9 +1438,13 @@ function TasteBlock({ artists, genres, isEditing, onEditGenres, onEditArtists })
         </div>
         {isEditing && <div style={{ position: 'absolute', top: 16, right: 24, background: '#F97316', color: '#fff', padding: '4px 8px', borderRadius: 99, fontSize: 10, fontWeight: 700 }}>EDIT GENRES</div>}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {genres.map(g => (
+          {displayGenres.length > 0 ? displayGenres.map(g => (
             <div key={g} style={{ ...LIQUID_GLASS, padding: '8px 14px', borderRadius: 99, fontFamily: DISPLAY, fontWeight: 600, fontSize: 13, color: '#14110D' }}>{g}</div>
-          ))}
+          )) : (
+            <div style={{ ...LIQUID_GLASS, padding: '8px 14px', borderRadius: 99, fontFamily: DISPLAY, fontWeight: 600, fontSize: 13, color: 'rgba(20,17,13,0.4)', border: '1px dashed rgba(20,17,13,0.2)' }}>
+              + Add Genre
+            </div>
+          )}
         </div>
       </div>
     </Reveal>
@@ -1477,6 +1554,9 @@ function ProfileScreenRouter() {
         }}>
           <ProfileTabV2 />
         </div>
+      )}
+      {screen === "past-reads" && (
+        <ThePastReadsScreen />
       )}
     </div>
   );
@@ -1921,6 +2001,101 @@ function PublicOverflowSheet({ onClose }) {
         <button onClick={onClose} style={{ padding: '16px', background: '#fff', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 16, fontSize: 16, fontWeight: 600, color: '#14110D', fontFamily: DISPLAY }}>Share Profile</button>
         <button onClick={onClose} style={{ padding: '16px', background: '#fff', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 16, fontSize: 16, fontWeight: 600, color: '#14110D', fontFamily: DISPLAY }}>Report User</button>
         <button onClick={onClose} style={{ padding: '16px', background: '#fee2e2', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 16, fontSize: 16, fontWeight: 600, color: '#ef4444', fontFamily: DISPLAY }}>Block User</button>
+      </div>
+    </div>
+  );
+}
+
+export function ThePastReadsScreen() {
+  const profile = useActiveUserProfile();
+  const { closePastReads } = usePV2();
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, zIndex: 50, background: '#1A1612',
+      display: 'flex', flexDirection: 'column', overflow: 'hidden',
+      animation: 'profileFadeIn 0.4s cubic-bezier(0.2, 0.7, 0.2, 1)'
+    }}>
+      <header style={{
+        padding: '56px 16px 16px', display: 'flex', flexDirection: 'column', gap: 4,
+        flexShrink: 0, background: 'linear-gradient(to bottom, #1A1612, rgba(26,22,18,0))', zIndex: 2
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button type="button" onClick={closePastReads} aria-label="Back" style={{
+            width: 40, height: 40, borderRadius: 13, border: '1px solid rgba(251,239,220,0.1)',
+            background: 'rgba(251,239,220,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', color: '#FBEFDC', backdropFilter: 'blur(10px)'
+          }}><Icon.Back width={22} height={22} /></button>
+          <div>
+            <h1 style={{
+              fontFamily: DISPLAY, fontWeight: 600, fontSize: 20, letterSpacing: '-0.02em', margin: 0, color: '#FBEFDC'
+            }}>Past Reads</h1>
+            <div style={{ fontFamily: BODY, fontSize: 13, color: 'rgba(251,239,220,0.5)', marginTop: 2 }}>
+              Your Sunday readings, since March 17.
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div style={{
+        flex: 1, overflowX: 'auto', overflowY: 'hidden', scrollbarWidth: 'none',
+        display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 20,
+        padding: '0 50vw 0 24px', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch'
+      }}>
+        {profile.pastReads.map((r, i) => {
+          if (r.type === 'terminal') {
+            return (
+              <div key={i} style={{
+                width: '75vw', maxWidth: 320, flexShrink: 0, scrollSnapAlign: 'center',
+                padding: '24px', borderRadius: 24, border: '1px solid rgba(251,239,220,0.1)',
+                background: 'rgba(251,239,220,0.03)',
+                boxShadow: '0 20px 40px -10px rgba(0,0,0,0.5)'
+              }}>
+                <div style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(251,239,220,0.4)', marginBottom: 12 }}>
+                  ● {r.date}
+                </div>
+                <div style={{ fontFamily: DISPLAY, fontWeight: 600, fontSize: 16, color: '#FBEFDC', marginBottom: 6 }}>
+                  {r.head}
+                </div>
+                <div style={{ fontSize: 14, color: 'rgba(251,239,220,0.6)', lineHeight: 1.5 }}>
+                  {r.body}
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div key={i} style={{
+              width: '80vw', maxWidth: 340, flexShrink: 0, scrollSnapAlign: 'center',
+              borderRadius: 24, padding: 24,
+              background: 'linear-gradient(165deg, rgba(245,215,131,0.95), rgba(249,115,22,0.85))',
+              border: '1px solid rgba(245,215,131,0.5)',
+              boxShadow: '0 24px 48px -12px rgba(0,0,0,0.6), 0 0 0 1px rgba(245,215,131,0.2) inset'
+            }}>
+              <div style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(20,17,13,0.5)', marginBottom: 12 }}>
+                {r.date}
+              </div>
+              <div style={{
+                fontFamily: DISPLAY, fontWeight: 600, fontSize: 22,
+                letterSpacing: '-0.02em', lineHeight: 1.12, color: '#14110D'
+              }}>{r.head}</div>
+              <p style={{ marginTop: 12, fontSize: 15, lineHeight: 1.5, color: 'rgba(20,17,13,0.8)' }}>
+                {r.body}
+              </p>
+              {r.chips && r.chips.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 16 }}>
+                  {r.chips.map((chip) => (
+                    <ChipTag key={chip.label} tone={chip.tone}>
+                      {chip.label}
+                    </ChipTag>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {/* Spacer to allow the last card to be centered */}
+        <div style={{ width: '24px', flexShrink: 0 }} />
       </div>
     </div>
   );

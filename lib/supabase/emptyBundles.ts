@@ -11,6 +11,7 @@ export async function profileExists(
   supabase: SupabaseClient<Database>,
   profileId: string
 ): Promise<boolean> {
+  if (profileId === 'ligo') return true;
   const { data, error } = await supabase
     .from("profiles")
     .select("id")

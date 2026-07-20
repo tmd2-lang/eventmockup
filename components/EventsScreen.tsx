@@ -77,8 +77,8 @@ export function EventsScreen({ onTab }: any) {
     setEvents(prev => prev.map(e => {
       if (e.id === id) {
         let newStatus = action;
-        // If undoing an RSVP for a private/invite-only event, revert to pending so it goes back to Needs Response
-        if (action === null && ['private', 'members_only', 'invite_only'].includes(e.visibility)) {
+        // As requested by user, any undone RSVP should return to the Needs Response section
+        if (action === null) {
           newStatus = 'pending' as any;
         }
         return { ...e, currentUserStatus: newStatus as any };
@@ -211,11 +211,11 @@ export function EventsScreen({ onTab }: any) {
           
           <div style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
             <div style={{ paddingTop: 'max(env(safe-area-inset-top, 56px), 56px)', paddingLeft: 20, paddingRight: 20, paddingBottom: 16 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ligo-orange)', marginBottom: 4 }}>
+              <div style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ligo-orange)', marginBottom: 4 }}>
                 CAMPUS · GEORGETOWN
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <h1 style={{ fontSize: 32, fontWeight: 800, margin: 0, fontFamily: 'var(--font-display)', letterSpacing: '-1px', color: '#111' }}>
+                <h1 style={{ fontSize: 32, fontWeight: 500, margin: 0, fontFamily: '"Bricolage Grotesque", sans-serif', letterSpacing: '-1px', color: '#111' }}>
                   What's Happening<br/>on Campus
                 </h1>
                 <div style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', color: '#111' }}>
@@ -228,17 +228,17 @@ export function EventsScreen({ onTab }: any) {
             <div style={{ display: 'flex', gap: isAdmin ? 16 : 24, padding: '0 20px' }}>
               <button 
                 onClick={() => setMainTab('home')} 
-                style={{ paddingBottom: 16, fontSize: isAdmin ? 15 : 16, fontWeight: 700, color: mainTab === 'home' ? 'var(--ink)' : 'rgba(20,17,13,0.4)', background: 'none', border: 'none', cursor: 'pointer', position: 'relative' }}>
+                style={{ paddingBottom: 16, fontSize: isAdmin ? 15 : 16, fontWeight: 500, color: mainTab === 'home' ? 'var(--ink)' : 'rgba(20,17,13,0.4)', background: 'none', border: 'none', cursor: 'pointer', position: 'relative' }}>
                 Explore
                 {mainTab === 'home' && <div style={{ position: 'absolute', bottom: -1, left: 0, right: 0, height: 2, background: 'var(--ink)', borderRadius: 2 }} />}
               </button>
               
               <button 
                 onClick={() => setMainTab('invites')} 
-                style={{ paddingBottom: 16, marginRight: pendingInvites.length > 0 ? 16 : 0, fontSize: isAdmin ? 15 : 16, fontWeight: 700, color: mainTab === 'invites' ? 'var(--ink)' : 'rgba(20,17,13,0.4)', background: 'none', border: 'none', cursor: 'pointer', position: 'relative' }}>
+                style={{ paddingBottom: 16, marginRight: pendingInvites.length > 0 ? 16 : 0, fontSize: isAdmin ? 15 : 16, fontWeight: 500, color: mainTab === 'invites' ? 'var(--ink)' : 'rgba(20,17,13,0.4)', background: 'none', border: 'none', cursor: 'pointer', position: 'relative' }}>
                 My Events
                 {pendingInvites.length > 0 && (
-                  <div style={{ position: 'absolute', top: -4, right: -14, background: 'var(--ligo-orange)', color: '#fff', fontSize: 10, fontWeight: 800, borderRadius: 10, padding: '2px 6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ position: 'absolute', top: -4, right: -14, background: 'var(--ligo-orange)', color: '#fff', fontSize: 10, fontWeight: 500, borderRadius: 10, padding: '2px 6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {pendingInvites.length}
                   </div>
                 )}
@@ -251,7 +251,7 @@ export function EventsScreen({ onTab }: any) {
                     setActiveOrgId(managedOrgs[0].id);
                     setView('organization');
                   }} 
-                  style={{ paddingBottom: 16, fontSize: 15, fontWeight: 700, color: 'rgba(20,17,13,0.4)', background: 'none', border: 'none', cursor: 'pointer', position: 'relative' }}>
+                  style={{ paddingBottom: 16, fontSize: 15, fontWeight: 500, color: 'rgba(20,17,13,0.4)', background: 'none', border: 'none', cursor: 'pointer', position: 'relative' }}>
                   Manage
                 </button>
               )}
@@ -260,7 +260,7 @@ export function EventsScreen({ onTab }: any) {
           <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
             {mainTab === 'home' && (
               <HomeFeedView 
-                events={events} 
+                events={activeUser.id === 'ligo' ? [] : events} 
                 user={activeUser} 
                 orgs={MOCK_ORGANIZATIONS}
                 onOpenEvent={(id) => { setActiveEventId(id); setView('event-detail'); }}
@@ -270,7 +270,7 @@ export function EventsScreen({ onTab }: any) {
 
             {mainTab === 'invites' && (
               <InvitesView 
-                events={events}
+                events={activeUser.id === 'ligo' ? [] : events}
                 onOpenEvent={(id) => { setActiveEventId(id); setView('event-detail'); }}
                 onAction={handleRsvp}
               />
@@ -296,6 +296,11 @@ export function EventsScreen({ onTab }: any) {
           event={activeEvent} 
           onBack={() => setView(activeOrgId ? 'organization' : 'main')} 
           onToast={flash}
+          onDelete={() => {
+            setEvents(prev => prev.filter(e => e.id !== activeEvent.id));
+            flash('Event deleted');
+            setView(activeOrgId ? 'organization' : 'main');
+          }}
         />
       )}
 
@@ -312,7 +317,7 @@ export function EventsScreen({ onTab }: any) {
           <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--orange)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 32 }}>
             <EVI.Check style={{ width: 40, height: 40 }} />
           </div>
-          <h1 style={{ fontSize: 40, fontWeight: 800, fontFamily: 'var(--font-display)', margin: '0 0 16px 0', lineHeight: 1, textTransform: 'uppercase' }}>It&apos;s Live.</h1>
+          <h1 style={{ fontSize: 40, fontWeight: 500, fontFamily: '"Bricolage Grotesque", sans-serif', margin: '0 0 16px 0', lineHeight: 1, textTransform: 'uppercase' }}>It&apos;s Live.</h1>
           <p style={{ fontSize: 16, color: 'rgba(20,17,13,0.6)', fontWeight: 500, marginBottom: 48, maxWidth: 300, lineHeight: 1.4 }}>
             {activeEvent.visibility === 'members_only' || activeEvent.visibility === 'invite_only' 
               ? `Invites are being delivered to your guests.` 
@@ -321,12 +326,12 @@ export function EventsScreen({ onTab }: any) {
           <div style={{ width: '100%', maxWidth: 320, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <button 
               onClick={simulateTimeJumpAndGoToDashboard} 
-              style={{ width: '100%', padding: '18px 24px', background: 'var(--ink)', color: '#fff', fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', borderRadius: 40, cursor: 'pointer' }}>
+              style={{ width: '100%', padding: '18px 24px', background: 'var(--ink)', color: '#fff', fontSize: 13, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', borderRadius: 40, cursor: 'pointer' }}>
               Go to Dashboard
             </button>
             <button 
               onClick={() => setView(activeOrgId ? 'organization' : 'main')} 
-              style={{ width: '100%', padding: '18px 24px', background: 'transparent', color: 'var(--ink)', fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer' }}>
+              style={{ width: '100%', padding: '18px 24px', background: 'transparent', color: 'var(--ink)', fontSize: 13, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer' }}>
               Back to feed
             </button>
           </div>
@@ -336,7 +341,7 @@ export function EventsScreen({ onTab }: any) {
       {view === 'organization' && activeUser.organizations.some((o: any) => ['officer', 'social_chair', 'admin'].includes(o.role)) && (
         <button 
           onClick={() => setSheetOpen(true)} 
-          style={{ position: 'absolute', bottom: 100, right: 20, zIndex: 30, background: 'var(--ink)', color: '#fff', padding: '16px 24px', borderRadius: 40, fontSize: 14, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
+          style={{ position: 'absolute', bottom: 100, right: 20, zIndex: 30, background: 'var(--ink)', color: '#fff', padding: '16px 24px', borderRadius: 40, fontSize: 14, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
           <EVI.Plus /> Create
         </button>
       )}
@@ -360,7 +365,7 @@ export function EventsScreen({ onTab }: any) {
       )}
 
       {toast && (
-        <div style={{ position: 'absolute', top: 40, left: 20, right: 20, background: 'var(--ink)', color: '#fff', padding: 16, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', zIndex: 100, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ position: 'absolute', top: 40, left: 20, right: 20, background: 'var(--ink)', color: '#fff', padding: 16, fontSize: 13, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', zIndex: 100, display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ color: 'var(--orange)' }}><EVI.Check /></span>{toast}
         </div>
       )}

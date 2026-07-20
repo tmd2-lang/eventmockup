@@ -34,7 +34,7 @@ export type ProfileData = {
   playlistTrackCount: number;
   answerTrail: Array<{ day: string; song: string; artist: string; today?: boolean }>;
   playlistTracks: Array<{ title: string; artist: string; dur: string; photo: string; coverArt?: string }>;
-  pastReads: Array<{ type?: string; date: string; head: string; body: string }>;
+  pastReads: Array<{ type?: string; date: string; head: string; body: string; chips?: HoroscopeChip[] }>;
   currentStreak: number;
   longestStreak: number;
   tasteEvolution: Array<{ month: string; archetype: string; note?: string }>;
@@ -50,7 +50,7 @@ export type ProfileData = {
   mainstreamScoreRest?: string;
   mainstreamMeterPct?: number;
   mainstreamFootnote?: React.ReactNode;
-  horoscope?: { headline: string; body: string; chips: HoroscopeChip[] };
+  horoscope?: { headline: string; body: string; chips: HoroscopeChip[]; dailyLine?: string };
   playlistName?: string;
   secretTrack?: { label: string; title: string; artist: string; cover: string; accentColor?: string };
   receiptsFooter?: string;
@@ -249,11 +249,13 @@ export const USERS: Record<string, UserProfile> = {
         { text: 'First at Georgetown to pick Anyma this semester' },
       ],
       prompts: [
-        { id: 'music-dealbreaker', answer: 'you only listen to the Spotify Top 50 playlist' },
-        { id: 'main-3', answer: 'Taylor Swift. I grew up with every era.' },
-        { id: 'hot-take-4', answer: 'anything by Imagine Dragons. Instant ban.' }
+        { id: 'hot-take-1', answer: 'a 7-minute track is the bare minimum for a good song.' },
+        { id: 'music-dealbreaker', answer: 'you ask for the aux and immediately play Fisher.' },
+        { id: 'confess-1', answer: 'anything Sade. 90s R&B is my kryptonite.' }
       ],
       ...PROFILE_PRESENTATION_DEFAULTS,
+      favoriteGenres: ['Organic House', 'Afro House', 'Minimal Techno'],
+      anthem: { title: 'Muye', artist: 'Rampa, &ME, Adam Port', coverArt: '/covers/youaresafe-coverart-worksformuye.jpeg' },
     }
   },
   marcus: {
@@ -366,10 +368,12 @@ export const USERS: Record<string, UserProfile> = {
         { ic: '◉', bg: '#0A0907', text: <>Your archetype held steady — <b>The Deep Cut Generalist</b> for 2 weeks running.</>, time: '4 hr ago', unread: true },
       ],
 
+      favoriteGenres: ['Indie Rock', 'Alternative Dance', 'Neo-Psychedelia'],
+      anthem: { title: 'Let It Happen', artist: 'Tame Impala', coverArt: '/covers/currents-coverart.jpeg' },
       prompts: [
-        { id: 'compat-3', answer: 'sounds like driving down PCH at midnight' },
-        { id: 'main-4', answer: 'getting whiplash between techno and country' },
-        { id: 'hot-take-1', answer: 'that Nickelback actually slaps and I will not apologize' }
+        { id: 'hot-take-1', answer: 'the best Tame Impala album isn\'t Currents, it\'s Lonerism.' },
+        { id: 'compat-3', answer: 'sounds like a perfectly curated indie sleaze throwback.' },
+        { id: 'main-4', answer: 'convincing my friends that a 9-minute synth solo is essential listening.' }
       ],
     }
   },
@@ -486,10 +490,12 @@ export const USERS: Record<string, UserProfile> = {
         { ic: '♬', bg: 'linear-gradient(145deg,#EA8CE1,#A13D99)', text: <><b>8 people</b> saved <b>main character behavior</b> this week.</>, time: 'Yesterday' },
       ],
 
+      favoriteGenres: ['Mainstream Pop', 'Contemporary R&B', 'Dance Pop'],
+      anthem: { title: 'Cruel Summer', artist: 'Taylor Swift', coverArt: '/covers/taylorswift-lover-coverart.jpeg' },
       prompts: [
         { id: 'main-2', answer: 'Espresso by Sabrina Carpenter. I am fueled by iced lattes.' },
-        { id: 'hot-take-3', answer: 'Don\'t Stop Believin\' — skip immediately.' },
-        { id: 'confess-1', answer: 'Party In The U.S.A. and I know every word.' }
+        { id: 'music-dealbreaker', answer: 'you don\'t know the bridge to Cruel Summer.' },
+        { id: 'confess-1', answer: 'anything by One Direction. I still have them in my regular rotation.' }
       ],
     }
   },
@@ -601,10 +607,12 @@ export const USERS: Record<string, UserProfile> = {
         { ic: '♬', bg: 'linear-gradient(145deg,#EA8CE1,#A13D99)', text: <><b>9 people</b> saved <b>tailgate tears</b> this week.</>, time: 'Yesterday' },
       ],
 
+      favoriteGenres: ['Modern Country', 'Heartland Rock', 'Folk Pop'],
+      anthem: { title: 'Something in the Orange', artist: 'Zach Bryan', coverArt: '/covers/zachbryanamericanheartbreak-coverart.jpeg' },
       prompts: [
         { id: 'main-3', answer: 'Zach Bryan. The poetry gets me.' },
         { id: 'confess-3', answer: 'Stick Season by Noah Kahan. It gets me every time.' },
-        { id: 'compat-2', answer: 'an embarrassing amount of 2010s Kesha' }
+        { id: 'compat-2', answer: 'an embarrassing amount of 2010s Pitbull for the tailgate.' }
       ],
     }
   },
@@ -648,8 +656,62 @@ export const USERS: Record<string, UserProfile> = {
         { title: 'Last Night', artist: 'Morgan Wallen', dur: '2:43', photo: `/covers/morganwallenonethingatatime-coverart.jpeg` },
       ],
       pastReads: [
-        { type: 'time-machine', date: 'Your Ligo Horoscope', head: "You’re playing the room perfectly today.", body: 'Your last five Ligo answers run Drake into Travis, then Morgan Wallen and SZA when the night gets social. Today reads like a pregame where everyone thinks they should get the aux, but somehow you still have it.' },
-        { type: 'honest', date: 'Hot Take', head: '“The best aux is knowing when to stop proving your answers.”', body: 'Drake, Travis Scott, Morgan Wallen — your answers move through campus faster than most at Georgetown.' },
+        { 
+          date: 'SUNDAY, JULY 19', 
+          head: "You've got a whole second identity you're not fooling anyone with.", 
+          body: "You'll put Frank Ocean on the aux to prove a point, but the songs you say actually know you are all Zach Bryan. You called Swifties insufferable and your never-told-anyone song is You Belong With Me. And you've defended old Drake, old Post Malone, and 'just not yet' on outgrowing Carti — you don't love artists, you love the era of them you met first. The room sees the Drake scholar. The truck ride home is all country.",
+          chips: [
+            { label: 'Secret softie', tone: 'orange' },
+            { label: 'Old-era loyalist', tone: 'yellow' },
+            { label: 'Aux credentials', tone: 'pink' }
+          ]
+        },
+        { 
+          date: 'SUNDAY, JULY 12', 
+          head: "Your taste didn't start with you, and you're finally okay with it.", 
+          body: "Springsteen shows up in your answers six times and never once by choice — he's your dad's kitchen, your grandparents' stereo, the holidays. You said classic rock is the genre you'd never admit your parents were right about, then picked Springsteen as the first artist you'd hand your future kids. That's not an admission, that's an inheritance. You're the handoff point in a relay you didn't know you were running.",
+          chips: [
+            { label: 'Inherited ears', tone: 'orange' },
+            { label: 'Dad-rock apologist', tone: 'yellow' },
+            { label: 'Family playlist keeper', tone: 'pink' }
+          ]
+        },
+        { 
+          date: 'SUNDAY, JULY 5', 
+          head: "You fall for the early version of everything.", 
+          body: "Old Drake. Stoney-era Post Malone. Zach Bryan before anyone caught on — your words. You've claimed 'before it was cool' on three different artists and you check tour dates you can't afford. The pattern isn't taste, it's loyalty: you bond with artists the way you bond with people, at the start, and you never fully update. Nostalgia isn't your mood. It's your operating system.",
+          chips: [
+            { label: 'Day-one energy', tone: 'orange' },
+            { label: 'Tour-date window shopper', tone: 'yellow' },
+            { label: 'Old-era loyalist', tone: 'pink' }
+          ]
+        },
+        { 
+          date: 'SUNDAY, JUNE 28', 
+          head: "The aux is a performance. The drive home isn't.", 
+          body: "Your prove-a-point songs are Frank Ocean and Kacey's Slow Burn — immaculate, defensible, curated. But alone? Kacey with the door closed, a Miley song you'd be embarrassed about, and Oklahoma Smokeshow feeling like it was written directly for you. There's a version of your taste built for the room and a version built for the ride home, and the gap between them is the most interesting thing about you.",
+          chips: [
+            { label: 'Curated in public', tone: 'orange' },
+            { label: 'Country at heart', tone: 'yellow' },
+            { label: 'Secret softie', tone: 'pink' }
+          ]
+        },
+        { 
+          date: 'SUNDAY, JUNE 21', 
+          head: "You're the friend group's A&R department.", 
+          body: "You introduced your entire crew to Zach Bryan, you've personally converted people, and Lady May is the song people ask you to send after they hear it once. You don't just have taste — you distribute it. Your answers say the aux isn't a flex for you so much as a responsibility. Somebody has to make sure the room hears Tyler Childers, and apparently it's you.",
+          chips: [
+            { label: 'Taste distributor', tone: 'orange' },
+            { label: 'Aux responsibility', tone: 'yellow' },
+            { label: 'Tyler Childers evangelist', tone: 'pink' }
+          ]
+        },
+        { 
+          type: 'terminal', 
+          date: 'MARCH 17, 2026', 
+          head: "Your chart began forming.", 
+          body: "First answer: 'What song's been on repeat for you this week?' — Pink Skies, Zach Bryan." 
+        },
       ],
       currentStreak: 6,
       longestStreak: 16,
@@ -692,13 +754,14 @@ export const USERS: Record<string, UserProfile> = {
         </>
       ),
       horoscope: {
-        headline: "You're playing the room perfectly today.",
-        body: 'Your last five Ligo answers run Drake into Travis, then Morgan Wallen and SZA when the night gets social. Today reads like a pregame where everyone thinks they should get the aux, but somehow you still have it.',
+        headline: "You've got a whole second identity you're not fooling anyone with.",
+        body: "You'll put Frank Ocean on the aux to prove a point, but the songs you say actually know you are all Zach Bryan. You called Swifties insufferable and your never-told-anyone song is You Belong With Me. And you've defended old Drake, old Post Malone, and 'just not yet' on outgrowing Carti — you don't love artists, you love the era of them you met first. The room sees the Drake scholar. The truck ride home is all country.",
         chips: [
-          { label: 'Drake energy', tone: 'orange' },
-          { label: 'Pregame fluent', tone: 'yellow' },
-          { label: 'Social aux', tone: 'pink' },
+          { label: 'Secret softie', tone: 'orange' },
+          { label: 'Old-era loyalist', tone: 'yellow' },
+          { label: 'Aux credentials', tone: 'pink' },
         ],
+        dailyLine: "Old Drake over new Drake, on the record. You don't love artists, you love the version of them you met first.",
       },
       playlistName: 'pass the aux',
       secretTrack: {
@@ -716,9 +779,11 @@ export const USERS: Record<string, UserProfile> = {
         { ic: '♬', bg: 'linear-gradient(145deg,#EA8CE1,#A13D99)', text: <><b>12 people</b> saved <b>pass the aux</b> this week.</>, time: 'Yesterday' },
       ],
 
+      favoriteGenres: ['Southern Hip Hop', 'Trap', 'Melodic Rap'],
+      anthem: { title: 'FE!N', artist: 'Travis Scott', coverArt: '/covers/travisscott-utopia.jpeg' },
       prompts: [
-        { id: 'hot-take-4', answer: 'anything by Imagine Dragons. Instant ban.' },
-        { id: 'main-5', answer: '"Real G\'s move in silence like lasagna"' },
+        { id: 'hot-take-4', answer: 'the radio edit of a Travis Scott song.' },
+        { id: 'hot-take-1', answer: 'Drake\'s timestamp tracks are his actual best work.' },
         { id: 'irl-3', answer: 'Kendrick Lamar on the Big Steppers tour. Life changing.' }
       ],
     }
@@ -831,10 +896,12 @@ export const USERS: Record<string, UserProfile> = {
         { ic: '♬', bg: 'linear-gradient(145deg,#EA8CE1,#A13D99)', text: <><b>14 people</b> saved <b>lacrosse house chaos</b> this week.</>, time: 'Yesterday' },
       ],
 
+      favoriteGenres: ['Rage Rap', 'Atlanta Trap', 'Underground Hip Hop'],
+      anthem: { title: 'Sky', artist: 'Playboi Carti', coverArt: '/covers/wholelottared-coverart.jpeg' },
       prompts: [
-        { id: 'hot-take-2', answer: 'Drake. The monotone just puts me to sleep.' },
-        { id: 'main-1', answer: 'exclusively 90s hip-hop to make me feel cool' },
-        { id: 'irl-2', answer: 'Mr. Brightside. Yes, I am that guy.' }
+        { id: 'hot-take-2', answer: 'J. Cole. Lyricism is overrated if the 808s don\'t shake the room.' },
+        { id: 'main-1', answer: 'unreleased Carti leaks (it scares the hoes).' },
+        { id: 'irl-3', answer: 'Rolling Loud 2021. The mosh pits were spiritual.' }
       ],
     }
   },
@@ -949,10 +1016,12 @@ export const USERS: Record<string, UserProfile> = {
         { ic: '♬', bg: 'linear-gradient(145deg,#EA8CE1,#A13D99)', text: <><b>4 people</b> saved <b>alt social chaos</b> this week.</>, time: 'Yesterday' },
       ],
 
+      favoriteGenres: ['Hyperpop', 'Indie Pop', 'UK Garage'],
+      anthem: { title: '360', artist: 'Charli XCX', coverArt: '/covers/brat-coverart.jpeg' },
       prompts: [
-        { id: 'confess-4', answer: 'something embarrassing by The 1975.' },
-        { id: 'irl-1', answer: 'Frank Ocean if he ever actually performs again' },
-        { id: 'compat-4', answer: 'Mr. Brightside. I just can\'t do it anymore.' }
+        { id: 'confess-4', answer: 'Girls by The Dare. I started ironically but now I can\'t stop.' },
+        { id: 'irl-1', answer: 'Frank Ocean if he ever actually performs again.' },
+        { id: 'music-dealbreaker', answer: 'you don\'t understand the cultural reset that was BRAT.' }
       ],
     }
   },
@@ -1067,10 +1136,12 @@ export const USERS: Record<string, UserProfile> = {
         { ic: '♬', bg: 'linear-gradient(145deg,#EA8CE1,#A13D99)', text: <><b>6 people</b> saved <b>emotional afters</b> this week.</>, time: 'Yesterday' },
       ],
 
+      favoriteGenres: ['Deep House', 'Dream Pop', 'Tech House'],
+      anthem: { title: 'Brooklyn Baby', artist: 'Lana Del Rey', coverArt: '/covers/lanadelreyultraviolence-coverart.jpeg' },
       prompts: [
-        { id: 'irl-5', answer: 'Losing It by Fisher at a massive festival' },
-        { id: 'confess-5', answer: 'Demon Days by Gorillaz. A masterpiece.' },
-        { id: 'music-dealbreaker', answer: 'you only listen to the Spotify Top 50 playlist' }
+        { id: 'irl-3', answer: 'Keinemusik at the Brooklyn Mirage until the sun came up.' },
+        { id: 'main-4', answer: 'staring blankly out the Uber window to Lana after every night out.' },
+        { id: 'music-dealbreaker', answer: 'you think \'electronic music\' just means EDM drops.' }
       ],
     }
   },
@@ -1185,11 +1256,42 @@ export const USERS: Record<string, UserProfile> = {
         { ic: '♬', bg: 'linear-gradient(145deg,#EA8CE1,#A13D99)', text: <><b>8 people</b> saved <b>public transit tears</b> this week.</>, time: 'Yesterday' },
       ],
 
+      favoriteGenres: ['Indie Folk', 'Alternative R&B', 'Bedroom Pop'],
+      anthem: { title: 'Self Control', artist: 'Frank Ocean', coverArt: '/covers/frankocean-blonde.jpeg' },
       prompts: [
-        { id: 'compat-3', answer: 'is smooth 90s R&B' },
-        { id: 'main-5', answer: '"Boy you got me hooked onto something"' },
-        { id: 'confess-2', answer: 'Baby by Justin Bieber.' }
+        { id: 'compat-3', answer: 'sounds like crying on the subway to Phoebe Bridgers.' },
+        { id: 'confess-5', answer: 'Frank Ocean\'s Blonde. Front to back, no skips.' },
+        { id: 'confess-2', answer: 'anything by Usher. Sometimes you just need early 2000s R&B to heal.' }
       ],
+    }
+  },
+  ligo: {
+    id: 'ligo',
+    name: 'Ligo User',
+    firstName: 'Ligo',
+    avatar: '',
+    archetype: 'The Empty Slate',
+    archetypeIcon: 'empty',
+    gradient: 'linear-gradient(145deg, #222, #555)',
+    profile: {
+      earnedArchetypeId: 'empty',
+      heldWeeks: '0 weeks',
+      earnedBlurb: "No data yet.",
+      traits: [],
+      artists: [],
+      afterHoursCover: [],
+      playlistTrackCount: 0,
+      answerTrail: [],
+      playlistTracks: [],
+      pastReads: [],
+      currentStreak: 0,
+      longestStreak: 0,
+      tasteEvolution: [],
+      rarestPicks: [],
+      connectedSongs: [],
+      firstToPick: [],
+      horoscope: null,
+      anthem: null,
     }
   }
 };
