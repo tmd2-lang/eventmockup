@@ -809,9 +809,10 @@ function BeatShareCard({ night, anim, dayIndex, userPick, onShare }: {
 /* ═══════════════════════════════════════════════════════════════════════
    Share Sheet
    ═══════════════════════════════════════════════════════════════════════ */
-function ShareSheet({ night, userPick, onClose }: {
+function ShareSheet({ night, userPick, dayIndex, onClose }: {
   night: any;
   userPick: { song: string; artist: string; art: string };
+  dayIndex: number;
   onClose: () => void;
 }) {
   const [sharing, setSharing] = useState(false);
@@ -1135,7 +1136,7 @@ export function RevealScreen({ onBack, activeUserId, playIntro = false, isCN = f
       )}
 
       {shareOpen && (
-        <ShareSheet night={night} userPick={userPick} onClose={() => setShareOpen(false)} />
+        <ShareSheet night={night} userPick={userPick} dayIndex={dayIndex} onClose={() => setShareOpen(false)} />
       )}
 
       {vibeToast && (
