@@ -16,9 +16,9 @@ export const ACTIVE_REVEAL_NIGHT: RevealNight = {
   nightLabel: 'Night one · the reveal',
   nightOrdinal: 'one',
   question: 'What song do you wish you could hear again for the first time?',
-  topSong: 'Not Like Us',
-  topArtist: 'Kendrick Lamar',
-  topArt: '/artists/kendrick.png',
+  topSong: 'Shabang',
+  topArtist: 'Drake',
+  topArt: '/covers/drake-iceman-coverart.jpeg',
   consensusPct: 38,
   totalVotes: 1204,
   wordCloud: [

@@ -269,6 +269,9 @@ export function RevealShell({
     <div ref={rootRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: bg, color: '#fff', touchAction: 'pan-y' }}>
       {/* Aurora background */}
       <AuroraBg act={cur} colors={colors} />
+      
+      {/* Legibility overlay for dynamic backgrounds */}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 0 }} />
 
       {/* Transition veil */}
       <TransitionVeil key={veilKey} type={prev !== null ? type : null} accent={waveColors.lit} />
