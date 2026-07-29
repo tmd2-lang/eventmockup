@@ -11,6 +11,7 @@ import {
   useContext,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import { Icon, Eyebrow, Wordmark, ChipTag, NowPip, Button } from "@/components/Primitives";
 import { useProfileGate } from "@/lib/profileGate";
 import {
@@ -24,6 +25,9 @@ import { usePersistentState } from "@/lib/usePersistentState";
 import { USERS, PROFILE_PRESENTATION_DEFAULTS, USER_IDENTITY_DEFAULTS } from "@/lib/users";
 import { useDailyReveal } from "@/hooks/useDailyReveal";
 import { searchCatalog, UNIFIED_CATALOG, searchArtists, UNIFIED_ARTISTS } from "@/lib/catalog";
+import { OrganizationWorkspace } from "../events/OrganizationWorkspace";
+import { MemberClubHome } from "../events/MemberClubHome";
+import { MOCK_ORGANIZATIONS, INITIAL_EVENTS } from "@/lib/mockEventsData";
 
 const EDGE = 22;
 const DISPLAY = "Bricolage Grotesque, sans-serif";
@@ -814,6 +818,23 @@ function ProfileTabV2() {
   const [edits, setEdits] = usePersistentState('ligo:profile_edits_v4', defaultEdits);
   const [activeEditSheet, setActiveEditSheet] = useState(null); // { type: 'anthem' | 'text' | 'genres', key?: string, initialValue?: any }
   
+  const [activeOrgId, setActiveOrgId] = useState<string | null>(null);
+  const [clubView, setClubView] = useState<'home' | 'ops'>('home');
+  const [events, setEvents] = usePersistentState('ligo:all_events_v2', INITIAL_EVENTS);
+  const [profileRoot, setProfileRoot] = useState(null);
+
+  useEffect(() => {
+    setProfileRoot(document.getElementById('ligo-profile-root'));
+  }, []);
+
+  const userOrganizations = activeUser.id === 'marcus' ? [
+    { organizationId: 'sigma_phi_epsilon', role: 'admin', groupIds: ['g-all-spe', 'g-exec-spe'] }
+  ] : activeUser.id === 'sofia' ? [
+    { organizationId: 'phantoms', role: 'admin', groupIds: ['g1', 'g2'] }
+  ] : activeUser.id === 'jordan' || activeUser.id === 'cole' || activeUser.id === 'bennett' ? [
+    { organizationId: 'sigma_phi_epsilon', role: 'member', groupIds: ['g-all-spe'] }
+  ] : [];
+
   const currentProfile = { ...profile, ...edits };
 
   const handleClearPrompt = (idx) => {
@@ -1072,6 +1093,46 @@ function ProfileTabV2() {
       </Reveal>
 
       {renderSlot(2, 'light')}
+
+      {/* Organizations Section */}
+      <div style={{ padding: `32px ${EDGE}px 0` }}>
+        <h2 style={{ fontFamily: DISPLAY, fontWeight: 600, fontSize: 20, letterSpacing: '-0.02em', color: '#14110D', marginBottom: 16 }}>
+          Clubs
+        </h2>
+        {userOrganizations.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {userOrganizations.map(orgRole => {
+              const org = MOCK_ORGANIZATIONS[orgRole.organizationId];
+              if (!org) return null;
+              return (
+                <div 
+                  key={org.id}
+                  onClick={() => { setClubView('home'); setActiveOrgId(org.id); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 16, background: '#FAFAF8', borderRadius: 20, boxShadow: '0 4px 16px rgba(20,17,13,0.04)', border: '1px solid rgba(20,17,13,0.06)', cursor: 'pointer', transition: 'transform 0.15s ease' }}
+                  onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
+                  onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  <div style={{ width: 48, height: 48, borderRadius: 12, background: '#14110D', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 600, letterSpacing: '0.04em', flexShrink: 0 }}>
+                    {org.initials}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 16, fontWeight: 600, color: '#14110D' }}>{org.name}</div>
+                    <div style={{ fontSize: 14, color: 'rgba(20,17,13,0.5)', marginTop: 2 }}>{org.category} · {org.memberCount} members · {orgRole.role.replace('_', ' ')}</div>
+                  </div>
+                  <Icon.Chev width={16} height={16} style={{ color: 'rgba(20,17,13,0.3)' }} />
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{ padding: 24, background: 'rgba(20,17,13,0.03)', borderRadius: 20, textAlign: 'center' }}>
+            <div style={{ fontSize: 15, color: 'rgba(20,17,13,0.6)', marginBottom: 12 }}>Not a member of any clubs yet.</div>
+            <button style={{ padding: '10px 20px', background: '#14110D', color: '#fff', borderRadius: 99, border: 'none', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Find Clubs</button>
+          </div>
+        )}
+      </div>
+
       {!isOwnProfile && <CountdownBanner />}
       {/* Edit Sheets Overlay */}
       {activeEditSheet && (
@@ -1137,6 +1198,39 @@ function ProfileTabV2() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Club home stays inside the phone frame via portal into #ligo-profile-root */}
+      {activeOrgId && profileRoot && createPortal(
+        <div style={{ position: 'absolute', inset: 0, zIndex: 80 }}>
+          {clubView === 'home' ? (
+            <MemberClubHome
+              org={MOCK_ORGANIZATIONS[activeOrgId]}
+              events={events}
+              currentUserRole={userOrganizations.find(o => o.organizationId === activeOrgId)?.role || 'member'}
+              onBack={() => { setActiveOrgId(null); setClubView('home'); }}
+              onOpenEvent={() => toast('Event detail would open here.')}
+              onOpenManage={
+                ['admin', 'officer', 'social_chair'].includes(
+                  userOrganizations.find(o => o.organizationId === activeOrgId)?.role || ''
+                )
+                  ? () => setClubView('ops')
+                  : undefined
+              }
+            />
+          ) : (
+            <OrganizationWorkspace
+              org={MOCK_ORGANIZATIONS[activeOrgId]}
+              events={events}
+              onBack={() => setClubView('home')}
+              onManageEvent={() => { toast('Manage event screen would open here.'); }}
+              onCreateEvent={() => { toast('Create event sheet would open here.'); }}
+              onInviteMembers={() => { toast('Invite members screen would open here.'); }}
+              currentUserRole={userOrganizations.find(o => o.organizationId === activeOrgId)?.role || 'member'}
+            />
+          )}
+        </div>,
+        profileRoot
       )}
     </div>
   );
@@ -1517,7 +1611,7 @@ function PromptCard({ label, text, variant = 'light', isEditing, onClick, onClea
 }
 export function ProfileV2Shell() {
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
+    <div id="ligo-profile-root" style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
       <ProfileScreenRouter />
       <ProfileV2Sheets />
       <ProfileToast />

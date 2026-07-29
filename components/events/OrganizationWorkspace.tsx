@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { createPortal } from 'react-dom';
 import { Organization, EventItem, SIGEP_ROSTER } from '../../lib/mockEventsData';
 import { USERS } from '../../lib/users';
 import { EVI } from './Icons';
@@ -10,24 +9,30 @@ export function OrganizationWorkspace({
   onBack,
   onManageEvent,
   onCreateEvent,
-  onInviteMembers
+  onInviteMembers,
+  currentUserRole = 'admin' // default to admin for backward compatibility in EventsScreen
 }: { 
   org: Organization, 
   events: EventItem[],
   onBack: () => void,
   onManageEvent: (id: string) => void,
   onCreateEvent: () => void,
-  onInviteMembers: () => void
+  onInviteMembers: () => void,
+  currentUserRole?: string
 }) {
   const [tab, setTab] = useState<'overview'|'events'|'members'>('overview');
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
 
+  const isOrganizer = currentUserRole === 'admin' || currentUserRole === 'officer' || currentUserRole === 'social_chair';
+  const roleLabel = (currentUserRole || 'member').replace('_', ' ');
+
   const orgEvents = events.filter(e => e.hostOrganizationId === org.id);
-  const upcomingEvents = orgEvents.filter(e => e.visibility !== 'members_only' || e.name !== 'Winter Retreat'); // Mock logic for demo
-  const draftEvents = orgEvents.filter(e => e.name === 'Winter Retreat'); // Mock logic for demo
+  const publicEvents = orgEvents.filter(e => e.visibility !== 'members_only');
+  const internalEvents = orgEvents.filter(e => e.visibility === 'members_only');
+  const upcomingEvents = publicEvents;
 
   return (
-    <div className="screen-fade" style={{ background: 'var(--ligo-paper)', minHeight: '100%', position: 'absolute', inset: 0, zIndex: 10, overflowY: 'auto' }}>
+    <div className="screen-fade" style={{ background: 'var(--ligo-paper)', minHeight: '100%', height: '100%', position: 'absolute', inset: 0, zIndex: 10, overflowY: 'auto', overflowX: 'hidden' }}>
       <div style={{ position: 'sticky', top: 0, background: 'rgba(250,250,248,0.9)', backdropFilter: 'blur(20px)', zIndex: 10, padding: 'max(env(safe-area-inset-top, 56px), 56px) 20px 24px', display: 'flex', alignItems: 'flex-start', gap: 16, borderBottom: '2px solid var(--ink)' }}>
         <button onClick={onBack} aria-label="Back" style={{ background: 'var(--ink)', color: '#fff', border: 'none', width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
           <EVI.Back />
@@ -35,7 +40,7 @@ export function OrganizationWorkspace({
         <div style={{ paddingTop: 4 }}>
           <div style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--orange)', marginBottom: 4 }}>{org.campus}</div>
           <h1 style={{ fontSize: 32, fontWeight: 500, fontFamily: 'var(--font-display)', margin: 0, lineHeight: 1, textTransform: 'uppercase' }}>{org.name}</h1>
-          <div style={{ fontSize: 13, color: 'rgba(20,17,13,0.6)', marginTop: 8, fontWeight: 500 }}>{org.memberCount} members · You&apos;re {org.currentUserRole === 'admin' ? 'an' : 'a'} {org.currentUserRole?.replace('_', ' ')}</div>
+          <div style={{ fontSize: 13, color: 'rgba(20,17,13,0.6)', marginTop: 8, fontWeight: 500 }}>{org.memberCount} members · Event ops · You&apos;re {roleLabel === 'admin' ? 'an' : 'a'} {roleLabel}</div>
         </div>
       </div>
 
@@ -64,56 +69,67 @@ export function OrganizationWorkspace({
                       <div style={{ fontSize: 12, color: 'rgba(20,17,13,0.4)', fontWeight: 500 }}>Pending</div>
                     </div>
                   </div>
-                  <button onClick={() => onManageEvent(upcomingEvents[0].id)} style={{ width: '100%', padding: '12px', background: 'var(--ink)', color: '#fff', borderRadius: 12, fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer' }}>Manage event</button>
+                  {isOrganizer && (
+                    <button onClick={() => onManageEvent(upcomingEvents[0].id)} style={{ width: '100%', padding: '12px', background: 'var(--ink)', color: '#fff', borderRadius: 12, fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer' }}>Manage event</button>
+                  )}
                 </div>
               )}
             </div>
 
-            <div style={{ marginBottom: 32 }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(20,17,13,0.5)', marginBottom: 12 }}>Quick Actions</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <button onClick={onCreateEvent} style={{ padding: 16, background: '#fff', borderRadius: 16, border: '1px solid rgba(20,17,13,0.06)', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <div style={{ color: 'var(--ink)' }}><EVI.Plus /></div>
-                  <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)' }}>Create event</div>
-                </button>
-                <button onClick={onInviteMembers} style={{ padding: 16, background: '#fff', borderRadius: 16, border: '1px solid rgba(20,17,13,0.06)', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <div style={{ color: 'var(--ink)' }}><EVI.Invite /></div>
-                  <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)' }}>Invite members</div>
-                </button>
-                <button style={{ padding: 16, background: '#fff', borderRadius: 16, border: '1px solid rgba(20,17,13,0.06)', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <div style={{ color: 'var(--ink)' }}><EVI.Share /></div>
-                  <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)' }}>Message attendees</div>
-                </button>
+            {isOrganizer && (
+              <div style={{ marginBottom: 32 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(20,17,13,0.5)', marginBottom: 12 }}>Quick Actions</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <button onClick={onCreateEvent} style={{ padding: 16, background: '#fff', borderRadius: 16, border: '1px solid rgba(20,17,13,0.06)', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{ color: 'var(--ink)' }}><EVI.Plus /></div>
+                    <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)' }}>Create event</div>
+                  </button>
+                  <button onClick={onInviteMembers} style={{ padding: 16, background: '#fff', borderRadius: 16, border: '1px solid rgba(20,17,13,0.06)', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{ color: 'var(--ink)' }}><EVI.Invite /></div>
+                    <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)' }}>Invite members</div>
+                  </button>
+                  <button style={{ padding: 16, background: '#fff', borderRadius: 16, border: '1px solid rgba(20,17,13,0.06)', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{ color: 'var(--ink)' }}><EVI.Share /></div>
+                    <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)' }}>Message attendees</div>
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
         {tab === 'events' && (
           <div>
             <div style={{ marginBottom: 48 }}>
-              <div style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 20 }}>Upcoming</div>
-              {upcomingEvents.map(e => (
+              <div style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 20 }}>Public Events</div>
+              {publicEvents.map(e => (
                 <div key={e.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: 24, borderBottom: '1px solid rgba(20,17,13,0.1)', marginBottom: 24 }}>
                   <div>
                     <div style={{ fontSize: 24, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--ink)', textTransform: 'uppercase', lineHeight: 1, marginBottom: 8 }}>{e.name}</div>
                     <div style={{ fontSize: 14, color: 'rgba(20,17,13,0.6)', fontWeight: 500 }}>{e.day} · {e.time}</div>
                   </div>
-                  <button onClick={() => onManageEvent(e.id)} style={{ padding: '8px 16px', background: 'var(--ink)', color: '#fff', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer' }}>Manage</button>
+                  {isOrganizer && (
+                    <button onClick={() => onManageEvent(e.id)} style={{ padding: '8px 16px', background: 'var(--ink)', color: '#fff', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer' }}>Manage</button>
+                  )}
                 </div>
               ))}
             </div>
             
-            {draftEvents.length > 0 && (
+            {internalEvents.length > 0 && (
               <div style={{ marginBottom: 48 }}>
-                <div style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 20 }}>Drafts</div>
-                {draftEvents.map(e => (
-                  <div key={e.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: 24, borderBottom: '1px solid rgba(20,17,13,0.1)', marginBottom: 24, opacity: 0.5 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+                  <div style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--orange)' }}>Members Only</div>
+                  <div style={{ background: 'var(--orange)', width: 6, height: 6, borderRadius: '50%' }} />
+                </div>
+                {internalEvents.map(e => (
+                  <div key={e.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: 24, borderBottom: '1px solid rgba(20,17,13,0.1)', marginBottom: 24 }}>
                     <div>
                       <div style={{ fontSize: 24, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--ink)', textTransform: 'uppercase', lineHeight: 1, marginBottom: 8 }}>{e.name}</div>
-                      <div style={{ fontSize: 14, color: 'rgba(20,17,13,0.6)', fontWeight: 500 }}>{e.day} · Draft</div>
+                      <div style={{ fontSize: 14, color: 'var(--orange)', fontWeight: 500 }}>{e.day} · {e.time || 'Internal'}</div>
                     </div>
-                    <button onClick={() => onManageEvent(e.id)} style={{ padding: '8px 16px', background: 'var(--ink)', color: '#fff', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer' }}>Edit</button>
+                    {isOrganizer && (
+                      <button onClick={() => onManageEvent(e.id)} style={{ padding: '8px 16px', background: 'var(--orange)', color: '#fff', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer' }}>Manage</button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -217,11 +233,12 @@ export function OrganizationWorkspace({
             )}
           </div>
         )}
+
         <div style={{ height: 120 }} />
       </div>
 
-      {selectedMember && typeof document !== 'undefined' && createPortal(
-        <div style={{ position: 'fixed', inset: 0, zIndex: 999999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      {selectedMember && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 50, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }} onClick={() => setSelectedMember(null)} />
           <div style={{ position: 'relative', width: '100%', maxWidth: 360, background: 'var(--ligo-paper)', borderRadius: 24, padding: 32, boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 16, marginBottom: 32 }}>
@@ -255,8 +272,7 @@ export function OrganizationWorkspace({
               Close
             </button>
           </div>
-        </div>,
-        document.body
+        </div>
       )}
     </div>
   );

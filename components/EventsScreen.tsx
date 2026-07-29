@@ -24,9 +24,11 @@ export function EventsScreen({ onTab }: any) {
     name: activeUserId.charAt(0).toUpperCase() + activeUserId.slice(1),
     campus: 'georgetown',
     organizations: activeUserId === 'marcus' ? [
-      { organizationId: 'sigma_phi_epsilon', role: 'social_chair', groupIds: ['g-all-spe', 'g-exec-spe'] }
+      { organizationId: 'sigma_phi_epsilon', role: 'admin', groupIds: ['g-all-spe', 'g-exec-spe'] }
     ] : activeUserId === 'sofia' ? [
-      { organizationId: 'phantoms', role: 'social_chair', groupIds: ['g1', 'g2'] }
+      { organizationId: 'phantoms', role: 'admin', groupIds: ['g1', 'g2'] }
+    ] : activeUserId === 'jordan' || activeUserId === 'cole' || activeUserId === 'bennett' ? [
+      { organizationId: 'sigma_phi_epsilon', role: 'member', groupIds: ['g-all-spe'] }
     ] : []
   };
 
@@ -308,6 +310,7 @@ export function EventsScreen({ onTab }: any) {
           onManageEvent={(id) => { setActiveEventId(id); setView('manage-event'); }}
           onCreateEvent={() => setSheetOpen(true)}
           onInviteMembers={() => setImportContactsOpen(true)}
+          currentUserRole={activeUser.organizations.find((o: any) => o.organizationId === activeOrgId)?.role || 'admin'}
         />
       )}
 
