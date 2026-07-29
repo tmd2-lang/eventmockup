@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { EventItem } from '../../lib/mockEventsData';
 import { EVI } from './Icons';
+import { AddToCalendar } from './AddToCalendar';
 
 export function EventDetailView({ e, onBack, onRsvpAction }: { e: EventItem, onBack: () => void, onRsvpAction: (action: 'going'|'maybe'|'declined'|null) => void }) {
   const [showFullAbout, setShowFullAbout] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
   const sampleNames = ['Maya A.', 'Jordan P.', 'Riya S.', 'Diego R.', 'Sofia H.', 'Theo K.'];
   const connections = e.socialProof?.connections || Math.floor(Math.random() * 20) + 5;
   
@@ -57,14 +59,25 @@ export function EventDetailView({ e, onBack, onRsvpAction }: { e: EventItem, onB
 
         {/* Key Info Strip */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32, paddingBottom: 32, borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111' }}>
-              <EVI.Calendar />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111' }}>
+                <EVI.Calendar />
+              </div>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 500, color: '#111' }}>{e.day}, {e.date?.split('·')[1]?.trim() || ''}</div>
+                <div style={{ fontSize: 14, color: '#666' }}>{e.timeFull || e.time}</div>
+              </div>
             </div>
-            <div>
-              <div style={{ fontSize: 16, fontWeight: 500, color: '#111' }}>{e.day}, {e.date?.split('·')[1]?.trim() || ''}</div>
-              <div style={{ fontSize: 14, color: '#666' }}>{e.timeFull || e.time}</div>
-            </div>
+            <AddToCalendar 
+              title={e.name}
+              description={Array.isArray(e.description) ? e.description.join('\n\n') : (typeof e.description === 'string' ? e.description.replace(/\\n\\n/g, '\n\n') : '')}
+              location={e.venue}
+              timeFull={e.timeFull || e.time || ''}
+              buttonStyle={{ background: 'rgba(0,0,0,0.05)', color: '#111', border: 'none', borderRadius: '100px', padding: '6px 12px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+              buttonText="Add"
+              wrapperStyle={{ width: 'auto' }}
+            />
           </div>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111' }}>
@@ -93,20 +106,23 @@ export function EventDetailView({ e, onBack, onRsvpAction }: { e: EventItem, onB
           <div style={{ marginBottom: 32 }}>
             <div style={{ fontSize: 18, fontWeight: 500, color: '#111', marginBottom: 12 }}>About</div>
             <div style={{ fontSize: 16, lineHeight: 1.5, color: '#444' }}>
-              {showFullAbout ? (
-                e.description.split('\\n\\n').map((p, i) => <p key={i} style={{ margin: '0 0 16px 0' }}>{renderTextWithBold(p)}</p>)
-              ) : (
-                <>
-                  {e.description.split('\\n\\n').slice(0, 3).map((p, i) => (
-                    <p key={i} style={{ margin: '0 0 16px 0' }}>{renderTextWithBold(p)}</p>
-                  ))}
-                  {e.description.split('\\n\\n').length > 3 && (
-                    <button onClick={() => setShowFullAbout(true)} style={{ background: 'none', border: 'none', color: 'var(--ligo-orange)', fontSize: 16, fontWeight: 500, padding: 0, cursor: 'pointer' }}>
-                      Show more
-                    </button>
-                  )}
-                </>
-              )}
+              {(() => {
+                const descArray = Array.isArray(e.description) ? e.description : (typeof e.description === 'string' ? (e.description.includes('\\n\\n') ? e.description.split('\\n\\n') : e.description.split('\n\n')) : []);
+                return showFullAbout ? (
+                  descArray.map((p, i) => <p key={i} style={{ margin: '0 0 16px 0' }}>{renderTextWithBold(p)}</p>)
+                ) : (
+                  <>
+                    {descArray.slice(0, 3).map((p, i) => (
+                      <p key={i} style={{ margin: '0 0 16px 0' }}>{renderTextWithBold(p)}</p>
+                    ))}
+                    {descArray.length > 3 && (
+                      <button onClick={() => setShowFullAbout(true)} style={{ background: 'none', border: 'none', color: 'var(--ligo-orange)', fontSize: 16, fontWeight: 500, padding: 0, cursor: 'pointer' }}>
+                        Show more
+                      </button>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
         )}
@@ -158,10 +174,10 @@ export function EventDetailView({ e, onBack, onRsvpAction }: { e: EventItem, onB
         {/* Org Card */}
         <div style={{ background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 16, padding: 20, cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.05)' }}>
           <div style={{ width: 48, height: 48, borderRadius: '50%', background: e.hostAvatarColor || '#000', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 500, flexShrink: 0 }}>
-            {e.hostAvatar || e.host.charAt(0)}
+            {e.hostAvatar || (e.host || (e as any).hostName || 'L').charAt(0)}
           </div>
           <div>
-            <div style={{ fontSize: 18, fontWeight: 500, color: '#111', marginBottom: 4 }}>{e.organizer?.name || e.host}</div>
+            <div style={{ fontSize: 18, fontWeight: 500, color: '#111', marginBottom: 4 }}>{e.organizer?.name || e.host || (e as any).hostName || 'Organizer'}</div>
             <div style={{ fontSize: 13, color: '#888', fontWeight: 500, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               {e.organizer?.upcoming || 0} upcoming · {e.organizer?.followers || '0'} {isPersonHost ? 'connections' : 'followers'}
             </div>
@@ -189,11 +205,87 @@ export function EventDetailView({ e, onBack, onRsvpAction }: { e: EventItem, onB
               Maybe
             </button>
             <button 
-              onClick={() => onRsvpAction(e.currentUserStatus === 'going' ? null : 'going')}
+              onClick={() => {
+                if (e.currentUserStatus !== 'going') {
+                  setShowSuccessToast(true);
+                  setTimeout(() => setShowSuccessToast(false), 6000);
+                }
+                onRsvpAction(e.currentUserStatus === 'going' ? null : 'going');
+              }}
               style={{ flex: 1.5, padding: '16px 0', background: (e.currentUserStatus === 'going' || e.currentUserStatus === 'hosting') ? 'var(--orange)' : 'var(--ink)', color: '#fff', fontSize: 14, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               {(e.currentUserStatus === 'going' || e.currentUserStatus === 'hosting') && <EVI.Check />}
               Going
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessToast && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 200,
+          padding: '24px'
+        }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: '24px',
+            width: '100%',
+            maxWidth: '320px',
+            boxShadow: '0 24px 48px rgba(0,0,0,0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Image Header */}
+            <div style={{ width: '100%', height: '140px', position: 'relative' }}>
+              {e.image ? (
+                <img src={e.image} alt={e.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <div style={{ width: '100%', height: '100%', background: e.color || 'var(--ligo-orange)' }} />
+              )}
+              {/* Close Button over Image */}
+              <button 
+                onClick={() => setShowSuccessToast(false)}
+                style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: 'none', color: '#fff', cursor: 'pointer', padding: 8, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <EVI.Close /> 
+              </button>
+            </div>
+
+            {/* Overlapping Checkmark */}
+            <div style={{ marginTop: '-32px', width: 64, height: 64, borderRadius: '50%', background: '#fff', padding: 4, zIndex: 2 }}>
+              <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'rgba(74, 222, 128, 0.1)', color: '#4ADE80', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <EVI.Check style={{ width: 32, height: 32 }} />
+              </div>
+            </div>
+
+            {/* Content Area */}
+            <div style={{ padding: '20px 32px 32px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', width: '100%' }}>
+              <div style={{ fontSize: 28, fontWeight: 500, fontFamily: 'var(--font-display)', color: '#111', marginBottom: 8, letterSpacing: '-0.5px', textTransform: 'uppercase' }}>
+                You're In!
+              </div>
+              <div style={{ fontSize: 15, color: '#666', marginBottom: 24, lineHeight: 1.4 }}>
+                Your RSVP for <strong>{e.name}</strong> is confirmed. Add it to your calendar so you don't miss out.
+              </div>
+              <AddToCalendar 
+                title={e.name}
+                description={Array.isArray(e.description) ? e.description.join('\n\n') : (typeof e.description === 'string' ? e.description.replace(/\\n\\n/g, '\n\n') : '')}
+                location={e.venue}
+                timeFull={e.timeFull || e.time || ''}
+                buttonStyle={{ width: '100%', background: '#111', color: '#fff', border: 'none', borderRadius: '100px', padding: '16px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}
+                buttonText="Add to Calendar"
+              />
+            </div>
           </div>
         </div>
       )}

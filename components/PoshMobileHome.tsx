@@ -143,7 +143,7 @@ function CarouselSection({ title, subtitle, events, onEventClick }: { title: str
               flexDirection: 'column'
             }}
           >
-            <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: '12px', overflow: 'hidden', marginBottom: '12px', background: '#222' }}>
+            <div style={{ position: 'relative', width: '100%', aspectRatio: '3/4', borderRadius: '12px', overflow: 'hidden', marginBottom: '12px', background: '#222' }}>
               <img src={event.image} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <div style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 4px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

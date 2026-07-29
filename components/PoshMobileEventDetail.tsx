@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { LigoEvents } from '../app/data/events';
 import { Icon } from './Primitives';
+import { AddToCalendar } from './events/AddToCalendar';
 
 export function PoshMobileEventDetail({ eventId, onBack }: { eventId: number; onBack: () => void }) {
   const event = LigoEvents.find(e => e.id === eventId) || LigoEvents[3];
@@ -269,7 +270,13 @@ export function PoshMobileEventDetail({ eventId, onBack }: { eventId: number; on
                {/* Buttons */}
                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
                  <button style={{ width: '100%', background: '#e0e0e0', color: '#000', border: 'none', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>View Ticket</button>
-                 <button style={{ width: '100%', background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>Add to Calendar</button>
+                 <AddToCalendar 
+                   title={event.title}
+                   description={event.description.join('\n\n')}
+                   location={event.location}
+                   timeFull={event.timeFull}
+                   buttonStyle={{ width: '100%', background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
+                 />
                  <button style={{ width: '100%', background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>Add to Apple Wallet</button>
                </div>
 
