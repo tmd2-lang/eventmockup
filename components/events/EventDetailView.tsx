@@ -107,7 +107,11 @@ export function EventDetailView({ e, onBack, onRsvpAction }: { e: EventItem, onB
             <div style={{ fontSize: 18, fontWeight: 500, color: '#111', marginBottom: 12 }}>About</div>
             <div style={{ fontSize: 16, lineHeight: 1.5, color: '#444' }}>
               {(() => {
-                const descArray = Array.isArray(e.description) ? e.description : (typeof e.description === 'string' ? (e.description.includes('\\n\\n') ? e.description.split('\\n\\n') : e.description.split('\n\n')) : []);
+                const descArray: string[] = Array.isArray(e.description)
+                  ? e.description
+                  : (typeof e.description === 'string'
+                      ? (e.description.includes('\\n\\n') ? e.description.split('\\n\\n') : e.description.split('\n\n'))
+                      : []);
                 return showFullAbout ? (
                   descArray.map((p, i) => <p key={i} style={{ margin: '0 0 16px 0' }}>{renderTextWithBold(p)}</p>)
                 ) : (

@@ -274,7 +274,7 @@ export function PoshMobileEventDetail({ eventId, onBack }: { eventId: number; on
                    title={event.title}
                    description={event.description.join('\n\n')}
                    location={event.location}
-                   timeFull={event.timeFull}
+                   timeFull={event.timeFull || ''}
                    buttonStyle={{ width: '100%', background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
                  />
                  <button style={{ width: '100%', background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>Add to Apple Wallet</button>
