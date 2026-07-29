@@ -88,7 +88,7 @@ export function CreateEventSheet({ club, onClose, onPublish, currentUserId }: { 
                         setEndTime('6:00 PM');
                         setVenue('SigEp House');
                         setSummary("The forecast says 75 and sunny, so we're doing what we always do. Backyard open, speakers turned all the way up, drinks on ice, and everyone's invited. Hydrate now. You'll thank yourself later. Backyard opens at 2. See you there. Grab your roommates and send it.");
-                        setFlyerUrl('/posh/SigEpFrat.png');
+                        setFlyerUrl('/Posh/SigEpFrat.png');
                       }}
                       style={{ background: 'rgba(20,17,13,0.05)', color: 'var(--ink)', border: 'none', padding: '8px 16px', borderRadius: 16, fontSize: 11, fontWeight: 500, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                     >
