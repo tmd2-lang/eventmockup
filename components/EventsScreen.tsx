@@ -33,7 +33,7 @@ export function EventsScreen({ onTab }: any) {
   // Keep mock data as-is for Charlotte to see the new fixture events
   const dynamicInitialEvents = INITIAL_EVENTS;
 
-  const [events, setEvents] = usePersistentState<EventItem[]>('ligo:all_events_v1', dynamicInitialEvents);
+  const [events, setEvents] = usePersistentState<EventItem[]>('ligo:all_events_v2', dynamicInitialEvents);
   const [view, setView] = useState<EventsView>("main");
   const [mainTab, setMainTab] = useState<'home' | 'invites'>('home');
   const [activeOrgId, setActiveOrgId] = useState<string | null>(null);
@@ -45,6 +45,26 @@ export function EventsScreen({ onTab }: any) {
   const [importContactsOpen, setImportContactsOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+
+  // Vercel (Linux) is case-sensitive; older cached rows can still point at `/posh/...`
+  // while files live under `/Posh/...`. Keep cover URLs in sync with source data.
+  React.useEffect(() => {
+    const byId = new Map(INITIAL_EVENTS.map(e => [String(e.id), e]));
+    const needsFix = events.some(e => {
+      const source = byId.get(String(e.id));
+      if (typeof e.image === 'string' && e.image.includes('/posh/')) return true;
+      return !!(source?.image && source.image !== e.image);
+    });
+    if (!needsFix) return;
+
+    setEvents(prev => prev.map(e => {
+      const source = byId.get(String(e.id));
+      const normalized =
+        typeof e.image === 'string' ? e.image.replace(/\/posh\//g, '/Posh/') : e.image;
+      const image = source?.image || normalized;
+      return image !== e.image ? { ...e, image } : e;
+    }));
+  }, [events, setEvents]);
 
   React.useEffect(() => {
     setEvents(prev => prev.map(e => {
