@@ -228,7 +228,7 @@ export function EventsScreen({ onTab }: any) {
         }
       }
       finalPendingCount = count;
-      finalEvent.invitedUserIds = [...new Set(ids)];
+      finalEvent.invitedUserIds = ids.filter((id, i) => ids.indexOf(id) === i);
       finalEvent.goingCount = 1;
       finalEvent.currentUserStatus = 'hosting';
 
