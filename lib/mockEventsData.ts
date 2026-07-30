@@ -302,7 +302,7 @@ export const GPB_SEED_EVENTS: EventItem[] = [
     visibility: 'members_only',
     eligibleCampuses: [],
     source: 'campus',
-    currentUserStatus: 'hosting',
+    currentUserStatus: 'pending',
     goingCount: 14,
     pendingCount: 9,
     declinedCount: 1,

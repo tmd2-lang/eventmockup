@@ -9,6 +9,7 @@ type ClubScreen = 'home' | 'chat' | 'events' | 'people';
 
 type ClubChatMessage = {
   id: number;
+  kind?: 'day' | 'message';
   sender: string;
   userId: string | null;
   text: string;
@@ -24,49 +25,102 @@ function welcomeLabel(org: Organization) {
 }
 
 function seedClubChat(orgId: string, currentUserId?: string): ClubChatMessage[] {
-  const markMine = (msg: Omit<ClubChatMessage, 'isMe'>): ClubChatMessage => ({
-    ...msg,
-    isMe: !!(currentUserId && msg.userId === currentUserId),
-    sender: currentUserId && msg.userId === currentUserId ? 'You' : msg.sender,
-  });
+  const markMine = (msg: Omit<ClubChatMessage, 'isMe'>): ClubChatMessage => {
+    if (msg.kind === 'day') {
+      return { ...msg, isMe: false };
+    }
+    return {
+      ...msg,
+      kind: msg.kind || 'message',
+      isMe: !!(currentUserId && msg.userId === currentUserId),
+      sender: currentUserId && msg.userId === currentUserId ? 'You' : msg.sender,
+    };
+  };
 
   if (orgId === 'program_board') {
+    let id = 0;
+    const day = (label: string): Omit<ClubChatMessage, 'isMe'> => ({
+      id: ++id,
+      kind: 'day',
+      sender: '',
+      userId: null,
+      text: label,
+      time: '',
+    });
+    const m = (sender: string, userId: string | null, text: string, time: string): Omit<ClubChatMessage, 'isMe'> => ({
+      id: ++id,
+      kind: 'message',
+      sender,
+      userId,
+      text,
+      time,
+    });
+
     return [
-      {
-        id: 1,
-        sender: 'Cole Brennan',
-        userId: 'cole',
-        text: 'Quick reminder: weekly chair sync is still Mondays at 6 in Leavey. Bring updates even if short.',
-        time: 'Yesterday',
-      },
-      {
-        id: 2,
-        sender: 'Priya Shah',
-        userId: null,
-        text: 'Can Marketing get photo access for the shared drive? We’re drowning in old folders.',
-        time: 'Yesterday',
-      },
-      {
-        id: 3,
-        sender: 'Maya Thompson',
-        userId: null,
-        text: 'Yes — I’ll add Programming + Marketing tonight. Ping me if you’re locked out.',
-        time: 'Yesterday',
-      },
-      {
-        id: 4,
-        sender: 'Jordan Davis',
-        userId: 'jordan',
-        text: 'Anyone free Thursday afternoon to help inventory production bins?',
-        time: '10:42 AM',
-      },
-      {
-        id: 5,
-        sender: 'Elena Rossi',
-        userId: null,
-        text: 'I can do 3–4. Also — office hours sign-up sheet is pinned in #ops if you haven’t grabbed a slot.',
-        time: '11:05 AM',
-      },
+      day('Monday'),
+      m('Cole Brennan', 'cole', 'Morning people — quick reminder that the weekly chair sync is still tonight at 6 in Leavey 421. Bring updates even if the update is “we are behind.”', '9:08 AM'),
+      m('Priya Shah', null, 'Marketing update: we are behind.', '9:14 AM'),
+      m('Cole Brennan', 'cole', 'Perfect. Meeting can end early then.', '9:15 AM'),
+      m('Maya Thompson', null, 'Can everyone please update the fall event tracker before 4? Half the rows still say “TBD” and one of them just says “fun outdoor thing.”', '9:31 AM'),
+      m('Jordan Davis', 'jordan', 'That was a working title.', '9:33 AM'),
+      m('Maya Thompson', null, 'It has been the working title for eleven days.', '9:34 AM'),
+      m('Elena Rossi', null, 'Also, office-hour sign-ups are pinned in Event Ops. Please grab a slot before Cole starts assigning them based on personal grudges.', '10:02 AM'),
+      m('Cole Brennan', 'cole', 'I would never.', '10:05 AM'),
+      m('Jordan Davis', 'jordan', 'He put me on Friday at 8:30 last semester.', '10:06 AM'),
+      m('Cole Brennan', 'cole', 'You missed three meetings.', '10:07 AM'),
+      m('Jordan Davis', 'jordan', 'Unrelated.', '10:07 AM'),
+      m('Priya Shah', null, 'Does anyone know who currently has the GPB camera battery charger?', '11:22 AM'),
+      m('Maya Thompson', null, 'Check the production cabinet.', '11:24 AM'),
+      m('Priya Shah', null, 'I did. I found four extension cords, a single glove and a Chick-fil-A receipt from February.', '11:25 AM'),
+      m('Jordan Davis', 'jordan', 'The glove is ours. Do not throw it away.', '11:29 AM'),
+      m('Elena Rossi', null, 'Can Programming and Marketing stay ten minutes after tonight’s meeting? We need to lock the rollout schedule for Midnight Breakfast.', '2:41 PM'),
+      m('Priya Shah', null, 'Yes, but I’m leaving by 7:20 because I have a paper due at midnight that currently has a title and no body.', '2:45 PM'),
+      m('Cole Brennan', 'cole', 'That is basically a complete first draft.', '2:46 PM'),
+      day('Tuesday'),
+      m('Jordan Davis', 'jordan', 'Anyone free Thursday afternoon to help inventory the production bins?', '10:42 AM'),
+      m('Elena Rossi', null, 'I can do 3–4. Also, the office-hours sheet is pinned in #ops if you haven’t grabbed a slot.', '10:48 AM'),
+      m('Cole Brennan', 'cole', 'I can come by at 3:30. We mainly need to figure out what still works and what has been held together by tape since 2022.', '11:03 AM'),
+      m('Maya Thompson', null, 'Please do not throw anything away until I photograph it for the inventory.', '11:07 AM'),
+      m('Jordan Davis', 'jordan', 'What if it is visibly smoking?', '11:09 AM'),
+      m('Maya Thompson', null, 'Photograph it quickly.', '11:10 AM'),
+      m('Priya Shah', null, 'Separate issue: who approved the orange gradient on the concert teaser?', '12:18 PM'),
+      m('Cole Brennan', 'cole', 'I thought it looked good.', '12:20 PM'),
+      m('Priya Shah', null, 'I didn’t say it looked bad. I asked who approved it.', '12:21 PM'),
+      m('Cole Brennan', 'cole', 'This feels like a trap.', '12:22 PM'),
+      m('Elena Rossi', null, 'It looked good on Priya’s laptop and radioactive on the Leavey screen.', '12:35 PM'),
+      m('Jordan Davis', 'jordan', 'Radioactive could be the campaign.', '12:36 PM'),
+      m('Priya Shah', null, 'Thank you, Jordan. Marketing will be moving forward without that feedback.', '12:38 PM'),
+      m('Maya Thompson', null, 'Does anybody want the six leftover sandwiches from yesterday’s meeting? They are currently taking up the entire office fridge.', '3:04 PM'),
+      m('Cole Brennan', 'cole', 'What kind?', '3:05 PM'),
+      m('Maya Thompson', null, 'Turkey, veggie and one unidentified.', '3:06 PM'),
+      m('Cole Brennan', 'cole', 'I’ll take the unidentified.', '3:06 PM'),
+      m('Elena Rossi', null, 'That sentence explains a lot about you.', '3:08 PM'),
+      day('Wednesday'),
+      m('Cole Brennan', 'cole', 'Bad news: Copley Lawn is unavailable for the September kickoff.', '8:52 AM'),
+      m('Priya Shah', null, 'What happened?', '8:54 AM'),
+      m('Cole Brennan', 'cole', 'Facilities has it blocked for reseeding.', '8:56 AM'),
+      m('Jordan Davis', 'jordan', 'We have lost to grass.', '8:57 AM'),
+      m('Maya Thompson', null, 'Backup options are Red Square, Leavey Esplanade or moving it indoors.', '9:01 AM'),
+      m('Elena Rossi', null, 'Red Square is probably easiest, but we need to rethink sound and the food setup.', '9:04 AM'),
+      m('Priya Shah', null, 'Marketing can update the location once we confirm. Please do not post anything before that.', '9:07 AM'),
+      m('Jordan Davis', 'jordan', 'Deleting my “Copley or nothing” story now.', '9:11 AM'),
+      m('Priya Shah', null, 'You did not post that.', '9:12 AM'),
+      m('Jordan Davis', 'jordan', 'You’ll never know.', '9:13 AM'),
+      m('Cole Brennan', 'cole', 'Can Exec vote in here? Red Square or Leavey?', '10:26 AM'),
+      m('Maya Thompson', null, 'Red Square.', '10:27 AM'),
+      m('Elena Rossi', null, 'Red Square, assuming Production confirms power access.', '10:28 AM'),
+      m('Jordan Davis', 'jordan', 'Production confirms we will locate electricity somewhere on Georgetown’s campus.', '10:29 AM'),
+      m('Cole Brennan', 'cole', 'Inspiring confidence as always.', '10:31 AM'),
+      m('Priya Shah', null, 'Also, I finally found the camera charger.', '11:43 AM'),
+      m('Maya Thompson', null, 'Where was it?', '11:44 AM'),
+      m('Priya Shah', null, 'In the camera bag.', '11:45 AM'),
+      m('Jordan Davis', 'jordan', 'Huge day for the organization.', '11:46 AM'),
+      m('Elena Rossi', null, 'One more thing: who is coming to trivia tonight?', '1:16 PM'),
+      m('Cole Brennan', 'cole', 'I’m in.', '1:19 PM'),
+      m('Priya Shah', null, 'Only if we agree not to let Cole answer every history question with “probably Nixon.”', '1:21 PM'),
+      m('Cole Brennan', 'cole', 'It works more often than you’d think.', '1:22 PM'),
+      m('Jordan Davis', 'jordan', 'Team name: Fun Outdoor Thing.', '1:23 PM'),
+      m('Maya Thompson', null, 'Absolutely not.', '1:24 PM'),
     ].map(markMine);
   }
 
@@ -129,6 +183,10 @@ export function MemberClubHome({
   events,
   currentUserRole = 'member',
   currentUserId,
+  initialScreen = 'home',
+  skipWelcome = false,
+  onScreenChange,
+  onRsvp,
   onBack,
   onOpenEvent,
   onOpenManage,
@@ -137,25 +195,44 @@ export function MemberClubHome({
   events: EventItem[];
   currentUserRole?: string;
   currentUserId?: string;
+  initialScreen?: ClubScreen;
+  skipWelcome?: boolean;
+  onScreenChange?: (screen: ClubScreen) => void;
+  onRsvp?: (id: string, action: 'going' | 'maybe' | 'declined' | null) => void;
   onBack: () => void;
   onOpenEvent?: (id: string) => void;
   onOpenManage?: () => void;
 }) {
-  const [welcome, setWelcome] = useState(true);
+  const [welcome, setWelcome] = useState(!skipWelcome);
   const [welcomeOut, setWelcomeOut] = useState(false);
-  const [screen, setScreen] = useState<ClubScreen>('home');
+  const [screen, setScreen] = useState<ClubScreen>(initialScreen);
   const [draft, setDraft] = useState('');
   const [history, setHistory] = useState<ClubChatMessage[]>(() => seedClubChat(org.id, currentUserId));
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
-  const [rsvps, setRsvps] = useState<Record<string, 'going' | 'maybe' | null>>({});
+
+  const goTo = (next: ClubScreen) => {
+    setScreen(next);
+    onScreenChange?.(next);
+  };
 
   useEffect(() => {
     setHistory(seedClubChat(org.id, currentUserId));
     setDraft('');
-    setScreen('home');
+  }, [org.id, currentUserId]);
+
+  useEffect(() => {
+    setScreen(initialScreen);
+  }, [initialScreen]);
+
+  useEffect(() => {
+    if (skipWelcome) {
+      setWelcome(false);
+      setWelcomeOut(false);
+      return;
+    }
     setWelcome(true);
     setWelcomeOut(false);
-  }, [org.id, currentUserId]);
+  }, [org.id, skipWelcome]);
 
   useEffect(() => {
     if (!welcome) return;
@@ -181,7 +258,7 @@ export function MemberClubHome({
     && e.publishStatus !== 'planning'
   );
 
-  const lastChat = history[history.length - 1];
+  const lastChat = [...history].reverse().find(m => m.kind !== 'day');
   const lastChatPreview = lastChat
     ? `${lastChat.isMe ? 'You' : lastChat.sender.split(' ')[0]}: ${lastChat.text}`
     : 'No messages yet';
@@ -205,7 +282,7 @@ export function MemberClubHome({
 
   const goHomeOrBack = () => {
     if (screen === 'home') onBack();
-    else setScreen('home');
+    else goTo('home');
   };
 
   const menuItems: Array<{
@@ -367,7 +444,7 @@ export function MemberClubHome({
             {menuItems.map((item, i) => (
               <button
                 key={item.id}
-                onClick={() => setScreen(item.id)}
+                onClick={() => goTo(item.id)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -417,6 +494,13 @@ export function MemberClubHome({
               Club chat · {org.name}
             </div>
             {history.map(msg => {
+              if (msg.kind === 'day') {
+                return (
+                  <div key={msg.id} style={{ alignSelf: 'center', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(20,17,13,0.4)', margin: '12px 0 4px' }}>
+                    {msg.text}
+                  </div>
+                );
+              }
               const avatar = msg.userId ? Object.values(USERS).find(u => u.id === msg.userId)?.avatar : null;
               return (
                 <div key={msg.id} style={{ display: 'flex', flexDirection: msg.isMe ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: 8 }}>
@@ -492,7 +576,9 @@ export function MemberClubHome({
               <div style={{ fontSize: 15, color: 'rgba(20,17,13,0.45)', fontWeight: 500 }}>No private events right now.</div>
             ) : (
               membersOnly.map(e => {
-                const status = rsvps[e.id];
+                const status = e.currentUserStatus;
+                const isGoing = status === 'going' || status === 'hosting';
+                const isMaybe = status === 'maybe';
                 return (
                   <div key={e.id} style={{ marginBottom: 28, paddingBottom: 28, borderBottom: '1px solid rgba(20,17,13,0.08)' }}>
                     {e.image && (
@@ -503,15 +589,20 @@ export function MemberClubHome({
                         <img src={e.image} alt={e.name} style={{ width: '100%', aspectRatio: '16/10', objectFit: 'cover', borderRadius: 16 }} />
                       </button>
                     )}
-                    <div style={{ fontSize: 22, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--ink)', textTransform: 'uppercase', lineHeight: 1.05, marginBottom: 8 }}>
-                      {e.name}
-                    </div>
-                    <div style={{ fontSize: 14, color: 'rgba(20,17,13,0.55)', fontWeight: 500, marginBottom: 16 }}>
-                      {e.day}{e.time ? ` · ${e.time}` : ''}{e.venue ? ` · ${e.venue}` : ''}
+                    <div
+                      onClick={() => onOpenEvent?.(e.id)}
+                      style={{ cursor: onOpenEvent ? 'pointer' : 'default' }}
+                    >
+                      <div style={{ fontSize: 22, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--ink)', textTransform: 'uppercase', lineHeight: 1.05, marginBottom: 8 }}>
+                        {e.name}
+                      </div>
+                      <div style={{ fontSize: 14, color: 'rgba(20,17,13,0.55)', fontWeight: 500, marginBottom: 16 }}>
+                        {e.day}{e.time ? ` · ${e.time}` : ''}{e.venue ? ` · ${e.venue}` : ''}
+                      </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button
-                        onClick={() => setRsvps(prev => ({ ...prev, [e.id]: prev[e.id] === 'going' ? null : 'going' }))}
+                        onClick={() => onRsvp?.(e.id, isGoing ? null : 'going')}
                         style={{
                           flex: 1,
                           padding: '12px 14px',
@@ -520,14 +611,14 @@ export function MemberClubHome({
                           cursor: 'pointer',
                           fontSize: 13,
                           fontWeight: 600,
-                          background: status === 'going' ? 'var(--orange)' : 'rgba(20,17,13,0.06)',
-                          color: status === 'going' ? '#fff' : 'var(--ink)',
+                          background: isGoing ? 'var(--orange)' : 'rgba(20,17,13,0.06)',
+                          color: isGoing ? '#fff' : 'var(--ink)',
                         }}
                       >
-                        {status === 'going' ? "You're in" : "I'm in"}
+                        {isGoing ? "You're in" : "I'm in"}
                       </button>
                       <button
-                        onClick={() => setRsvps(prev => ({ ...prev, [e.id]: prev[e.id] === 'maybe' ? null : 'maybe' }))}
+                        onClick={() => onRsvp?.(e.id, isMaybe ? null : 'maybe')}
                         style={{
                           flex: 1,
                           padding: '12px 14px',
@@ -536,7 +627,7 @@ export function MemberClubHome({
                           cursor: 'pointer',
                           fontSize: 13,
                           fontWeight: 600,
-                          background: status === 'maybe' ? 'rgba(20,17,13,0.08)' : 'transparent',
+                          background: isMaybe ? 'rgba(20,17,13,0.08)' : 'transparent',
                           color: 'var(--ink)',
                         }}
                       >

@@ -47,6 +47,8 @@ export function EventsScreen({ onTab }: any) {
   const [activeOrgId, setActiveOrgId] = useState<string | null>(null);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const [detailReturnView, setDetailReturnView] = useState<EventsView>('main');
+  const [memberClubScreen, setMemberClubScreen] = useState<'home' | 'chat' | 'events' | 'people'>('home');
+  const [skipClubWelcome, setSkipClubWelcome] = useState(false);
   
   const [showSwipeableInvites, setShowSwipeableInvites] = useState(false);
   const lastViewedUserId = React.useRef<string | null>(null);
@@ -129,13 +131,32 @@ export function EventsScreen({ onTab }: any) {
         const isTarget = (e as any).invitedUserIds?.includes(activeUserId);
         return { ...e, currentUserStatus: isHost ? 'hosting' : isTarget ? 'pending' : null };
       }
+      // GPB members-only seeds are authored as "hosting" for Cole — remap for members
+      if (
+        e.hostOrganizationId === 'program_board'
+        && e.visibility === 'members_only'
+        && (e as any).creatorId === 'cole'
+      ) {
+        if (activeUserId === 'cole') {
+          return e.currentUserStatus === 'hosting' ? e : { ...e, currentUserStatus: 'hosting' };
+        }
+        if (activeUserId === 'jordan' && (e.currentUserStatus === 'hosting' || e.currentUserStatus == null)) {
+          return { ...e, currentUserStatus: 'pending' };
+        }
+        // Seed default is pending — keep Cole host remap above; leave member RSVPs alone
+      }
       return e;
     }));
   }, [activeUserId]);
 
   function flash(msg: string) { setToast(msg); setTimeout(() => setToast(null), 2600); }
 
-  const pendingInvites = events.filter(e => e.currentUserStatus === 'pending' && ['private', 'members_only', 'invite_only'].includes(e.visibility));
+  const pendingInvites = events.filter(e =>
+    e.currentUserStatus === 'pending'
+    && ['private', 'members_only', 'invite_only'].includes(e.visibility)
+    && e.publishStatus !== 'draft'
+    && e.publishStatus !== 'planning'
+  );
 
   React.useEffect(() => {
     // When active user changes, trigger stack if they have invites
@@ -383,6 +404,8 @@ export function EventsScreen({ onTab }: any) {
                       key={org.id}
                       onClick={() => {
                         setActiveOrgId(org.id);
+                        setMemberClubScreen('home');
+                        setSkipClubWelcome(false);
                         setView('member-club');
                       }}
                       style={{
@@ -424,8 +447,17 @@ export function EventsScreen({ onTab }: any) {
           events={events}
           currentUserId={activeUserId}
           currentUserRole={activeUser.organizations.find((o: any) => o.organizationId === activeOrgId)?.role || 'member'}
+          initialScreen={memberClubScreen}
+          skipWelcome={skipClubWelcome}
+          onScreenChange={setMemberClubScreen}
+          onRsvp={handleRsvp}
           onBack={() => { setActiveOrgId(null); setView('main'); setMainTab('clubs'); }}
-          onOpenEvent={(id) => { setActiveEventId(id); setDetailReturnView('member-club'); setView('event-detail'); }}
+          onOpenEvent={(id) => {
+            setSkipClubWelcome(true);
+            setActiveEventId(id);
+            setDetailReturnView('member-club');
+            setView('event-detail');
+          }}
           onOpenManage={
             ['admin', 'officer', 'social_chair'].includes(
               activeUser.organizations.find((o: any) => o.organizationId === activeOrgId)?.role || ''

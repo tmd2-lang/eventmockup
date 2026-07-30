@@ -29,16 +29,26 @@ export function InvitesView({
     return e.visibility === 'private' ? e.subtitle : e.host;
   };
 
+  const isLiveInvite = (e: EventItem) =>
+    e.publishStatus !== 'draft' && e.publishStatus !== 'planning';
+
   const pendingEvents = events
-    .filter(e => e.currentUserStatus === 'pending')
+    .filter(e => e.currentUserStatus === 'pending' && isLiveInvite(e))
     .sort((a, b) => new Date(a.parsedDate || 0).getTime() - new Date(b.parsedDate || 0).getTime());
 
   const upcomingEvents = events
-    .filter(e => (e.currentUserStatus === 'going' || e.currentUserStatus === 'maybe') && getDaysFromToday(e.parsedDate) >= -1)
+    .filter(e =>
+      (e.currentUserStatus === 'going' || e.currentUserStatus === 'maybe' || e.currentUserStatus === 'hosting')
+      && isLiveInvite(e)
+      && getDaysFromToday(e.parsedDate) >= -1
+    )
     .sort((a, b) => new Date(a.parsedDate || 0).getTime() - new Date(b.parsedDate || 0).getTime());
 
   const pastAndDeclinedEvents = events
-    .filter(e => e.currentUserStatus === 'declined' || ((e.currentUserStatus === 'going' || e.currentUserStatus === 'maybe') && getDaysFromToday(e.parsedDate) < -1))
+    .filter(e =>
+      e.currentUserStatus === 'declined'
+      || ((e.currentUserStatus === 'going' || e.currentUserStatus === 'maybe' || e.currentUserStatus === 'hosting') && getDaysFromToday(e.parsedDate) < -1)
+    )
     .sort((a, b) => new Date(b.parsedDate || 0).getTime() - new Date(a.parsedDate || 0).getTime()); // descending for past
 
   const renderEventRow = (e: EventItem, mode: 'pending' | 'upcoming' | 'past') => {
@@ -95,7 +105,9 @@ export function InvitesView({
                   fontSize: 13, fontWeight: 500, cursor: 'pointer'
                 }}
               >
-                {e.currentUserStatus === 'going' ? 'Going ✓' : 'Maybe'}
+                {e.currentUserStatus === 'going' || e.currentUserStatus === 'hosting'
+                  ? (e.currentUserStatus === 'hosting' ? 'Hosting' : 'Going ✓')
+                  : 'Maybe'}
               </button>
             )}
           </div>
