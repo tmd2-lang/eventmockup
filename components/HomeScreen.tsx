@@ -598,10 +598,6 @@ function DailyPick({
             <p style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 500, fontSize: 17, lineHeight: 1.4, color: "rgba(20,17,13,0.45)", margin: 0 }}>
               Loading today&apos;s question…
             </p>
-          ) : error ? (
-            <p style={{ fontFamily: "Bricolage Grotesque, sans-serif", fontWeight: 500, fontSize: 17, lineHeight: 1.4, color: "rgba(200,50,50,0.85)", margin: 0 }}>
-              {error}
-            </p>
           ) : (
             <h2
               style={{

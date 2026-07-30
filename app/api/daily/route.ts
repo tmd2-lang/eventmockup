@@ -7,22 +7,34 @@ import {
   isMissingTableError,
   profileExists,
 } from "@/lib/supabase/emptyBundles";
+import { DEMO_QUESTION } from "@/lib/revealConstants";
+
+const MOCK_QUESTION = {
+  day_number: 1,
+  scheduled_date: "2026-07-30",
+  weekday: "Thursday",
+  question_type: "song",
+  answer_type: "song",
+  question_text: DEMO_QUESTION,
+  original_number: 1,
+};
 
 export async function GET(request: Request) {
-  if (!isSupabaseConfigured()) {
-    return NextResponse.json(
-      {
-        error: "Supabase not configured",
-        hint: "Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local, then restart the dev server",
-      },
-      { status: 503 }
-    );
-  }
-
   const { searchParams } = new URL(request.url);
   const profileId = searchParams.get("profile")?.trim().toLowerCase();
   if (!profileId) {
     return NextResponse.json({ error: "Missing query param: profile" }, { status: 400 });
+  }
+
+  // Local / Vercel mock without Supabase — keep Home usable for demos
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({
+      profileId,
+      ...EMPTY_DAILY_RESPONSE,
+      currentDayNumber: 1,
+      currentQuestion: MOCK_QUESTION,
+      meta: { trailCount: 0, empty: true, mock: true },
+    });
   }
 
   try {
@@ -41,6 +53,9 @@ export async function GET(request: Request) {
         if (questions.length > 0) {
           currentDayNumber = resolveCurrentDayNumber(questions);
           currentQuestion = getQuestionForDay(questions, currentDayNumber);
+        } else {
+          currentDayNumber = 1;
+          currentQuestion = MOCK_QUESTION;
         }
 
         return NextResponse.json({
@@ -69,6 +84,8 @@ export async function GET(request: Request) {
         return NextResponse.json({
           profileId,
           ...EMPTY_DAILY_RESPONSE,
+          currentDayNumber: 1,
+          currentQuestion: MOCK_QUESTION,
           meta: { trailCount: 0, empty: true },
         });
       }
