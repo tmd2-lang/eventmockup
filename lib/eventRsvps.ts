@@ -34,6 +34,14 @@ export function resolveEventStatusForUser(
     return 'pending';
   }
 
+  // Seed fixtures used a global pending/invited flag for the demo invite stack
+  if (
+    (event.currentUserStatus === 'pending' || event.currentUserStatus === 'invited')
+    && (event.visibility === 'private' || event.visibility === 'invite_only' || event.visibility === 'members_only')
+  ) {
+    return 'pending';
+  }
+
   return null;
 }
 

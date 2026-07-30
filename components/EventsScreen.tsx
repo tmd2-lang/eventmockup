@@ -65,7 +65,7 @@ export function EventsScreen({ onTab }: any) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [importContactsOpen, setImportContactsOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const lastViewedUserId = useRef(activeUserId);
+  const lastViewedUserId = useRef<string | null>(null);
 
   // Per-user view of events (membership + invites + explicit RSVPs)
   const viewEvents = useMemo(
