@@ -38,25 +38,31 @@ export function CreateEventSheet({ club, onClose, onPublish, currentUserId }: { 
       id: 'new-' + Date.now(),
       name: name,
       host: club.name,
+      hostName: club.name,
       hostOrganizationId: club.id,
+      hostAvatar: club.initials,
+      hostAvatarColor: club.id === 'program_board' ? '#0050ff' : undefined,
       day: date,
-      time: time,
+      time: endTime ? `${time} – ${endTime}` : time,
       endTime: endTime || undefined,
       venue: venue,
       summary: summary || undefined,
+      description: summary || undefined,
       flyerUrl: flyerUrl || undefined,
+      image: flyerUrl || undefined,
       visibility: mode || 'members_only',
       inviteOnly: mode === 'invite_only',
       selectedSubgroups: mode === 'members_only' ? selectedSubgroups : undefined,
       selectedGuests: mode === 'invite_only' ? selectedGuests : undefined,
-      color: '#f5d783',
+      color: club.id === 'program_board' ? '#0050ff' : '#f5d783',
       tag: 'Social',
       tags: ['Social'],
       tagBg: '#0a0907',
       tagFg: '#fff',
       goingCount: 1,
       pendingCount: 0,
-      currentUserStatus: 'hosting'
+      currentUserStatus: 'hosting',
+      publishStatus: draft ? 'draft' : 'published',
     }, draft);
   };
 
@@ -110,6 +116,26 @@ export function CreateEventSheet({ club, onClose, onPublish, currentUserId }: { 
                       style={{ background: 'rgba(20,17,13,0.05)', color: 'var(--ink)', border: 'none', padding: '8px 16px', borderRadius: 16, fontSize: 11, fontWeight: 500, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                     >
                       Autofill Concert
+                    </button>
+                  )}
+                  {club.id === 'program_board' && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setName('GPB Fall Programming Kickoff');
+                        setDate('Thursday, September 10, 2026');
+                        setTime('7:00 PM');
+                        setEndTime('8:30 PM');
+                        setVenue('Leavey Center, Program Room');
+                        setSummary('Join the full Georgetown Program Board for our fall programming kickoff. We’ll walk through the semester calendar, assign initial event teams, review production timelines, and cover expectations for Programming, Marketing, and Production. Dinner will be provided, and all members should arrive ready to choose at least one September or October event to support.');
+                        setFlyerUrl('/Posh/GPB2.png');
+                        setMode('members_only');
+                        const all = club.groups.find(g => g.name === 'All Members');
+                        setSelectedSubgroups(all ? [all.id] : []);
+                      }}
+                      style={{ background: 'rgba(20,17,13,0.05)', color: 'var(--ink)', border: 'none', padding: '8px 16px', borderRadius: 16, fontSize: 11, fontWeight: 500, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                    >
+                      Autofill Kickoff
                     </button>
                   )}
                 </div>

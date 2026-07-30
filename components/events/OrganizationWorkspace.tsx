@@ -57,10 +57,12 @@ function RosterMembersList({
   roster,
   groups,
   onSelect,
+  currentUserId,
 }: {
   roster: OrganizationMember[];
   groups: { id: string; title: string }[];
   onSelect: (member: OrganizationMember & { matchedUser?: (typeof USERS)[string] }) => void;
+  currentUserId?: string;
 }) {
   const joined = roster.filter(m => m.status === 'joined').length;
   const invited = roster.filter(m => m.status === 'invited').length;
@@ -84,6 +86,7 @@ function RosterMembersList({
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {members.map((m, i) => {
                 const matchedUser = matchRosterUser(m);
+                const isYou = !!(currentUserId && matchedUser && matchedUser.id === currentUserId);
                 const initials = m.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
                 const { statusBg, statusColor, statusBorder, statusText } = memberStatusStyle(m.status);
 
@@ -101,7 +104,9 @@ function RosterMembersList({
                       </div>
                     )}
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--ink)' }}>{m.name}</div>
+                      <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--ink)' }}>
+                        {isYou ? 'You' : m.name}
+                      </div>
                       {m.title && <div style={{ fontSize: 13, color: 'rgba(20,17,13,0.5)', fontWeight: 500 }}>{m.title}</div>}
                     </div>
                     <div style={{ padding: '6px 10px', borderRadius: 12, background: statusBg, border: statusBorder, fontSize: 11, fontWeight: 500, color: statusColor }}>
@@ -125,7 +130,8 @@ export function OrganizationWorkspace({
   onManageEvent,
   onCreateEvent,
   onInviteMembers,
-  currentUserRole = 'admin' // default to admin for backward compatibility in EventsScreen
+  currentUserRole = 'admin', // default to admin for backward compatibility in EventsScreen
+  currentUserId,
 }: { 
   org: Organization, 
   events: EventItem[],
@@ -133,7 +139,8 @@ export function OrganizationWorkspace({
   onManageEvent: (id: string) => void,
   onCreateEvent: () => void,
   onInviteMembers: () => void,
-  currentUserRole?: string
+  currentUserRole?: string,
+  currentUserId?: string,
 }) {
   const [tab, setTab] = useState<'overview'|'events'|'members'>('overview');
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
@@ -144,7 +151,7 @@ export function OrganizationWorkspace({
   const orgEvents = events.filter(e => e.hostOrganizationId === org.id);
   const publicEvents = orgEvents.filter(e => e.visibility !== 'members_only');
   const internalEvents = orgEvents.filter(e => e.visibility === 'members_only');
-  const upcomingEvents = publicEvents;
+  const upcomingEvents = publicEvents.filter(e => e.publishStatus !== 'draft' && e.publishStatus !== 'planning');
 
   return (
     <div className="screen-fade" style={{ background: 'var(--ligo-paper)', minHeight: '100%', height: '100%', position: 'absolute', inset: 0, zIndex: 10, overflowY: 'auto', overflowX: 'hidden' }}>
@@ -217,14 +224,25 @@ export function OrganizationWorkspace({
           <div>
             <div style={{ marginBottom: 48 }}>
               <div style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 20 }}>Public Events</div>
+              {publicEvents.length === 0 && (
+                <div style={{ fontSize: 14, color: 'rgba(20,17,13,0.4)', fontWeight: 500, marginBottom: 24 }}>No public events yet.</div>
+              )}
               {publicEvents.map(e => (
                 <div key={e.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: 24, borderBottom: '1px solid rgba(20,17,13,0.1)', marginBottom: 24 }}>
-                  <div>
-                    <div style={{ fontSize: 24, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--ink)', textTransform: 'uppercase', lineHeight: 1, marginBottom: 8 }}>{e.name}</div>
+                  <div style={{ minWidth: 0, paddingRight: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+                      <div style={{ fontSize: 24, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--ink)', textTransform: 'uppercase', lineHeight: 1 }}>{e.name}</div>
+                      {e.publishStatus && e.publishStatus !== 'published' && (
+                        <span style={{ fontSize: 10, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', padding: '4px 8px', borderRadius: 8, background: e.publishStatus === 'draft' ? 'rgba(20,17,13,0.06)' : 'rgba(249,115,22,0.12)', color: e.publishStatus === 'draft' ? 'rgba(20,17,13,0.55)' : 'var(--orange)' }}>
+                          {e.publishStatus}
+                        </span>
+                      )}
+                    </div>
                     <div style={{ fontSize: 14, color: 'rgba(20,17,13,0.6)', fontWeight: 500 }}>{e.day} · {e.time}</div>
+                    {e.venue && <div style={{ fontSize: 13, color: 'rgba(20,17,13,0.4)', fontWeight: 500, marginTop: 4 }}>{e.venue}</div>}
                   </div>
                   {isOrganizer && (
-                    <button onClick={() => onManageEvent(e.id)} style={{ padding: '8px 16px', background: 'var(--ink)', color: '#fff', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer' }}>Manage</button>
+                    <button onClick={() => onManageEvent(e.id)} style={{ padding: '8px 16px', background: 'var(--ink)', color: '#fff', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer', flexShrink: 0 }}>Manage</button>
                   )}
                 </div>
               ))}
@@ -238,12 +256,20 @@ export function OrganizationWorkspace({
                 </div>
                 {internalEvents.map(e => (
                   <div key={e.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: 24, borderBottom: '1px solid rgba(20,17,13,0.1)', marginBottom: 24 }}>
-                    <div>
-                      <div style={{ fontSize: 24, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--ink)', textTransform: 'uppercase', lineHeight: 1, marginBottom: 8 }}>{e.name}</div>
+                    <div style={{ minWidth: 0, paddingRight: 12 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+                        <div style={{ fontSize: 24, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--ink)', textTransform: 'uppercase', lineHeight: 1 }}>{e.name}</div>
+                        {e.publishStatus && (
+                          <span style={{ fontSize: 10, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', padding: '4px 8px', borderRadius: 8, background: e.publishStatus === 'draft' ? 'rgba(20,17,13,0.06)' : 'rgba(249,115,22,0.12)', color: e.publishStatus === 'draft' ? 'rgba(20,17,13,0.55)' : 'var(--orange)' }}>
+                            {e.publishStatus}
+                          </span>
+                        )}
+                      </div>
                       <div style={{ fontSize: 14, color: 'var(--orange)', fontWeight: 500 }}>{e.day} · {e.time || 'Internal'}</div>
+                      {e.venue && <div style={{ fontSize: 13, color: 'rgba(20,17,13,0.4)', fontWeight: 500, marginTop: 4 }}>{e.venue}</div>}
                     </div>
                     {isOrganizer && (
-                      <button onClick={() => onManageEvent(e.id)} style={{ padding: '8px 16px', background: 'var(--orange)', color: '#fff', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer' }}>Manage</button>
+                      <button onClick={() => onManageEvent(e.id)} style={{ padding: '8px 16px', background: 'var(--orange)', color: '#fff', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none', cursor: 'pointer', flexShrink: 0 }}>Manage</button>
                     )}
                   </div>
                 ))}
@@ -269,6 +295,7 @@ export function OrganizationWorkspace({
                     { id: 'new-members', title: 'NEW MEMBERS' },
                   ]}
                   onSelect={setSelectedMember}
+                  currentUserId={currentUserId}
                 />
                 <div style={{ marginTop: 32 }}>
                   <div style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 8 }}>
@@ -284,6 +311,7 @@ export function OrganizationWorkspace({
                 roster={GPB_ROSTER}
                 groups={[...GPB_MEMBER_GROUPS]}
                 onSelect={setSelectedMember}
+                currentUserId={currentUserId}
               />
             ) : (
               <div>

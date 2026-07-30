@@ -26,8 +26,8 @@ export function EventDetailView({ e, onBack, onRsvpAction }: { e: EventItem, onB
       
       {/* Immersive Hero */}
       <div style={{ position: 'relative', width: '100%', height: '50vh', background: e.color }}>
-        {e.image && (
-          <img src={e.image} alt={e.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        {(e.image || e.flyerUrl) && (
+          <img src={e.image || e.flyerUrl} alt={e.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         )}
         
         {/* Gradient Overlay for Top Nav */}
@@ -102,15 +102,16 @@ export function EventDetailView({ e, onBack, onRsvpAction }: { e: EventItem, onB
         </div>
 
         {/* About Section */}
-        {e.description && (
+        {(e.description || e.summary) && (
           <div style={{ marginBottom: 32 }}>
             <div style={{ fontSize: 18, fontWeight: 500, color: '#111', marginBottom: 12 }}>About</div>
             <div style={{ fontSize: 16, lineHeight: 1.5, color: '#444' }}>
               {(() => {
-                const descArray: string[] = Array.isArray(e.description)
-                  ? e.description
-                  : (typeof e.description === 'string'
-                      ? (e.description.includes('\\n\\n') ? e.description.split('\\n\\n') : e.description.split('\n\n'))
+                const raw = e.description || e.summary || '';
+                const descArray: string[] = Array.isArray(raw)
+                  ? raw
+                  : (typeof raw === 'string'
+                      ? (raw.includes('\\n\\n') ? raw.split('\\n\\n') : raw.split('\n\n'))
                       : []);
                 return showFullAbout ? (
                   descArray.map((p, i) => <p key={i} style={{ margin: '0 0 16px 0' }}>{renderTextWithBold(p)}</p>)

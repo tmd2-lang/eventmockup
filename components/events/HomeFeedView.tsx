@@ -31,7 +31,11 @@ export function HomeFeedView({
     .map(o => orgs[o.organizationId])
     .filter(Boolean);
 
-  const publicEvents = events.filter(e => e.visibility === 'public' || e.visibility === 'campus');
+  const publicEvents = events.filter(e =>
+    (e.visibility === 'public' || e.visibility === 'campus')
+    && e.publishStatus !== 'draft'
+    && e.publishStatus !== 'planning'
+  );
   
   // 1. This Week
   const thisWeekEvents = [...publicEvents].sort((a, b) => (b.goingCount || 0) - (a.goingCount || 0));

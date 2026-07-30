@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { INITIAL_EVENTS, MOCK_ORGANIZATIONS, EventItem, MockUser } from "../lib/mockEventsData";
+import { INITIAL_EVENTS, MOCK_ORGANIZATIONS, EventItem, MockUser, GPB_SEED_EVENTS } from "../lib/mockEventsData";
 import { HomeFeedView } from "./events/HomeFeedView";
 import { InvitesView } from "./events/InvitesView";
 import { OrganizationWorkspace } from "./events/OrganizationWorkspace";
@@ -41,11 +41,12 @@ export function EventsScreen({ onTab }: any) {
   // Keep mock data as-is for Charlotte to see the new fixture events
   const dynamicInitialEvents = INITIAL_EVENTS;
 
-  const [events, setEvents] = usePersistentState<EventItem[]>('ligo:all_events_v2', dynamicInitialEvents);
+  const [events, setEvents] = usePersistentState<EventItem[]>('ligo:all_events_v4', dynamicInitialEvents);
   const [view, setView] = useState<EventsView>("main");
   const [mainTab, setMainTab] = useState<MainTab>('home');
   const [activeOrgId, setActiveOrgId] = useState<string | null>(null);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
+  const [detailReturnView, setDetailReturnView] = useState<EventsView>('main');
   
   const [showSwipeableInvites, setShowSwipeableInvites] = useState(false);
   const lastViewedUserId = React.useRef<string | null>(null);
@@ -58,27 +59,67 @@ export function EventsScreen({ onTab }: any) {
   // while files live under `/Posh/...`. Keep cover URLs in sync with source data.
   // Also remap legacy hostOrganizationId values (e.g. GPB avatar code → program_board).
   React.useEffect(() => {
+    const kickoffCopy =
+      'Join the full Georgetown Program Board for our fall programming kickoff. We’ll walk through the semester calendar, assign initial event teams, review production timelines, and cover expectations for Programming, Marketing, and Production. Dinner will be provided, and all members should arrive ready to choose at least one September or October event to support.';
     const byId = new Map(INITIAL_EVENTS.map(e => [String(e.id), e]));
+
     const needsFix = events.some(e => {
       const source = byId.get(String(e.id));
       if (typeof e.image === 'string' && e.image.includes('/posh/')) return true;
       if (e.hostOrganizationId === 'GPB') return true;
-      return !!(source?.image && source.image !== e.image);
+      if (source?.image && source.image !== e.image) return true;
+      const isKickoff = (e.name || '').toLowerCase().includes('kickoff')
+        && (e.hostOrganizationId === 'program_board' || e.hostOrganizationId === 'GPB');
+      if (isKickoff && !(e.image || e.flyerUrl)) return true;
+      if (isKickoff && !(e.description || e.summary)) return true;
+      // Created events saved flyerUrl but not image
+      if (e.flyerUrl && !e.image) return true;
+      if (e.summary && !e.description) return true;
+      return false;
     });
-    if (!needsFix) return;
+    const missingSeeds = GPB_SEED_EVENTS.filter(seed => !events.some(e => e.id === seed.id));
+    if (!needsFix && missingSeeds.length === 0) return;
 
-    setEvents(prev => prev.map(e => {
-      const source = byId.get(String(e.id));
-      const normalized =
-        typeof e.image === 'string' ? e.image.replace(/\/posh\//g, '/Posh/') : e.image;
-      const image = source?.image || normalized;
-      const hostOrganizationId =
-        e.hostOrganizationId === 'GPB' ? 'program_board'
-        : (source?.hostOrganizationId || e.hostOrganizationId);
-      return image !== e.image || hostOrganizationId !== e.hostOrganizationId
-        ? { ...e, image, hostOrganizationId }
-        : e;
-    }));
+    setEvents(prev => {
+      const fixed = prev.map(e => {
+        const source = byId.get(String(e.id));
+        const normalized =
+          typeof e.image === 'string' ? e.image.replace(/\/posh\//g, '/Posh/') : e.image;
+        let image = source?.image || normalized || e.flyerUrl || e.image;
+        let description = e.description || e.summary;
+        const hostOrganizationId =
+          e.hostOrganizationId === 'GPB' ? 'program_board'
+          : (source?.hostOrganizationId || e.hostOrganizationId);
+
+        const isKickoff = (e.name || '').toLowerCase().includes('kickoff')
+          && (hostOrganizationId === 'program_board');
+        if (isKickoff) {
+          if (!image) image = e.flyerUrl || '/Posh/GPB2.png';
+          if (!description) description = e.summary || kickoffCopy;
+        }
+
+        if (
+          image === e.image
+          && (e.flyerUrl || image) === e.flyerUrl
+          && description === e.description
+          && hostOrganizationId === e.hostOrganizationId
+          && (e.summary || description) === e.summary
+        ) {
+          return e;
+        }
+
+        return {
+          ...e,
+          image,
+          flyerUrl: e.flyerUrl || image,
+          description,
+          summary: e.summary || (typeof description === 'string' ? description : e.summary),
+          hostOrganizationId,
+        };
+      });
+      const stillMissing = GPB_SEED_EVENTS.filter(seed => !fixed.some(e => e.id === seed.id));
+      return stillMissing.length ? [...fixed, ...stillMissing] : fixed;
+    });
   }, [events, setEvents]);
 
   React.useEffect(() => {
@@ -244,6 +285,7 @@ export function EventsScreen({ onTab }: any) {
           onRsvp={handleRsvp} 
           onViewDetails={(id) => {
             setActiveEventId(id);
+            setDetailReturnView('main');
             setView('event-detail');
           }}
         />
@@ -315,7 +357,7 @@ export function EventsScreen({ onTab }: any) {
                 events={activeUser.id === 'ligo' ? [] : events} 
                 user={activeUser} 
                 orgs={MOCK_ORGANIZATIONS}
-                onOpenEvent={(id) => { setActiveEventId(id); setView('event-detail'); }}
+                onOpenEvent={(id) => { setActiveEventId(id); setDetailReturnView('main'); setView('event-detail'); }}
                 onOpenOrgWorkspace={(id) => { setActiveOrgId(id); setView('organization'); }}
               />
             )}
@@ -323,7 +365,7 @@ export function EventsScreen({ onTab }: any) {
             {mainTab === 'invites' && (
               <InvitesView 
                 events={activeUser.id === 'ligo' ? [] : events}
-                onOpenEvent={(id) => { setActiveEventId(id); setView('event-detail'); }}
+                onOpenEvent={(id) => { setActiveEventId(id); setDetailReturnView('main'); setView('event-detail'); }}
                 onAction={handleRsvp}
               />
             )}
@@ -380,7 +422,7 @@ export function EventsScreen({ onTab }: any) {
           events={events}
           currentUserRole={activeUser.organizations.find((o: any) => o.organizationId === activeOrgId)?.role || 'member'}
           onBack={() => { setActiveOrgId(null); setView('main'); setMainTab('clubs'); }}
-          onOpenEvent={(id) => { setActiveEventId(id); setView('event-detail'); }}
+          onOpenEvent={(id) => { setActiveEventId(id); setDetailReturnView('member-club'); setView('event-detail'); }}
           onOpenManage={
             ['admin', 'officer', 'social_chair'].includes(
               activeUser.organizations.find((o: any) => o.organizationId === activeOrgId)?.role || ''
@@ -400,6 +442,7 @@ export function EventsScreen({ onTab }: any) {
           onCreateEvent={() => setSheetOpen(true)}
           onInviteMembers={() => setImportContactsOpen(true)}
           currentUserRole={activeUser.organizations.find((o: any) => o.organizationId === activeOrgId)?.role || 'admin'}
+          currentUserId={activeUserId}
         />
       )}
 
@@ -408,6 +451,11 @@ export function EventsScreen({ onTab }: any) {
           event={activeEvent} 
           onBack={() => setView(activeOrgId ? 'organization' : 'main')} 
           onToast={flash}
+          currentUserId={activeUserId}
+          onViewEvent={() => {
+            setDetailReturnView('manage-event');
+            setView('event-detail');
+          }}
           onDelete={() => {
             setEvents(prev => prev.filter(e => e.id !== activeEvent.id));
             flash('Event deleted');
@@ -419,7 +467,7 @@ export function EventsScreen({ onTab }: any) {
       {view === 'event-detail' && activeEvent && (
         <EventDetailView 
           e={activeEvent} 
-          onBack={() => setView('main')} 
+          onBack={() => setView(detailReturnView)} 
           onRsvpAction={(a) => handleRsvp(activeEvent.id, a)}
         />
       )}
