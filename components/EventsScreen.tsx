@@ -422,6 +422,7 @@ export function EventsScreen({ onTab }: any) {
         <MemberClubHome
           org={activeOrg}
           events={events}
+          currentUserId={activeUserId}
           currentUserRole={activeUser.organizations.find((o: any) => o.organizationId === activeOrgId)?.role || 'member'}
           onBack={() => { setActiveOrgId(null); setView('main'); setMainTab('clubs'); }}
           onOpenEvent={(id) => { setActiveEventId(id); setDetailReturnView('member-club'); setView('event-detail'); }}
@@ -472,6 +473,9 @@ export function EventsScreen({ onTab }: any) {
           onBack={() => setView(detailReturnView)} 
           onRsvpAction={(a) => handleRsvp(activeEvent.id, a)}
           currentUserId={activeUserId}
+          canOpenEventChat={activeUser.organizations.some(
+            (o: any) => o.organizationId === activeEvent.hostOrganizationId
+          )}
         />
       )}
 

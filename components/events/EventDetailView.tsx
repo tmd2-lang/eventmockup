@@ -3,20 +3,24 @@ import { EventItem } from '../../lib/mockEventsData';
 import { getGoingSocial } from '../../lib/eventSocialProof';
 import { EVI } from './Icons';
 import { AddToCalendar } from './AddToCalendar';
+import { EventGroupChat } from './EventGroupChat';
 
 export function EventDetailView({
   e,
   onBack,
   onRsvpAction,
   currentUserId,
+  canOpenEventChat,
 }: {
   e: EventItem;
   onBack: () => void;
   onRsvpAction: (action: 'going' | 'maybe' | 'declined' | null) => void;
   currentUserId?: string;
+  canOpenEventChat?: boolean;
 }) {
   const [showFullAbout, setShowFullAbout] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const social = getGoingSocial(e, currentUserId);
   
   const renderTextWithBold = (text: string) => {
@@ -151,6 +155,37 @@ export function EventDetailView({
             </div>
           </div>
         </div>
+
+        {canOpenEventChat && (
+          <button
+            onClick={() => setChatOpen(true)}
+            style={{
+              width: '100%',
+              marginBottom: 28,
+              padding: '16px 18px',
+              background: 'var(--orange)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 14,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              textAlign: 'left',
+            }}
+          >
+            <EVI.Group />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Event group chat
+              </div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 4, fontWeight: 500 }}>
+                Plans & logistics for this event only
+              </div>
+            </div>
+            <EVI.Chevron style={{ opacity: 0.8, flexShrink: 0 }} />
+          </button>
+        )}
 
         {/* About Section */}
         {(e.description || e.summary) && (
@@ -325,6 +360,14 @@ export function EventDetailView({
             </div>
           </div>
         </div>
+      )}
+
+      {chatOpen && (
+        <EventGroupChat
+          event={e}
+          currentUserId={currentUserId}
+          onClose={() => setChatOpen(false)}
+        />
       )}
     </div>
   );
