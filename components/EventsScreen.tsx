@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { INITIAL_EVENTS, MOCK_ORGANIZATIONS, EventItem, MockUser, GPB_SEED_EVENTS } from "../lib/mockEventsData";
+import { setUserRsvp, withResolvedStatuses, type UserRsvpStore } from "../lib/eventRsvps";
 import { HomeFeedView } from "./events/HomeFeedView";
 import { InvitesView } from "./events/InvitesView";
 import { OrganizationWorkspace } from "./events/OrganizationWorkspace";
@@ -10,11 +11,19 @@ import { CreateEventSheet } from "./events/CreateEventSheet";
 import { EventDetailView } from "./events/EventDetailView";
 import { SwipeableInvites } from "./events/SwipeableInvites";
 import { ImportContactsFlow } from "./events/ImportContactsFlow";
+import { LiveActivityPill } from "./events/LiveActivityPill";
 import { EVI } from "./events/Icons";
 import { usePersistentState } from "../lib/usePersistentState";
 
 type EventsView = "main" | "organization" | "member-club" | "manage-event" | "event-detail" | "publish-confirmation";
 type MainTab = 'home' | 'invites' | 'clubs';
+
+/** Demo users who belong to each org — used when publishing members-only invites */
+const DEMO_ORG_MEMBERS: Record<string, string[]> = {
+  program_board: ['cole', 'jordan'],
+  sigma_phi_epsilon: ['marcus', 'jordan', 'bennett', 'cole'],
+  phantoms: ['sofia'],
+};
 
 export function EventsScreen({ onTab }: any) {
   const [activeUserId] = usePersistentState('ligo:active_user', 'marcus');
@@ -42,6 +51,7 @@ export function EventsScreen({ onTab }: any) {
   const dynamicInitialEvents = INITIAL_EVENTS;
 
   const [events, setEvents] = usePersistentState<EventItem[]>('ligo:all_events_v4', dynamicInitialEvents);
+  const [rsvpStore, setRsvpStore] = usePersistentState<UserRsvpStore>('ligo:user_rsvps_v1', {});
   const [view, setView] = useState<EventsView>("main");
   const [mainTab, setMainTab] = useState<MainTab>('home');
   const [activeOrgId, setActiveOrgId] = useState<string | null>(null);
@@ -49,12 +59,19 @@ export function EventsScreen({ onTab }: any) {
   const [detailReturnView, setDetailReturnView] = useState<EventsView>('main');
   const [memberClubScreen, setMemberClubScreen] = useState<'home' | 'chat' | 'events' | 'people'>('home');
   const [skipClubWelcome, setSkipClubWelcome] = useState(false);
+  const [liveActivityEventId, setLiveActivityEventId] = useState<string | null>(null);
   
   const [showSwipeableInvites, setShowSwipeableInvites] = useState(false);
-  const lastViewedUserId = React.useRef<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [importContactsOpen, setImportContactsOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const lastViewedUserId = useRef(activeUserId);
+
+  // Per-user view of events (membership + invites + explicit RSVPs)
+  const viewEvents = useMemo(
+    () => withResolvedStatuses(events, activeUserId, activeUser, rsvpStore),
+    [events, activeUserId, activeUser, rsvpStore],
+  );
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
 
   // Vercel (Linux) is case-sensitive; older cached rows can still point at `/posh/...`
@@ -124,34 +141,7 @@ export function EventsScreen({ onTab }: any) {
     });
   }, [events, setEvents]);
 
-  React.useEffect(() => {
-    setEvents(prev => prev.map(e => {
-      if (typeof e.id === 'string' && e.id.startsWith('new-')) {
-        const isHost = activeUserId === (e as any).creatorId;
-        const isTarget = (e as any).invitedUserIds?.includes(activeUserId);
-        return { ...e, currentUserStatus: isHost ? 'hosting' : isTarget ? 'pending' : null };
-      }
-      // GPB members-only seeds are authored as "hosting" for Cole — remap for members
-      if (
-        e.hostOrganizationId === 'program_board'
-        && e.visibility === 'members_only'
-        && (e as any).creatorId === 'cole'
-      ) {
-        if (activeUserId === 'cole') {
-          return e.currentUserStatus === 'hosting' ? e : { ...e, currentUserStatus: 'hosting' };
-        }
-        if (activeUserId === 'jordan' && (e.currentUserStatus === 'hosting' || e.currentUserStatus == null)) {
-          return { ...e, currentUserStatus: 'pending' };
-        }
-        // Seed default is pending — keep Cole host remap above; leave member RSVPs alone
-      }
-      return e;
-    }));
-  }, [activeUserId]);
-
-  function flash(msg: string) { setToast(msg); setTimeout(() => setToast(null), 2600); }
-
-  const pendingInvites = events.filter(e =>
+  const pendingInvites = viewEvents.filter(e =>
     e.currentUserStatus === 'pending'
     && ['private', 'members_only', 'invite_only'].includes(e.visibility)
     && e.publishStatus !== 'draft'
@@ -167,23 +157,24 @@ export function EventsScreen({ onTab }: any) {
         setShowSwipeableInvites(false);
       }
       lastViewedUserId.current = activeUserId;
+      setLiveActivityEventId(null);
     }
   }, [activeUserId, pendingInvites.length]);
 
+  function flash(msg: string) { setToast(msg); setTimeout(() => setToast(null), 2600); }
+
   function handleRsvp(id: string, action: 'going'|'maybe'|'declined'|null) {
-    setEvents(prev => prev.map(e => {
-      if (e.id === id) {
-        let newStatus = action;
-        // As requested by user, any undone RSVP should return to the Needs Response section
-        if (action === null) {
-          newStatus = 'pending' as any;
-        }
-        return { ...e, currentUserStatus: newStatus as any };
-      }
-      return e;
-    }));
-    if (action) flash(`RSVP updated to ${action}`);
-    else flash('RSVP removed');
+    const eventId = String(id);
+    // null = undo → clear explicit RSVP so membership invites fall back to pending
+    setRsvpStore(prev => setUserRsvp(prev, activeUserId, eventId, action));
+    if (action === 'going') {
+      setLiveActivityEventId(eventId);
+      flash(`You're in — Live Activity on`);
+    } else {
+      if (liveActivityEventId === eventId) setLiveActivityEventId(null);
+      if (action) flash(`RSVP updated to ${action}`);
+      else flash('RSVP removed');
+    }
   }
 
   function handlePublish(newEvent: Partial<EventItem>, isDraft: boolean) {
@@ -199,6 +190,7 @@ export function EventsScreen({ onTab }: any) {
     finalEvent.invitedUserIds = [];
 
     const activeOrg = MOCK_ORGANIZATIONS[finalEvent.hostOrganizationId];
+    const demoMembers = DEMO_ORG_MEMBERS[finalEvent.hostOrganizationId] || [];
 
     if (finalEvent.visibility === 'members_only') {
       if (activeOrg.memberCount === 0) {
@@ -209,7 +201,6 @@ export function EventsScreen({ onTab }: any) {
       const allMembers = activeOrg.groups.find((g: any) => g.name === 'All Members');
       if (allMembers && subgroups.includes(allMembers.id)) {
         finalPendingCount = allMembers.memberCount;
-        finalEvent.invitedUserIds = ['jordan', 'sofia', 'charlotte'];
       } else {
         let count = 0;
         for (const sg of subgroups) {
@@ -217,8 +208,9 @@ export function EventsScreen({ onTab }: any) {
           if (g) count += g.memberCount;
         }
         finalPendingCount = count;
-        finalEvent.invitedUserIds = ['jordan']; 
       }
+      // Invite other demo profiles in this org (membership also implies pending)
+      finalEvent.invitedUserIds = demoMembers.filter(id => id !== activeUserId);
       finalEvent.goingCount = 1;
       finalEvent.currentUserStatus = 'hosting';
 
@@ -231,10 +223,12 @@ export function EventsScreen({ onTab }: any) {
         if (g.type === 'org') {
           const o = MOCK_ORGANIZATIONS[g.id];
           if (o) count += o.memberCount;
+          const orgDemo = DEMO_ORG_MEMBERS[g.id] || [];
+          ids.push(...orgDemo.filter(id => id !== activeUserId));
         }
       }
       finalPendingCount = count;
-      finalEvent.invitedUserIds = ids;
+      finalEvent.invitedUserIds = [...new Set(ids)];
       finalEvent.goingCount = 1;
       finalEvent.currentUserStatus = 'hosting';
 
@@ -246,12 +240,11 @@ export function EventsScreen({ onTab }: any) {
 
     finalEvent.pendingCount = finalPendingCount;
 
-    // We keep goingCount 1 initially because the host is going.
     INITIAL_EVENTS.push(finalEvent);
     setEvents(prev => [...prev, finalEvent]);
     
     setActiveEventId(finalEvent.id);
-    setSheetOpen(false); // Make sure the sheet closes
+    setSheetOpen(false);
     setView('publish-confirmation');
   }
 
@@ -277,8 +270,11 @@ export function EventsScreen({ onTab }: any) {
     setView('manage-event');
   };
 
-  const activeEvent = activeEventId ? events.find(e => e.id === activeEventId) : null;
+  const activeEvent = activeEventId ? viewEvents.find(e => e.id === activeEventId) : null;
   const activeOrg = activeOrgId ? MOCK_ORGANIZATIONS[activeOrgId] : null;
+  const liveActivityEvent = liveActivityEventId
+    ? viewEvents.find(e => String(e.id) === liveActivityEventId && (e.currentUserStatus === 'going' || e.currentUserStatus === 'hosting'))
+    : null;
 
   const managedOrgs = activeUser.organizations
     .filter((o: any) => ['officer', 'social_chair', 'admin'].includes(o.role))
@@ -297,6 +293,18 @@ export function EventsScreen({ onTab }: any) {
   return (
     <div className="screen" style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: 'var(--ligo-paper)' }}>
       
+      {liveActivityEvent && (
+        <LiveActivityPill
+          event={liveActivityEvent}
+          onOpen={() => {
+            setActiveEventId(String(liveActivityEvent.id));
+            setDetailReturnView(view === 'main' ? 'main' : view);
+            setView('event-detail');
+          }}
+          onDismiss={() => setLiveActivityEventId(null)}
+        />
+      )}
+
       {showSwipeableInvites && (
         <SwipeableInvites 
           invites={pendingInvites} 
@@ -376,7 +384,7 @@ export function EventsScreen({ onTab }: any) {
           <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
             {mainTab === 'home' && (
               <HomeFeedView 
-                events={activeUser.id === 'ligo' ? [] : events} 
+                events={activeUser.id === 'ligo' ? [] : viewEvents} 
                 user={activeUser} 
                 orgs={MOCK_ORGANIZATIONS}
                 onOpenEvent={(id) => { setActiveEventId(id); setDetailReturnView('main'); setView('event-detail'); }}
@@ -386,7 +394,7 @@ export function EventsScreen({ onTab }: any) {
 
             {mainTab === 'invites' && (
               <InvitesView 
-                events={activeUser.id === 'ligo' ? [] : events}
+                events={activeUser.id === 'ligo' ? [] : viewEvents}
                 onOpenEvent={(id) => { setActiveEventId(id); setDetailReturnView('main'); setView('event-detail'); }}
                 onAction={handleRsvp}
                 currentUserId={activeUserId}
@@ -444,7 +452,7 @@ export function EventsScreen({ onTab }: any) {
       {view === 'member-club' && activeOrg && (
         <MemberClubHome
           org={activeOrg}
-          events={events}
+          events={viewEvents}
           currentUserId={activeUserId}
           currentUserRole={activeUser.organizations.find((o: any) => o.organizationId === activeOrgId)?.role || 'member'}
           initialScreen={memberClubScreen}
@@ -471,7 +479,7 @@ export function EventsScreen({ onTab }: any) {
       {view === 'organization' && activeOrg && (
         <OrganizationWorkspace 
           org={activeOrg} 
-          events={events} 
+          events={viewEvents} 
           onBack={() => { setActiveOrgId(null); setView('main'); }}
           onManageEvent={(id) => { setActiveEventId(id); setView('manage-event'); }}
           onCreateEvent={() => setSheetOpen(true)}

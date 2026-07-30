@@ -3,6 +3,44 @@ import { EventItem } from '../../lib/mockEventsData';
 import { getGoingSocial } from '../../lib/eventSocialProof';
 import { EVI } from './Icons';
 
+function eventDayDate(e: EventItem): Date | null {
+  if (e.parsedDate) {
+    const d = new Date(e.parsedDate);
+    if (!Number.isNaN(d.getTime())) return d;
+  }
+  if (e.day) {
+    const d = new Date(e.day);
+    if (!Number.isNaN(d.getTime())) return d;
+  }
+  return null;
+}
+
+function getDaysFromToday(e: EventItem): number | null {
+  const d = eventDayDate(e);
+  if (!d) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(d);
+  target.setHours(0, 0, 0, 0);
+  return Math.round((target.getTime() - today.getTime()) / (1000 * 3600 * 24));
+}
+
+function isLiveInvite(e: EventItem) {
+  return e.publishStatus !== 'draft' && e.publishStatus !== 'planning';
+}
+
+/** Hosting is global on mock events — only count it for the actual creator. */
+function isUpcomingForUser(e: EventItem, currentUserId?: string) {
+  if (!isLiveInvite(e)) return false;
+  const days = getDaysFromToday(e);
+  // Keep undated events visible, but don't pretend they're "today"
+  if (days !== null && days < -1) return false;
+
+  if (e.currentUserStatus === 'going' || e.currentUserStatus === 'maybe') return true;
+  if (e.currentUserStatus === 'hosting' && currentUserId && e.creatorId === currentUserId) return true;
+  return false;
+}
+
 export function InvitesView({ 
   events, 
   onOpenEvent, 
@@ -17,54 +55,51 @@ export function InvitesView({
   const [showPast, setShowPast] = useState(false);
   const [editingResponseId, setEditingResponseId] = useState<string | null>(null);
 
-  // Helper to calculate days from today
-  const getDaysFromToday = (d: any) => {
-    if (!d) return 0;
-    const diff = new Date(d).getTime() - new Date().getTime();
-    return Math.ceil(diff / (1000 * 3600 * 24));
-  };
-
-  // Helper for context line
   const getContextLine = (e: EventItem) => {
     return e.visibility === 'private' ? e.subtitle : e.host;
   };
 
-  const isLiveInvite = (e: EventItem) =>
-    e.publishStatus !== 'draft' && e.publishStatus !== 'planning';
-
   const pendingEvents = events
     .filter(e => e.currentUserStatus === 'pending' && isLiveInvite(e))
-    .sort((a, b) => new Date(a.parsedDate || 0).getTime() - new Date(b.parsedDate || 0).getTime());
+    .sort((a, b) => (eventDayDate(a)?.getTime() || 0) - (eventDayDate(b)?.getTime() || 0));
 
   const upcomingEvents = events
-    .filter(e =>
-      (e.currentUserStatus === 'going' || e.currentUserStatus === 'maybe' || e.currentUserStatus === 'hosting')
-      && isLiveInvite(e)
-      && getDaysFromToday(e.parsedDate) >= -1
-    )
-    .sort((a, b) => new Date(a.parsedDate || 0).getTime() - new Date(b.parsedDate || 0).getTime());
+    .filter(e => isUpcomingForUser(e, currentUserId))
+    .sort((a, b) => (eventDayDate(a)?.getTime() || 0) - (eventDayDate(b)?.getTime() || 0));
 
   const pastAndDeclinedEvents = events
-    .filter(e =>
-      e.currentUserStatus === 'declined'
-      || ((e.currentUserStatus === 'going' || e.currentUserStatus === 'maybe' || e.currentUserStatus === 'hosting') && getDaysFromToday(e.parsedDate) < -1)
-    )
-    .sort((a, b) => new Date(b.parsedDate || 0).getTime() - new Date(a.parsedDate || 0).getTime()); // descending for past
+    .filter(e => {
+      const days = getDaysFromToday(e);
+      if (e.currentUserStatus === 'declined') return true;
+      if (
+        (e.currentUserStatus === 'going' || e.currentUserStatus === 'maybe')
+        && days !== null
+        && days < -1
+      ) return true;
+      if (
+        e.currentUserStatus === 'hosting'
+        && currentUserId
+        && e.creatorId === currentUserId
+        && days !== null
+        && days < -1
+      ) return true;
+      return false;
+    })
+    .sort((a, b) => (eventDayDate(b)?.getTime() || 0) - (eventDayDate(a)?.getTime() || 0));
 
   const renderEventRow = (e: EventItem, mode: 'pending' | 'upcoming' | 'past') => {
-    const daysOut = getDaysFromToday(e.parsedDate);
-    const showDaysOut = (mode === 'upcoming' || mode === 'pending') && daysOut >= 0;
+    const daysOut = getDaysFromToday(e);
+    const showDaysOut = (mode === 'upcoming' || mode === 'pending') && daysOut !== null && daysOut >= 0;
     const social = mode === 'pending' ? getGoingSocial(e, currentUserId) : null;
+    const isHosting = e.currentUserStatus === 'hosting' && e.creatorId === currentUserId;
 
     return (
       <div key={e.id} style={{ display: 'flex', flexDirection: 'column', padding: '16px 20px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', gap: 16, cursor: 'pointer', alignItems: 'center' }} onClick={() => onOpenEvent(e.id)}>
-          {/* Thumbnail */}
           <div style={{ width: 64, height: 64, borderRadius: 12, background: e.image ? `url(${e.image}) center/cover` : (e.hostAvatarColor || '#eee'), flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20, fontWeight: 500 }}>
             {!e.image && e.hostAvatar}
           </div>
           
-          {/* Info */}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 16, fontWeight: 500, color: '#111', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 4 }}>
               {e.title || e.name}
@@ -85,11 +120,10 @@ export function InvitesView({
             </div>
           </div>
           
-          {/* Right side (countdown + status chip) */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
             {showDaysOut && (
               <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--ligo-orange)', whiteSpace: 'nowrap' }}>
-                in {daysOut} day{daysOut !== 1 ? 's' : ''}
+                {daysOut === 0 ? 'Today' : `in ${daysOut} day${daysOut !== 1 ? 's' : ''}`}
               </div>
             )}
             
@@ -99,15 +133,13 @@ export function InvitesView({
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   padding: '6px 12px', borderRadius: 16,
-                  background: e.currentUserStatus === 'going' ? 'rgba(249,115,22,0.1)' : 'transparent',
-                  border: e.currentUserStatus === 'going' ? '1px solid rgba(249,115,22,0.2)' : '1px solid rgba(0,0,0,0.15)',
-                  color: e.currentUserStatus === 'going' ? 'var(--ligo-orange)' : '#444',
+                  background: e.currentUserStatus === 'going' || isHosting ? 'rgba(249,115,22,0.1)' : 'transparent',
+                  border: e.currentUserStatus === 'going' || isHosting ? '1px solid rgba(249,115,22,0.2)' : '1px solid rgba(0,0,0,0.15)',
+                  color: e.currentUserStatus === 'going' || isHosting ? 'var(--ligo-orange)' : '#444',
                   fontSize: 13, fontWeight: 500, cursor: 'pointer'
                 }}
               >
-                {e.currentUserStatus === 'going' || e.currentUserStatus === 'hosting'
-                  ? (e.currentUserStatus === 'hosting' ? 'Hosting' : 'Going ✓')
-                  : 'Maybe'}
+                {isHosting ? 'Hosting' : e.currentUserStatus === 'going' ? 'Going ✓' : 'Maybe'}
               </button>
             )}
           </div>
