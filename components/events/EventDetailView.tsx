@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
 import { EventItem } from '../../lib/mockEventsData';
+import { getGoingSocial } from '../../lib/eventSocialProof';
 import { EVI } from './Icons';
 import { AddToCalendar } from './AddToCalendar';
 
-export function EventDetailView({ e, onBack, onRsvpAction }: { e: EventItem, onBack: () => void, onRsvpAction: (action: 'going'|'maybe'|'declined'|null) => void }) {
+export function EventDetailView({
+  e,
+  onBack,
+  onRsvpAction,
+  currentUserId,
+}: {
+  e: EventItem;
+  onBack: () => void;
+  onRsvpAction: (action: 'going' | 'maybe' | 'declined' | null) => void;
+  currentUserId?: string;
+}) {
   const [showFullAbout, setShowFullAbout] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
-  const sampleNames = ['Maya A.', 'Jordan P.', 'Riya S.', 'Diego R.', 'Sofia H.', 'Theo K.'];
-  const connections = e.socialProof?.connections || Math.floor(Math.random() * 20) + 5;
+  const social = getGoingSocial(e, currentUserId);
   
   const renderTextWithBold = (text: string) => {
     return text.split(/(\*\*.*?\*\*)/g).map((part, i) => {
@@ -58,7 +68,7 @@ export function EventDetailView({ e, onBack, onRsvpAction }: { e: EventItem, onB
         </h1>
 
         {/* Key Info Strip */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32, paddingBottom: 32, borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24, paddingBottom: 24, borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
               <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111' }}>
@@ -99,6 +109,47 @@ export function EventDetailView({ e, onBack, onRsvpAction }: { e: EventItem, onB
               </div>
             </div>
           )}
+        </div>
+
+        {/* Who's going — up near RSVP decision, real faces */}
+        <div style={{ marginBottom: 28, paddingBottom: 24, borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+          <div style={{ fontSize: 18, fontWeight: 500, color: '#111', marginBottom: 12 }}>
+            {isPastEvent ? `${social.going} attended` : social.heading}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            {social.faces.length > 0 && (
+              <div style={{ display: 'flex', flexShrink: 0 }}>
+                {social.faces.map((f, i) => (
+                  <img
+                    key={f.id}
+                    src={f.avatar}
+                    alt={f.shortName}
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '2px solid #fff',
+                      marginLeft: i === 0 ? 0 : -14,
+                      position: 'relative',
+                      zIndex: social.faces.length - i,
+                      background: '#eee',
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 15, color: '#111', fontWeight: 500, lineHeight: 1.3 }}>
+                {social.label}
+              </div>
+              {social.connectionsLabel && (
+                <div style={{ fontSize: 13, color: '#666', fontWeight: 500, marginTop: 3 }}>
+                  {social.connectionsLabel} {isPastEvent ? 'attended' : 'are attending'}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* About Section */}
@@ -142,25 +193,6 @@ export function EventDetailView({ e, onBack, onRsvpAction }: { e: EventItem, onB
               <li>{e.visibility === 'public' ? 'Open to the public.' : 'Open to Georgetown students.'}</li>
             )}
           </ul>
-        </div>
-
-        {/* Attendee Count */}
-        <div style={{ marginBottom: 32 }}>
-          <div style={{ fontSize: 18, fontWeight: 500, color: '#111', marginBottom: 16 }}>
-            {isPastEvent ? `${e.socialProof?.going || e.goingCount} attended` : `${e.goingCount || e.socialProof?.going} people are going`}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div style={{ display: 'flex' }}>
-              {[1, 2, 3].map((_, i) => (
-                <div key={i} style={{ width: 40, height: 40, borderRadius: '50%', background: '#eee', border: '2px solid #fff', marginLeft: i === 0 ? 0 : -16, zIndex: 10 - i, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 500, color: '#888' }}>
-                  {sampleNames[i].charAt(0)}
-                </div>
-              ))}
-            </div>
-            <div style={{ fontSize: 15, color: '#666', fontWeight: 500 }}>
-              <b>{connections}</b> of your Georgetown connections {isPastEvent ? 'attended' : 'are attending'}
-            </div>
-          </div>
         </div>
 
         {/* Category Tags */}

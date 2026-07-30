@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { EventItem } from '../../lib/mockEventsData';
+import { getGoingSocial } from '../../lib/eventSocialProof';
 import { EVI } from './Icons';
 
 export function InvitesView({ 
   events, 
   onOpenEvent, 
-  onAction
+  onAction,
+  currentUserId,
 }: { 
   events: EventItem[], 
   onOpenEvent: (id: string) => void,
-  onAction: (id: string, action: 'going'|'maybe'|'declined'|null) => void
+  onAction: (id: string, action: 'going'|'maybe'|'declined'|null) => void,
+  currentUserId?: string,
 }) {
   const [showPast, setShowPast] = useState(false);
   const [editingResponseId, setEditingResponseId] = useState<string | null>(null);
@@ -41,6 +44,7 @@ export function InvitesView({
   const renderEventRow = (e: EventItem, mode: 'pending' | 'upcoming' | 'past') => {
     const daysOut = getDaysFromToday(e.parsedDate);
     const showDaysOut = (mode === 'upcoming' || mode === 'pending') && daysOut >= 0;
+    const social = mode === 'pending' ? getGoingSocial(e, currentUserId) : null;
 
     return (
       <div key={e.id} style={{ display: 'flex', flexDirection: 'column', padding: '16px 20px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
@@ -53,7 +57,7 @@ export function InvitesView({
           {/* Info */}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 16, fontWeight: 500, color: '#111', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 4 }}>
-              {e.title}
+              {e.title || e.name}
             </div>
             
             <div style={{ fontSize: 13, color: 'rgba(20,17,13,0.6)', marginBottom: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -61,7 +65,7 @@ export function InvitesView({
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 500, color: '#444' }}>
-              {e.date}
+              {e.date || e.day}
               {e.visibility === 'private' && (
                 <>
                   <span style={{ color: 'rgba(20,17,13,0.3)' }}>·</span>
@@ -97,9 +101,39 @@ export function InvitesView({
           </div>
         </div>
 
+        {mode === 'pending' && social && social.going > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12, paddingLeft: 80 }}>
+            {social.faces.length > 0 && (
+              <div style={{ display: 'flex', flexShrink: 0 }}>
+                {social.faces.slice(0, 3).map((f, i) => (
+                  <img
+                    key={f.id}
+                    src={f.avatar}
+                    alt=""
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '1.5px solid #fff',
+                      marginLeft: i === 0 ? 0 : -7,
+                      position: 'relative',
+                      zIndex: 3 - i,
+                      background: '#eee',
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+            <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(20,17,13,0.55)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {social.label}
+            </div>
+          </div>
+        )}
+
         {/* Action Controls */}
         {mode === 'pending' || editingResponseId === e.id ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => { onAction(e.id, 'declined'); setEditingResponseId(null); }} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid rgba(0,0,0,0.1)', background: 'transparent', fontSize: 14, fontWeight: 500, color: '#444', cursor: 'pointer' }}>Decline</button>
               <button onClick={() => { onAction(e.id, 'maybe'); setEditingResponseId(null); }} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid rgba(0,0,0,0.1)', background: 'transparent', fontSize: 14, fontWeight: 500, color: '#444', cursor: 'pointer' }}>Maybe</button>

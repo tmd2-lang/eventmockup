@@ -282,7 +282,8 @@ export function EventsScreen({ onTab }: any) {
           hidden={view === 'event-detail'}
           onComplete={() => setShowSwipeableInvites(false)} 
           onClose={() => setShowSwipeableInvites(false)}
-          onRsvp={handleRsvp} 
+          onRsvp={handleRsvp}
+          currentUserId={activeUserId}
           onViewDetails={(id) => {
             setActiveEventId(id);
             setDetailReturnView('main');
@@ -367,6 +368,7 @@ export function EventsScreen({ onTab }: any) {
                 events={activeUser.id === 'ligo' ? [] : events}
                 onOpenEvent={(id) => { setActiveEventId(id); setDetailReturnView('main'); setView('event-detail'); }}
                 onAction={handleRsvp}
+                currentUserId={activeUserId}
               />
             )}
 
@@ -469,6 +471,7 @@ export function EventsScreen({ onTab }: any) {
           e={activeEvent} 
           onBack={() => setView(detailReturnView)} 
           onRsvpAction={(a) => handleRsvp(activeEvent.id, a)}
+          currentUserId={activeUserId}
         />
       )}
 

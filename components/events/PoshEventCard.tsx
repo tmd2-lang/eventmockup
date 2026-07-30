@@ -1,8 +1,15 @@
 import React from "react";
 import { EventItem } from "../../lib/mockEventsData";
+import { getGoingSocial } from "../../lib/eventSocialProof";
 
 export function PoshEventCard({ event, onClick, layout = "carousel", index = 0 }: { event: EventItem, onClick: () => void, layout?: "carousel" | "grid", index?: number }) {
   const isGrid = layout === "grid";
+  const social = getGoingSocial(event);
+  const goingLine = social.going > 0
+    ? (social.connectionCount > 0
+      ? `${social.going} going · ${social.connectionCount} you know`
+      : `${social.going} going`)
+    : null;
 
   return (
     <div 
@@ -52,6 +59,11 @@ export function PoshEventCard({ event, onClick, layout = "carousel", index = 0 }
       <div style={{ fontSize: '13px', color: '#888', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
         {event.tickets?.[0]?.price || 'Free'} · {event.venue}
       </div>
+      {goingLine && (
+        <div style={{ fontSize: '12px', color: 'rgba(20,17,13,0.55)', fontWeight: 500, marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {goingLine}
+        </div>
+      )}
     </div>
   );
 }
