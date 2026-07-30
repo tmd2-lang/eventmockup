@@ -59,6 +59,7 @@ export function EventsScreen({ onTab }: any) {
   const [detailReturnView, setDetailReturnView] = useState<EventsView>('main');
   const [memberClubScreen, setMemberClubScreen] = useState<'home' | 'chat' | 'events' | 'people'>('home');
   const [skipClubWelcome, setSkipClubWelcome] = useState(false);
+  const [skipOrgWelcome, setSkipOrgWelcome] = useState(false);
   const [liveActivityEventId, setLiveActivityEventId] = useState<string | null>(null);
   
   const [showSwipeableInvites, setShowSwipeableInvites] = useState(false);
@@ -373,6 +374,7 @@ export function EventsScreen({ onTab }: any) {
                 <button 
                   onClick={() => {
                     setActiveOrgId(managedOrgs[0].id);
+                    setSkipOrgWelcome(false);
                     setView('organization');
                   }} 
                   style={{ paddingBottom: 16, fontSize: 15, fontWeight: 500, color: 'rgba(20,17,13,0.4)', background: 'none', border: 'none', cursor: 'pointer', position: 'relative' }}>
@@ -388,7 +390,7 @@ export function EventsScreen({ onTab }: any) {
                 user={activeUser} 
                 orgs={MOCK_ORGANIZATIONS}
                 onOpenEvent={(id) => { setActiveEventId(id); setDetailReturnView('main'); setView('event-detail'); }}
-                onOpenOrgWorkspace={(id) => { setActiveOrgId(id); setView('organization'); }}
+                onOpenOrgWorkspace={(id) => { setActiveOrgId(id); setSkipOrgWelcome(false); setView('organization'); }}
               />
             )}
 
@@ -470,7 +472,7 @@ export function EventsScreen({ onTab }: any) {
             ['admin', 'officer', 'social_chair'].includes(
               activeUser.organizations.find((o: any) => o.organizationId === activeOrgId)?.role || ''
             )
-              ? () => setView('organization')
+              ? () => { setSkipOrgWelcome(false); setView('organization'); }
               : undefined
           }
         />
@@ -480,8 +482,13 @@ export function EventsScreen({ onTab }: any) {
         <OrganizationWorkspace 
           org={activeOrg} 
           events={viewEvents} 
-          onBack={() => { setActiveOrgId(null); setView('main'); }}
-          onManageEvent={(id) => { setActiveEventId(id); setView('manage-event'); }}
+          skipWelcome={skipOrgWelcome}
+          onBack={() => { setActiveOrgId(null); setSkipOrgWelcome(false); setView('main'); }}
+          onManageEvent={(id) => {
+            setSkipOrgWelcome(true);
+            setActiveEventId(id);
+            setView('manage-event');
+          }}
           onCreateEvent={() => setSheetOpen(true)}
           onInviteMembers={() => setImportContactsOpen(true)}
           currentUserRole={activeUser.organizations.find((o: any) => o.organizationId === activeOrgId)?.role || 'admin'}
@@ -492,7 +499,10 @@ export function EventsScreen({ onTab }: any) {
       {view === 'manage-event' && activeEvent && (
         <ManageEventView 
           event={activeEvent} 
-          onBack={() => setView(activeOrgId ? 'organization' : 'main')} 
+          onBack={() => {
+            setSkipOrgWelcome(true);
+            setView(activeOrgId ? 'organization' : 'main');
+          }} 
           onToast={flash}
           currentUserId={activeUserId}
           onViewEvent={() => {
@@ -502,6 +512,7 @@ export function EventsScreen({ onTab }: any) {
           onDelete={() => {
             setEvents(prev => prev.filter(e => e.id !== activeEvent.id));
             flash('Event deleted');
+            setSkipOrgWelcome(true);
             setView(activeOrgId ? 'organization' : 'main');
           }}
         />

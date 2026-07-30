@@ -1,8 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Organization, EventItem, OrganizationMember, SIGEP_ROSTER } from '../../lib/mockEventsData';
 import { GPB_MEMBER_GROUPS, GPB_ROSTER } from '../../lib/gpbRoster';
 import { USERS } from '../../lib/users';
 import { EVI } from './Icons';
+
+function welcomeLabel(org: Organization) {
+  if (org.id === 'program_board') return 'GPB';
+  if (org.id === 'sigma_phi_epsilon') return 'SigEp';
+  if (org.id === 'phantoms') return 'Phantoms';
+  return org.initials || org.name;
+}
 
 function memberStatusStyle(status: string) {
   if (status === 'joined') {
@@ -126,12 +133,13 @@ function RosterMembersList({
 export function OrganizationWorkspace({ 
   org, 
   events, 
-  onBack,
+  onBack, 
   onManageEvent,
   onCreateEvent,
   onInviteMembers,
-  currentUserRole = 'admin', // default to admin for backward compatibility in EventsScreen
+  currentUserRole = 'admin',
   currentUserId,
+  skipWelcome = false,
 }: { 
   org: Organization, 
   events: EventItem[],
@@ -141,12 +149,36 @@ export function OrganizationWorkspace({
   onInviteMembers: () => void,
   currentUserRole?: string,
   currentUserId?: string,
+  skipWelcome?: boolean,
 }) {
   const [tab, setTab] = useState<'overview'|'events'|'members'>('overview');
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
+  const [welcome, setWelcome] = useState(!skipWelcome);
+  const [welcomeOut, setWelcomeOut] = useState(false);
+
+  useEffect(() => {
+    if (skipWelcome) {
+      setWelcome(false);
+      setWelcomeOut(false);
+      return;
+    }
+    setWelcome(true);
+    setWelcomeOut(false);
+  }, [org.id, skipWelcome]);
+
+  useEffect(() => {
+    if (!welcome) return;
+    const fade = window.setTimeout(() => setWelcomeOut(true), 1100);
+    const done = window.setTimeout(() => setWelcome(false), 1500);
+    return () => {
+      window.clearTimeout(fade);
+      window.clearTimeout(done);
+    };
+  }, [welcome, org.id]);
 
   const isOrganizer = currentUserRole === 'admin' || currentUserRole === 'officer' || currentUserRole === 'social_chair';
   const roleLabel = (currentUserRole || 'member').replace('_', ' ');
+  const shortName = welcomeLabel(org);
 
   const orgEvents = events.filter(e => e.hostOrganizationId === org.id);
   const publicEvents = orgEvents.filter(e => e.visibility !== 'members_only');
@@ -155,14 +187,65 @@ export function OrganizationWorkspace({
 
   return (
     <div className="screen-fade" style={{ background: 'var(--ligo-paper)', minHeight: '100%', height: '100%', position: 'absolute', inset: 0, zIndex: 10, overflowY: 'auto', overflowX: 'hidden' }}>
-      <div style={{ position: 'sticky', top: 0, background: 'rgba(250,250,248,0.9)', backdropFilter: 'blur(20px)', zIndex: 10, padding: 'max(env(safe-area-inset-top, 56px), 56px) 20px 24px', display: 'flex', alignItems: 'flex-start', gap: 16, borderBottom: '2px solid var(--ink)' }}>
+      {welcome && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 60,
+            background: 'var(--ink)',
+            color: '#fff',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 20,
+            opacity: welcomeOut ? 0 : 1,
+            transition: 'opacity 0.4s ease',
+            pointerEvents: welcomeOut ? 'none' : 'auto',
+          }}
+        >
+          <div style={{
+            width: 72,
+            height: 72,
+            borderRadius: 20,
+            background: 'rgba(255,255,255,0.12)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 22,
+            fontWeight: 600,
+            letterSpacing: '0.06em',
+          }}>
+            {org.initials}
+          </div>
+          <div style={{ textAlign: 'center', padding: '0 32px' }}>
+            <div style={{ fontSize: 12, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'rgba(255,255,255,0.45)', marginBottom: 12 }}>
+              {org.id === 'program_board'
+                ? 'Running the board'
+                : org.id === 'sigma_phi_epsilon'
+                  ? 'Running the chapter'
+                  : 'Organizer'}
+            </div>
+            <div style={{ fontSize: 42, fontWeight: 500, fontFamily: 'var(--font-display)', textTransform: 'uppercase', lineHeight: 1, letterSpacing: '-0.02em' }}>
+              {shortName}
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.4)', marginTop: 16, letterSpacing: '0.02em' }}>
+              Events · members · invites
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div style={{ position: 'sticky', top: 0, background: 'rgba(250,250,248,0.9)', backdropFilter: 'blur(20px)', zIndex: 10, padding: 'max(env(safe-area-inset-top, 72px), 72px) 20px 24px', display: 'flex', alignItems: 'flex-start', gap: 16, borderBottom: '2px solid var(--ink)' }}>
         <button onClick={onBack} aria-label="Back" style={{ background: 'var(--ink)', color: '#fff', border: 'none', width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
           <EVI.Back />
         </button>
         <div style={{ paddingTop: 4 }}>
-          <div style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--orange)', marginBottom: 4 }}>{org.campus}</div>
-          <h1 style={{ fontSize: 32, fontWeight: 500, fontFamily: 'var(--font-display)', margin: 0, lineHeight: 1, textTransform: 'uppercase' }}>{org.name}</h1>
-          <div style={{ fontSize: 13, color: 'rgba(20,17,13,0.6)', marginTop: 8, fontWeight: 500 }}>{org.memberCount} members · Event ops · You&apos;re {roleLabel === 'admin' ? 'an' : 'a'} {roleLabel}</div>
+          <div style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--orange)', marginBottom: 4 }}>Event ops · {org.campus}</div>
+          <h1 style={{ fontSize: 32, fontWeight: 500, fontFamily: 'var(--font-display)', margin: 0, lineHeight: 1, textTransform: 'uppercase' }}>{shortName}</h1>
+          <div style={{ fontSize: 14, color: 'rgba(20,17,13,0.55)', marginTop: 8, fontWeight: 500 }}>{org.name}</div>
+          <div style={{ fontSize: 13, color: 'rgba(20,17,13,0.45)', marginTop: 6, fontWeight: 500 }}>{org.memberCount} members · You&apos;re {roleLabel === 'admin' ? 'an' : 'a'} {roleLabel}</div>
         </div>
       </div>
 
