@@ -4,6 +4,7 @@ import { INITIAL_EVENTS, MOCK_ORGANIZATIONS, EventItem, MockUser } from "../lib/
 import { HomeFeedView } from "./events/HomeFeedView";
 import { InvitesView } from "./events/InvitesView";
 import { OrganizationWorkspace } from "./events/OrganizationWorkspace";
+import { MemberClubHome } from "./events/MemberClubHome";
 import { ManageEventView } from "./events/ManageEventView";
 import { CreateEventSheet } from "./events/CreateEventSheet";
 import { EventDetailView } from "./events/EventDetailView";
@@ -12,8 +13,8 @@ import { ImportContactsFlow } from "./events/ImportContactsFlow";
 import { EVI } from "./events/Icons";
 import { usePersistentState } from "../lib/usePersistentState";
 
-type EventsView = "main" | "organization" | "manage-event" | "event-detail" | "publish-confirmation";
-type MainTab = 'home' | 'invites';
+type EventsView = "main" | "organization" | "member-club" | "manage-event" | "event-detail" | "publish-confirmation";
+type MainTab = 'home' | 'invites' | 'clubs';
 
 export function EventsScreen({ onTab }: any) {
   const [activeUserId] = usePersistentState('ligo:active_user', 'marcus');
@@ -27,7 +28,12 @@ export function EventsScreen({ onTab }: any) {
       { organizationId: 'sigma_phi_epsilon', role: 'admin', groupIds: ['g-all-spe', 'g-exec-spe'] }
     ] : activeUserId === 'sofia' ? [
       { organizationId: 'phantoms', role: 'admin', groupIds: ['g1', 'g2'] }
-    ] : activeUserId === 'jordan' || activeUserId === 'cole' || activeUserId === 'bennett' ? [
+    ] : activeUserId === 'cole' ? [
+      { organizationId: 'program_board', role: 'admin', groupIds: ['g-all-gpb', 'g-exec-gpb', 'g-programming-gpb'] }
+    ] : activeUserId === 'jordan' ? [
+      { organizationId: 'sigma_phi_epsilon', role: 'member', groupIds: ['g-all-spe'] },
+      { organizationId: 'program_board', role: 'member', groupIds: ['g-all-gpb', 'g-production-gpb'] }
+    ] : activeUserId === 'bennett' ? [
       { organizationId: 'sigma_phi_epsilon', role: 'member', groupIds: ['g-all-spe'] }
     ] : []
   };
@@ -37,7 +43,7 @@ export function EventsScreen({ onTab }: any) {
 
   const [events, setEvents] = usePersistentState<EventItem[]>('ligo:all_events_v2', dynamicInitialEvents);
   const [view, setView] = useState<EventsView>("main");
-  const [mainTab, setMainTab] = useState<'home' | 'invites'>('home');
+  const [mainTab, setMainTab] = useState<MainTab>('home');
   const [activeOrgId, setActiveOrgId] = useState<string | null>(null);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   
@@ -50,11 +56,13 @@ export function EventsScreen({ onTab }: any) {
 
   // Vercel (Linux) is case-sensitive; older cached rows can still point at `/posh/...`
   // while files live under `/Posh/...`. Keep cover URLs in sync with source data.
+  // Also remap legacy hostOrganizationId values (e.g. GPB avatar code → program_board).
   React.useEffect(() => {
     const byId = new Map(INITIAL_EVENTS.map(e => [String(e.id), e]));
     const needsFix = events.some(e => {
       const source = byId.get(String(e.id));
       if (typeof e.image === 'string' && e.image.includes('/posh/')) return true;
+      if (e.hostOrganizationId === 'GPB') return true;
       return !!(source?.image && source.image !== e.image);
     });
     if (!needsFix) return;
@@ -64,7 +72,12 @@ export function EventsScreen({ onTab }: any) {
       const normalized =
         typeof e.image === 'string' ? e.image.replace(/\/posh\//g, '/Posh/') : e.image;
       const image = source?.image || normalized;
-      return image !== e.image ? { ...e, image } : e;
+      const hostOrganizationId =
+        e.hostOrganizationId === 'GPB' ? 'program_board'
+        : (source?.hostOrganizationId || e.hostOrganizationId);
+      return image !== e.image || hostOrganizationId !== e.hostOrganizationId
+        ? { ...e, image, hostOrganizationId }
+        : e;
     }));
   }, [events, setEvents]);
 
@@ -210,6 +223,14 @@ export function EventsScreen({ onTab }: any) {
     .map((o: any) => MOCK_ORGANIZATIONS[o.organizationId])
     .filter(Boolean);
   const isAdmin = managedOrgs.length > 0;
+  const memberOrgs = activeUser.organizations
+    .map((o: any) => ({
+      ...o,
+      org: MOCK_ORGANIZATIONS[o.organizationId],
+    }))
+    .filter((o: any) => o.org);
+  const hasClubs = memberOrgs.length > 0;
+  const compactTabs = isAdmin || hasClubs;
   
   return (
     <div className="screen" style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: 'var(--ligo-paper)' }}>
@@ -247,17 +268,17 @@ export function EventsScreen({ onTab }: any) {
             </div>
             
             {/* Top Tab Bar */}
-            <div style={{ display: 'flex', gap: isAdmin ? 16 : 24, padding: '0 20px' }}>
+            <div style={{ display: 'flex', gap: compactTabs ? 16 : 24, padding: '0 20px' }}>
               <button 
                 onClick={() => setMainTab('home')} 
-                style={{ paddingBottom: 16, fontSize: isAdmin ? 15 : 16, fontWeight: 500, color: mainTab === 'home' ? 'var(--ink)' : 'rgba(20,17,13,0.4)', background: 'none', border: 'none', cursor: 'pointer', position: 'relative' }}>
+                style={{ paddingBottom: 16, fontSize: compactTabs ? 15 : 16, fontWeight: 500, color: mainTab === 'home' ? 'var(--ink)' : 'rgba(20,17,13,0.4)', background: 'none', border: 'none', cursor: 'pointer', position: 'relative' }}>
                 Explore
                 {mainTab === 'home' && <div style={{ position: 'absolute', bottom: -1, left: 0, right: 0, height: 2, background: 'var(--ink)', borderRadius: 2 }} />}
               </button>
               
               <button 
                 onClick={() => setMainTab('invites')} 
-                style={{ paddingBottom: 16, marginRight: pendingInvites.length > 0 ? 16 : 0, fontSize: isAdmin ? 15 : 16, fontWeight: 500, color: mainTab === 'invites' ? 'var(--ink)' : 'rgba(20,17,13,0.4)', background: 'none', border: 'none', cursor: 'pointer', position: 'relative' }}>
+                style={{ paddingBottom: 16, marginRight: pendingInvites.length > 0 ? 16 : 0, fontSize: compactTabs ? 15 : 16, fontWeight: 500, color: mainTab === 'invites' ? 'var(--ink)' : 'rgba(20,17,13,0.4)', background: 'none', border: 'none', cursor: 'pointer', position: 'relative' }}>
                 My Events
                 {pendingInvites.length > 0 && (
                   <div style={{ position: 'absolute', top: -4, right: -14, background: 'var(--ligo-orange)', color: '#fff', fontSize: 10, fontWeight: 500, borderRadius: 10, padding: '2px 6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -266,6 +287,15 @@ export function EventsScreen({ onTab }: any) {
                 )}
                 {mainTab === 'invites' && <div style={{ position: 'absolute', bottom: -1, left: 0, right: 0, height: 2, background: 'var(--ink)', borderRadius: 2 }} />}
               </button>
+
+              {hasClubs && (
+                <button 
+                  onClick={() => setMainTab('clubs')} 
+                  style={{ paddingBottom: 16, fontSize: compactTabs ? 15 : 16, fontWeight: 500, color: mainTab === 'clubs' ? 'var(--ink)' : 'rgba(20,17,13,0.4)', background: 'none', border: 'none', cursor: 'pointer', position: 'relative' }}>
+                  Clubs
+                  {mainTab === 'clubs' && <div style={{ position: 'absolute', bottom: -1, left: 0, right: 0, height: 2, background: 'var(--ink)', borderRadius: 2 }} />}
+                </button>
+              )}
 
               {isAdmin && (
                 <button 
@@ -298,8 +328,67 @@ export function EventsScreen({ onTab }: any) {
               />
             )}
 
+            {mainTab === 'clubs' && (
+              <div className="screen-fade" style={{ padding: '8px 20px 120px' }}>
+                <div style={{ fontSize: 13, color: 'rgba(20,17,13,0.5)', fontWeight: 500, marginBottom: 20, marginTop: 8 }}>
+                  Your organizations on campus
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {memberOrgs.map(({ org, role }: any) => (
+                    <button
+                      key={org.id}
+                      onClick={() => {
+                        setActiveOrgId(org.id);
+                        setView('member-club');
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 16,
+                        padding: 16,
+                        background: '#fff',
+                        borderRadius: 20,
+                        boxShadow: '0 4px 16px rgba(20,17,13,0.04)',
+                        border: '1px solid rgba(20,17,13,0.06)',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                      }}
+                    >
+                      <div style={{ width: 48, height: 48, borderRadius: 12, background: '#14110D', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 600, letterSpacing: '0.04em', flexShrink: 0 }}>
+                        {org.initials}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 16, fontWeight: 600, color: '#14110D' }}>{org.name}</div>
+                        <div style={{ fontSize: 14, color: 'rgba(20,17,13,0.5)', marginTop: 2 }}>
+                          {org.category} · {org.memberCount} members · {String(role).replace('_', ' ')}
+                        </div>
+                      </div>
+                      <EVI.Chevron style={{ width: 16, height: 16, color: 'rgba(20,17,13,0.3)', transform: 'rotate(-90deg)' }} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
+      )}
+
+      {view === 'member-club' && activeOrg && (
+        <MemberClubHome
+          org={activeOrg}
+          events={events}
+          currentUserRole={activeUser.organizations.find((o: any) => o.organizationId === activeOrgId)?.role || 'member'}
+          onBack={() => { setActiveOrgId(null); setView('main'); setMainTab('clubs'); }}
+          onOpenEvent={(id) => { setActiveEventId(id); setView('event-detail'); }}
+          onOpenManage={
+            ['admin', 'officer', 'social_chair'].includes(
+              activeUser.organizations.find((o: any) => o.organizationId === activeOrgId)?.role || ''
+            )
+              ? () => setView('organization')
+              : undefined
+          }
+        />
       )}
 
       {view === 'organization' && activeOrg && (
@@ -379,11 +468,24 @@ export function EventsScreen({ onTab }: any) {
       )}
 
       {importContactsOpen && (
-        <ImportContactsFlow 
+        <ImportContactsFlow
+          orgId={activeOrg?.id || activeUser.organizations.find((o: any) => ['officer', 'social_chair', 'admin'].includes(o.role))?.organizationId}
+          orgName={
+            activeOrg?.name
+            || MOCK_ORGANIZATIONS[
+              activeUser.organizations.find((o: any) => ['officer', 'social_chair', 'admin'].includes(o.role))?.organizationId || ''
+            ]?.name
+          }
+          onBack={() => {
+            setImportContactsOpen(false);
+            // Stay on organization workspace if that's where invite was opened from
+            if (activeOrgId) setView('organization');
+          }}
           onClose={() => {
             setImportContactsOpen(false);
-            flash('Invitations sent successfully');
-          }} 
+            if (activeOrgId) setView('organization');
+            flash('Invitations sent');
+          }}
         />
       )}
 

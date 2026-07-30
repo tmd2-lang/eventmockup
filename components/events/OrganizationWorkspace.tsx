@@ -1,7 +1,122 @@
 import React, { useState } from 'react';
-import { Organization, EventItem, SIGEP_ROSTER } from '../../lib/mockEventsData';
+import { Organization, EventItem, OrganizationMember, SIGEP_ROSTER } from '../../lib/mockEventsData';
+import { GPB_MEMBER_GROUPS, GPB_ROSTER } from '../../lib/gpbRoster';
 import { USERS } from '../../lib/users';
 import { EVI } from './Icons';
+
+function memberStatusStyle(status: string) {
+  if (status === 'joined') {
+    return {
+      statusBg: 'rgba(20,17,13,0.05)',
+      statusColor: 'var(--ink)',
+      statusBorder: 'none',
+      statusText: 'On Ligo',
+    };
+  }
+  if (status === 'invited') {
+    return {
+      statusBg: 'transparent',
+      statusColor: 'var(--ink)',
+      statusBorder: '1px solid rgba(20,17,13,0.2)',
+      statusText: 'Invited',
+    };
+  }
+  if (status === 'sms-pending') {
+    return {
+      statusBg: 'rgba(20,17,13,0.05)',
+      statusColor: 'rgba(20,17,13,0.5)',
+      statusBorder: 'none',
+      statusText: 'Text sent',
+    };
+  }
+  // not_on_ligo and anything else
+  return {
+    statusBg: 'transparent',
+    statusColor: 'rgba(20,17,13,0.45)',
+    statusBorder: '1px dashed rgba(20,17,13,0.2)',
+    statusText: 'Not on Ligo',
+  };
+}
+
+function matchRosterUser(member: OrganizationMember) {
+  // Only wire known demo profiles when the roster row is intentionally that person.
+  // Cole Brennan = Cole. Jordan Davis = Jordan. Sofia Martinez / Marcus Reed stay unmatched for now.
+  if (member.name === 'Cole Brennan' || member.email === 'cole.brennan@georgetown.edu') {
+    return USERS.cole;
+  }
+  if (member.name === 'Jordan Davis' || member.email === 'jordand@georgetown.edu') {
+    return USERS.jordan;
+  }
+  if (member.email === 'marcust@georgetown.edu') return USERS.marcus;
+  if (member.email === 'coleb@georgetown.edu') return USERS.cole;
+  if (member.email === 'bennettr@georgetown.edu') return USERS.bennett;
+  return undefined;
+}
+
+function RosterMembersList({
+  roster,
+  groups,
+  onSelect,
+}: {
+  roster: OrganizationMember[];
+  groups: { id: string; title: string }[];
+  onSelect: (member: OrganizationMember & { matchedUser?: (typeof USERS)[string] }) => void;
+}) {
+  const joined = roster.filter(m => m.status === 'joined').length;
+  const invited = roster.filter(m => m.status === 'invited').length;
+  const notOnLigo = roster.length - joined - invited;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+      <div style={{ fontSize: 13, color: 'rgba(20,17,13,0.55)', fontWeight: 500, marginTop: -8 }}>
+        {roster.length} members · {joined} on Ligo · {invited} invited · {notOnLigo} not yet
+      </div>
+
+      {groups.map(group => {
+        const members = roster.filter(m => m.subgroup === group.id);
+        if (members.length === 0) return null;
+
+        return (
+          <div key={group.id}>
+            <div style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 16 }}>
+              {group.title} · {members.length}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {members.map((m, i) => {
+                const matchedUser = matchRosterUser(m);
+                const initials = m.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                const { statusBg, statusColor, statusBorder, statusText } = memberStatusStyle(m.status);
+
+                return (
+                  <div
+                    key={`${m.email}-${i}`}
+                    onClick={() => onSelect({ ...m, matchedUser })}
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}
+                  >
+                    {matchedUser ? (
+                      <img src={matchedUser.avatar} alt={m.name} style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--ink)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 500 }}>
+                        {initials}
+                      </div>
+                    )}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--ink)' }}>{m.name}</div>
+                      {m.title && <div style={{ fontSize: 13, color: 'rgba(20,17,13,0.5)', fontWeight: 500 }}>{m.title}</div>}
+                    </div>
+                    <div style={{ padding: '6px 10px', borderRadius: 12, background: statusBg, border: statusBorder, fontSize: 11, fontWeight: 500, color: statusColor }}>
+                      {statusText}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export function OrganizationWorkspace({ 
   org, 
@@ -145,74 +260,17 @@ export function OrganizationWorkspace({
             </div>
 
             {org.id === 'sigma_phi_epsilon' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-                {[
-                  { id: 'exec-board', title: 'EXEC BOARD' },
-                  { id: 'brothers', title: 'BROTHERS' },
-                  { id: 'new-members', title: 'NEW MEMBERS' }
-                ].map(group => {
-                  const members = SIGEP_ROSTER.filter(m => m.subgroup === group.id);
-                  if (members.length === 0) return null;
-                  
-                  return (
-                    <div key={group.id}>
-                      <div style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 16 }}>
-                        {group.title} · {members.length}
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                        {members.map((m, i) => {
-                          const matchedUser = Object.values(USERS).find(u => {
-                            if (m.email === 'marcust@georgetown.edu' && u.id === 'marcus') return true;
-                            if (m.email === 'jordand@georgetown.edu' && u.id === 'jordan') return true;
-                            if (m.email === 'coleb@georgetown.edu' && u.id === 'cole') return true;
-                            if (m.email === 'bennettr@georgetown.edu' && u.id === 'bennett') return true;
-                            return false;
-                          });
-                          
-                          const initials = m.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-                          
-                          let statusBg = 'transparent';
-                          let statusColor = 'var(--ink)';
-                          let statusBorder = 'none';
-                          let statusText = '';
-                          
-                          if (m.status === 'joined') {
-                            statusBg = 'rgba(20,17,13,0.05)';
-                            statusText = 'Joined';
-                          } else if (m.status === 'invited') {
-                            statusBorder = '1px solid rgba(20,17,13,0.2)';
-                            statusText = 'Invited';
-                          } else if (m.status === 'sms-pending') {
-                            statusBg = 'rgba(20,17,13,0.05)';
-                            statusColor = 'rgba(20,17,13,0.5)';
-                            statusText = 'Text sent';
-                          }
-
-                          return (
-                            <div key={i} onClick={() => setSelectedMember({ ...m, matchedUser })} style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-                              {matchedUser ? (
-                                <img src={matchedUser.avatar} alt={m.name} style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} />
-                              ) : (
-                                <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--ink)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 500 }}>
-                                  {initials}
-                                </div>
-                              )}
-                              <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--ink)' }}>{m.name}</div>
-                                {m.title && <div style={{ fontSize: 13, color: 'rgba(20,17,13,0.5)', fontWeight: 500 }}>{m.title}</div>}
-                              </div>
-                              <div style={{ padding: '6px 10px', borderRadius: 12, background: statusBg, border: statusBorder, fontSize: 11, fontWeight: 500, color: statusColor }}>
-                                {statusText}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-                
-                <div>
+              <>
+                <RosterMembersList
+                  roster={SIGEP_ROSTER}
+                  groups={[
+                    { id: 'exec-board', title: 'EXEC BOARD' },
+                    { id: 'brothers', title: 'BROTHERS' },
+                    { id: 'new-members', title: 'NEW MEMBERS' },
+                  ]}
+                  onSelect={setSelectedMember}
+                />
+                <div style={{ marginTop: 32 }}>
                   <div style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(20,17,13,0.4)', marginBottom: 8 }}>
                     ALUMNI · 150
                   </div>
@@ -220,7 +278,13 @@ export function OrganizationWorkspace({
                     Reachable for invites · not shown here.
                   </div>
                 </div>
-              </div>
+              </>
+            ) : org.id === 'program_board' ? (
+              <RosterMembersList
+                roster={GPB_ROSTER}
+                groups={[...GPB_MEMBER_GROUPS]}
+                onSelect={setSelectedMember}
+              />
             ) : (
               <div>
                 {org.groups.filter(g => g.name !== 'All Members').map(g => (

@@ -827,11 +827,23 @@ function ProfileTabV2() {
     setProfileRoot(document.getElementById('ligo-profile-root'));
   }, []);
 
+  useEffect(() => {
+    if (!events.some(e => e.hostOrganizationId === 'GPB')) return;
+    setEvents(prev => prev.map(e =>
+      e.hostOrganizationId === 'GPB' ? { ...e, hostOrganizationId: 'program_board' } : e
+    ));
+  }, [events, setEvents]);
+
   const userOrganizations = activeUser.id === 'marcus' ? [
     { organizationId: 'sigma_phi_epsilon', role: 'admin', groupIds: ['g-all-spe', 'g-exec-spe'] }
   ] : activeUser.id === 'sofia' ? [
     { organizationId: 'phantoms', role: 'admin', groupIds: ['g1', 'g2'] }
-  ] : activeUser.id === 'jordan' || activeUser.id === 'cole' || activeUser.id === 'bennett' ? [
+  ] : activeUser.id === 'cole' ? [
+    { organizationId: 'program_board', role: 'admin', groupIds: ['g-all-gpb', 'g-exec-gpb', 'g-programming-gpb'] }
+  ] : activeUser.id === 'jordan' ? [
+    { organizationId: 'sigma_phi_epsilon', role: 'member', groupIds: ['g-all-spe'] },
+    { organizationId: 'program_board', role: 'member', groupIds: ['g-all-gpb', 'g-production-gpb'] }
+  ] : activeUser.id === 'bennett' ? [
     { organizationId: 'sigma_phi_epsilon', role: 'member', groupIds: ['g-all-spe'] }
   ] : [];
 

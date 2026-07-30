@@ -206,7 +206,23 @@ export const MOCK_ORGANIZATIONS: Record<string, Organization> = {
     groups: [
       { id: 'g-all', name: 'All Members', memberCount: 42 },
     ]
-  }
+  },
+  program_board: {
+    id: 'program_board',
+    name: 'Georgetown Program Board',
+    initials: 'GPB',
+    campus: 'georgetown',
+    category: 'Campus Programming',
+    memberCount: 48,
+    currentUserRole: 'admin',
+    groups: [
+      { id: 'g-all-gpb', name: 'All Members', memberCount: 48, memberIds: [] },
+      { id: 'g-exec-gpb', name: 'Exec Board', memberCount: 8, memberIds: [] },
+      { id: 'g-programming-gpb', name: 'Programming', memberCount: 14, memberIds: [] },
+      { id: 'g-marketing-gpb', name: 'Marketing', memberCount: 12, memberIds: [] },
+      { id: 'g-production-gpb', name: 'Production', memberCount: 14, memberIds: [] },
+    ],
+  },
 };
 
 const ev = (
@@ -234,7 +250,11 @@ export const INITIAL_EVENTS: EventItem[] = LigoEvents.map(e => {
     time: e.date?.split('·')[2]?.trim() || e.time,
     name: e.title,
     host: e.hostName,
-    hostOrganizationId: e.hostAvatar === 'PH' ? 'phantoms' : e.hostAvatar === 'SPE' ? 'sigma_phi_epsilon' : e.hostAvatar, // using avatar as a rough ID
+    hostOrganizationId:
+      e.hostAvatar === 'PH' ? 'phantoms'
+      : e.hostAvatar === 'SPE' ? 'sigma_phi_epsilon'
+      : e.hostAvatar === 'GPB' ? 'program_board'
+      : e.hostAvatar, // using avatar as a rough ID
     venue: e.location.split(',')[0],
     description: Array.isArray(e.description) ? e.description.join('\\n\\n') : e.description,
     category: e.tags?.[0] || 'campus',

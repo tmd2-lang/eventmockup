@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from 'react';
-import { Organization, EventItem, SIGEP_ROSTER } from '../../lib/mockEventsData';
+import { Organization, EventItem, OrganizationMember, SIGEP_ROSTER } from '../../lib/mockEventsData';
+import { GPB_MEMBER_GROUPS, GPB_ROSTER } from '../../lib/gpbRoster';
 import { USERS } from '../../lib/users';
 import { EVI } from './Icons';
 
@@ -11,14 +12,13 @@ const MOCK_CHAT = [
   { id: 4, sender: 'Jordan D.', userId: 'jordan', text: 'Just bring yourselves, we have plenty of drinks left from last week', isMe: false, time: '2:40 PM' },
 ];
 
-function matchRosterUser(m: { email: string }) {
-  return Object.values(USERS).find(u => {
-    if (m.email === 'marcust@georgetown.edu' && u.id === 'marcus') return true;
-    if (m.email === 'jordand@georgetown.edu' && u.id === 'jordan') return true;
-    if (m.email === 'coleb@georgetown.edu' && u.id === 'cole') return true;
-    if (m.email === 'bennettr@georgetown.edu' && u.id === 'bennett') return true;
-    return false;
-  });
+function matchRosterUser(m: OrganizationMember | { email: string; name?: string }) {
+  if (m.name === 'Cole Brennan' || m.email === 'cole.brennan@georgetown.edu') return USERS.cole;
+  if (m.name === 'Jordan Davis' || m.email === 'jordand@georgetown.edu') return USERS.jordan;
+  if (m.email === 'marcust@georgetown.edu') return USERS.marcus;
+  if (m.email === 'coleb@georgetown.edu') return USERS.cole;
+  if (m.email === 'bennettr@georgetown.edu') return USERS.bennett;
+  return undefined;
 }
 
 export function MemberClubHome({
@@ -138,7 +138,7 @@ export function MemberClubHome({
           <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 16 }}>
               <div style={{ alignSelf: 'center', fontSize: 12, color: 'rgba(20,17,13,0.4)', fontWeight: 500, marginBottom: 8 }}>
-                SigEp house chat · members only
+                {org.name} · members only
               </div>
               {history.map(msg => {
                 const avatar = msg.userId ? Object.values(USERS).find(u => u.id === msg.userId)?.avatar : null;
@@ -314,16 +314,22 @@ export function MemberClubHome({
         {tab === 'people' && (
           <div>
             <div style={{ fontSize: 13, color: 'rgba(20,17,13,0.5)', fontWeight: 500, marginBottom: 24 }}>
-              Brothers in the chapter — tap someone to see contact info.
+              {org.id === 'sigma_phi_epsilon'
+                ? 'Brothers in the chapter — tap someone to see contact info.'
+                : 'People in this organization — tap someone to see contact info.'}
             </div>
-            {org.id === 'sigma_phi_epsilon' ? (
+            {org.id === 'sigma_phi_epsilon' || org.id === 'program_board' ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
-                {[
-                  { id: 'exec-board', title: 'Exec board' },
-                  { id: 'brothers', title: 'Brothers' },
-                  { id: 'new-members', title: 'New members' },
-                ].map(group => {
-                  const members = SIGEP_ROSTER.filter(m => m.subgroup === group.id && m.status === 'joined');
+                {(org.id === 'program_board'
+                  ? GPB_MEMBER_GROUPS.map(g => ({ id: g.id, title: g.title }))
+                  : [
+                      { id: 'exec-board', title: 'Exec board' },
+                      { id: 'brothers', title: 'Brothers' },
+                      { id: 'new-members', title: 'New members' },
+                    ]
+                ).map(group => {
+                  const roster = org.id === 'program_board' ? GPB_ROSTER : SIGEP_ROSTER;
+                  const members = roster.filter(m => m.subgroup === group.id && m.status === 'joined');
                   if (members.length === 0) return null;
                   return (
                     <div key={group.id}>
