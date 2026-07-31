@@ -2,6 +2,8 @@
 
 An interactive, clickable prototype of **LIGO** — a music-first social app for college students. The demo runs inside an iPhone frame in the browser: answer a daily question, open the nightly **Aurora reveal** at 8 PM, browse events, and explore nine demo profiles.
 
+**Events / clubs mockup (send this to the team):** **[docs/EVENTS_MOCKUP_GUIDE.md](docs/EVENTS_MOCKUP_GUIDE.md)** — Cole + Jordan walkthrough, where public vs members-only events show up, autofills, Clubs vs Manage.
+
 **New to v1?** Read **[docs/V1_DIRECTION.md](docs/V1_DIRECTION.md)** first — product pivot, daily loop, and roadmap.
 
 **Branches:** **`v0-demo-mockup`** (git tag) is the frozen full-canon demo at [ligo-v0.vercel.app](https://ligo-v0.vercel.app). Branch **`v1`** is the new direction: nightly reveal-first mockup, profiles + catalogs in TypeScript, Supabase profiles-only. See [docs/V1_STARTING_POINT.md](docs/V1_STARTING_POINT.md) for setup; [docs/DEPLOY_V0.md](docs/DEPLOY_V0.md) for the frozen v0 deploy.
