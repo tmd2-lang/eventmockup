@@ -25,9 +25,8 @@ const DEMO_ORG_MEMBERS: Record<string, string[]> = {
   phantoms: ['sofia'],
 };
 
-export function EventsScreen({ onTab, overrideUserId, siloMode }: { onTab?: any, overrideUserId?: string, siloMode?: boolean }) {
-  const [persistedUserId] = usePersistentState('ligo:active_user', 'marcus');
-  const activeUserId = overrideUserId || persistedUserId;
+export function EventsScreen({ onTab }: any) {
+  const [activeUserId] = usePersistentState('ligo:active_user', 'marcus');
 
   // Dynamic user based on profile state
   const activeUser: MockUser = {
@@ -151,11 +150,6 @@ export function EventsScreen({ onTab, overrideUserId, siloMode }: { onTab?: any,
   );
 
   React.useEffect(() => {
-    // Siloed admin demos skip the consumer Pass / I'm In stack
-    if (siloMode) {
-      setShowSwipeableInvites(false);
-      return;
-    }
     // When active user changes, trigger stack if they have invites
     if (activeUserId !== lastViewedUserId.current) {
       if (pendingInvites.length > 0) {
@@ -166,7 +160,7 @@ export function EventsScreen({ onTab, overrideUserId, siloMode }: { onTab?: any,
       lastViewedUserId.current = activeUserId;
       setLiveActivityEventId(null);
     }
-  }, [activeUserId, pendingInvites.length, siloMode]);
+  }, [activeUserId, pendingInvites.length]);
 
   function flash(msg: string) { setToast(msg); setTimeout(() => setToast(null), 2600); }
 
@@ -478,8 +472,7 @@ export function EventsScreen({ onTab, overrideUserId, siloMode }: { onTab?: any,
             ['admin', 'officer', 'social_chair'].includes(
               activeUser.organizations.find((o: any) => o.organizationId === activeOrgId)?.role || ''
             )
-              // Already saw club welcome — skip the Manage "Running the board" splash
-              ? () => { setSkipOrgWelcome(true); setView('organization'); }
+              ? () => { setSkipOrgWelcome(false); setView('organization'); }
               : undefined
           }
         />
