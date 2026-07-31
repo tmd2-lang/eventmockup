@@ -86,7 +86,7 @@ const STREAK_TROPHIES = [
   { id: 'h6', label: '180 days', short: '180', days: 180, accent: '#14110D', icon: '♛', title: 'Hall of Fame', blurb: "Half a year of never missing a day. Legends aren't born — they're streaked into existence." },
 ];
 
-export function ProfileV2Provider({ children, overrideUserId, matchReason, onClose }: { children: ReactNode, overrideUserId?: string, matchReason?: string, onClose?: () => void }) {
+export function ProfileV2Provider({ children, overrideUserId, matchReason, onClose, asSelf }: { children: ReactNode, overrideUserId?: string, matchReason?: string, onClose?: () => void, asSelf?: boolean }) {
   const [screen, setScreen] = useState('profile');
   const [sheet, setSheet] = useState(null);
   const [sheetOrigin, setSheetOrigin] = useState(null);
@@ -169,7 +169,7 @@ export function ProfileV2Provider({ children, overrideUserId, matchReason, onClo
       screen, setScreen, sheet, openSheet, closeSheet, sheetOrigin,
       toastMsg, toastOn, toast, notifUnread,
       openArchetypeGallery, closeArchetypeGallery, openArchetypeFromGallery,
-      playingIdx, toggleTrack, meterOn, overrideUserId, matchReason, onClose,
+      playingIdx, toggleTrack, meterOn, overrideUserId, matchReason, onClose, asSelf,
       openReceipts, closeReceipts, openPastReads, closePastReads, runMeterAnim
     }}>
       {children}
@@ -799,13 +799,14 @@ const defaultEdits = {};
 function ProfileTabV2() {
   const profile = useActiveUserProfile();
   const activeUser = useActiveUser();
-  const { overrideUserId } = usePV2();
+  const { overrideUserId, asSelf } = usePV2();
   const [activeUserId] = usePersistentState('ligo:active_user', 'jordan');
   
   const viewerUser = USERS[activeUserId] || USERS['jordan'];
   const viewerProfile = { ...PROFILE_PRESENTATION_DEFAULTS, ...viewerUser.profile };
   
-  const isOwnProfile = !overrideUserId || overrideUserId === activeUserId;
+  // asSelf: locked silo demos (e.g. /cole) view override user as own profile
+  const isOwnProfile = asSelf || !overrideUserId || overrideUserId === activeUserId;
   
   const { loading: trailLoading, error: trailError, answerTrail } = useDailyReveal(activeUser.id);
   const initials = activeUser.name.split(' ').map(n => n[0]).join('.') + '.';
@@ -1234,10 +1235,11 @@ function ProfileTabV2() {
             <OrganizationWorkspace
               org={MOCK_ORGANIZATIONS[activeOrgId]}
               events={events}
+              skipWelcome
               onBack={() => setClubView('home')}
-              onManageEvent={() => { toast('Manage event screen would open here.'); }}
-              onCreateEvent={() => { toast('Create event sheet would open here.'); }}
-              onInviteMembers={() => { toast('Invite members screen would open here.'); }}
+              onManageEvent={() => { toast('Open Events → Manage for full event ops.'); }}
+              onCreateEvent={() => { toast('Open Events → Manage to create events.'); }}
+              onInviteMembers={() => { toast('Open Events → Manage to invite members.'); }}
               currentUserRole={userOrganizations.find(o => o.organizationId === activeOrgId)?.role || 'member'}
             />
           )}

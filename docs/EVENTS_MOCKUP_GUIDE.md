@@ -7,13 +7,15 @@ Send this with the live link when you share the demo with the team.
 
 **Live link:** use the Vercel URL TJ / Micah share for this build (repo: `eventmockup` / `ligo-home-mockup`).
 
+**Cole-only shortcut:** `/cole` — Events only, locked to Cole (GPB admin). Use this for organizer demos so people don’t have to find the profile switcher.
+
 ---
 
 ## Before you start
 
 1. Open the link on desktop (phone frame in the browser is fine).
-2. Bottom nav: **Events · Home · Profile**.
-3. Switch people from **Profile** (or the avatar / profile switcher on Home) — pick **Cole** or **Jordan**. That choice sticks in the browser.
+2. Bottom nav: **Events · Home · Profile** (or just Events on `/cole` — no bottom nav).
+3. Switch people from **Profile** (or the avatar / profile switcher on Home) — pick **Cole** or **Jordan**. That choice sticks in the browser. On `/cole` you’re locked to Cole.
 4. Prefer **one tab** when demoing. Two tabs won’t update each other live; refresh the second tab after you publish.
 
 ### Who to use
